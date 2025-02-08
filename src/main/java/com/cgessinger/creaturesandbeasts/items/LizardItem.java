@@ -54,13 +54,15 @@ public class LizardItem extends ForgeSpawnEggItem {
             if (blockstate.is(Blocks.SPAWNER)) {
                 BlockEntity blockentity = level.getBlockEntity(blockpos);
                 if (blockentity instanceof SpawnerBlockEntity) {
-                    BaseSpawner basespawner = ((SpawnerBlockEntity)blockentity).getSpawner();
+                    BaseSpawner basespawner = ((SpawnerBlockEntity) blockentity).getSpawner();
                     EntityType<?> entitytype1 = this.getType(itemstack.getTag());
-                    basespawner.setEntityId(entitytype1);
-                    blockentity.setChanged();
-                    level.sendBlockUpdated(blockpos, blockstate, blockstate, 3);
-                    itemstack.shrink(1);
-                    return InteractionResult.CONSUME;
+                    if (entitytype1 != null) {
+                        basespawner.setEntityId(entitytype1, level, level.getRandom(), blockpos); // Updated method
+                        blockentity.setChanged();
+                        level.sendBlockUpdated(blockpos, blockstate, blockstate, 3);
+                        itemstack.shrink(1);
+                        return InteractionResult.CONSUME;
+                    }
                 }
             }
 

@@ -2,7 +2,7 @@ package com.cgessinger.creaturesandbeasts.mixin;
 
 import com.cgessinger.creaturesandbeasts.entities.EndWhaleEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -17,14 +17,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinLivingEntityRenderer<T extends LivingEntity> {
 
     @Inject(method = "setupRotations(Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;FFF)V", at = @At("RETURN"))
-    private void CNB_setupWhaleRidingRotations(T entity, PoseStack stack, float ageInTicks, float rotationYaw, float partialTicks, CallbackInfo ci) {
+    private void CNB_setupWhaleRidingRotations(LivingEntity entity, PoseStack stack, float ageInTicks, float rotationYaw, float partialTicks, CallbackInfo ci) {
         if (entity.getVehicle() instanceof EndWhaleEntity endWhale) {
             float whaleRotY = endWhale.getViewYRot(partialTicks);
             float playerRotY = entity.getViewYRot(partialTicks);
             float whaleRotX = endWhale.getViewXRot(partialTicks);
             float playerRotX = entity.getViewXRot(partialTicks);
-            stack.mulPose(Vector3f.ZP.rotationDegrees(Mth.wrapDegrees(whaleRotY - playerRotY) / 2));
-            stack.mulPose(Vector3f.XP.rotationDegrees(Mth.wrapDegrees(whaleRotX - playerRotX)));
+
+            // Apply rotations to the PoseStack
+            stack.mulPose(Axis.ZP.rotationDegrees(Mth.wrapDegrees(whaleRotY - playerRotY) / 2));
+            stack.mulPose(Axis.XP.rotationDegrees(Mth.wrapDegrees(whaleRotX - playerRotX)));
         }
     }
 

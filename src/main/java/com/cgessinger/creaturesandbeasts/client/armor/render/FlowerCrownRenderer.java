@@ -13,34 +13,45 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.renderers.geo.GeoArmorRenderer;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.renderer.GeoArmorRenderer;
 
 @OnlyIn(Dist.CLIENT)
 public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
-    private ItemStack armorItem = null;
+    private ItemStack armorItem; // Declare the armorItem field
 
     public FlowerCrownRenderer() {
         super(new FlowerCrownModel());
 
-        this.headBone = "group";
-        this.bodyBone = null;
-        this.rightArmBone = null;
-        this.leftArmBone = null;
-        this.rightLegBone = null;
-        this.leftLegBone = null;
-        this.rightBootBone = null;
-        this.leftBootBone = null;
+        // Set the bone name for the head
+        this.headParts();
     }
 
     @Override
-    public GeoArmorRenderer setCurrentItem(LivingEntity entityLiving, ItemStack itemStack, EquipmentSlot armorSlot) {
-        this.armorItem = itemStack;
-        return super.setCurrentItem(entityLiving, itemStack, armorSlot);
+    public void preRender(
+            PoseStack poseStack,
+            FlowerCrownItem animatable,
+            BakedGeoModel model,
+            MultiBufferSource bufferSource,
+            VertexConsumer buffer,
+            boolean isReRender,
+            float partialTick,
+            int packedLight,
+            int packedOverlay,
+            float red,
+            float green,
+            float blue,
+            float alpha
+    ) {
+        // Store the current item stack for later use
+        this.armorItem = animatable.getCurrentItem();
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
     }
 
     @Override
-    public RenderType getRenderType(FlowerCrownItem animatable, float partialTicks, PoseStack stack, @Nullable MultiBufferSource renderTypeBuffer, @Nullable VertexConsumer vertexBuilder, int packedLightIn, ResourceLocation textureLocation) {
-        return RenderType.eyes(textureLocation);
+    public RenderType getRenderType(FlowerCrownItem animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
+        // Use RenderType.eyes for glowing textures
+        return RenderType.eyes(texture);
     }
 
     public ItemStack getCurrentItem() {

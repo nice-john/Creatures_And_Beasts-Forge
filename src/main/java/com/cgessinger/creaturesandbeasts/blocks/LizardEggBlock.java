@@ -24,8 +24,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -38,7 +37,11 @@ public class LizardEggBlock extends Block {
     private LizardType parent2;
 
     public LizardEggBlock() {
-        super(BlockBehaviour.Properties.of(Material.EGG, MaterialColor.SAND).strength(0.5F).sound(SoundType.METAL).randomTicks().noOcclusion());
+        super(BlockBehaviour.Properties.of().mapColor(MapColor.SAND)
+                .strength(0.5F)
+                .sound(SoundType.METAL)
+                .randomTicks()
+                .noOcclusion());
         this.registerDefaultState(this.stateDefinition.any().setValue(EGGS, 1));
         this.parent1 = CNBLizardTypes.DESERT;
         this.parent2 = CNBLizardTypes.JUNGLE;

@@ -4,8 +4,6 @@ import com.cgessinger.creaturesandbeasts.entities.ThrownCactemSpearEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -130,20 +128,29 @@ public class SpearItem extends Item implements Vanishable {
     }
 
     private void shootProjectile(Level level, Player player, ItemStack stack, float soundVariation, float randomization, boolean canPickup) {
+        // Create the thrown spear entity
         ThrownCactemSpearEntity thrownSpear = new ThrownCactemSpearEntity(level, player, stack);
-        Vec3 vec31 = player.getUpVector(1.0F);
-        Quaternion quaternion = new Quaternion(new Vector3f(vec31), randomization, true);
-        Vec3 vec3 = player.getViewVector(1.0F);
-        Vector3f vector3f = new Vector3f(vec3);
-        vector3f.transform(quaternion);
-        thrownSpear.shoot(vector3f.x(), vector3f.y(), vector3f.z(), 1.6F, 1.0F);
 
+        // Calculate the direction and rotation of the spear
+        Vec3 upVector = player.getUpVector(1.0F);
+        Vec3 viewVector = player.getViewVector(1.0F);
+
+        // Apply randomization to the direction
+        float randomPitch = (level.random.nextFloat() - 0.5F) * randomization;
+        float randomYaw = (level.random.nextFloat() - 0.5F) * randomization;
+        viewVector = viewVector.xRot(randomPitch).yRot(randomYaw);
+
+        // Shoot the spear
+        thrownSpear.shoot(viewVector.x(), viewVector.y(), viewVector.z(), 1.6F, 1.0F);
+
+        // Set pickup rules based on player abilities
         if (player.getAbilities().instabuild) {
             thrownSpear.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
         } else {
             thrownSpear.pickup = canPickup ? AbstractArrow.Pickup.ALLOWED : AbstractArrow.Pickup.DISALLOWED;
         }
 
+        // Add the spear to the level and play the throw sound
         level.addFreshEntity(thrownSpear);
         level.playSound(null, thrownSpear, CNBSoundEvents.SPEAR_THROW.get(), SoundSource.PLAYERS, 1.0F, soundVariation);
     }

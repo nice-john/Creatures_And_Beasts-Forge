@@ -9,7 +9,7 @@ public class CNBFuelItem extends Item {
     private final int burnTime;
 
     public CNBFuelItem(int burnTime) {
-        super(new Item.Properties().tab(CreaturesAndBeasts.TAB));
+        super(new Item.Properties());
         this.burnTime = burnTime;
     }
 

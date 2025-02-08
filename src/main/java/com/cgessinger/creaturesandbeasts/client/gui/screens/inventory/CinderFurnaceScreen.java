@@ -4,6 +4,7 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.containers.CinderFurnaceContainer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.recipebook.AbstractFurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -37,39 +38,47 @@ public class CinderFurnaceScreen extends AbstractContainerScreen<CinderFurnaceCo
         this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
     }
 
+
+
     public void containerTick() {
         super.containerTick();
         this.recipeBookComponent.tick();
     }
 
-    public void render(PoseStack poseStack, int p_97859_, int p_97860_, float p_97861_) {
-        this.renderBackground(poseStack);
+    @Override
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(guiGraphics);
         if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-            this.renderBg(poseStack, p_97861_, p_97859_, p_97860_);
-            this.recipeBookComponent.render(poseStack, p_97859_, p_97860_, p_97861_);
+            this.renderBg(guiGraphics, partialTicks, mouseX, mouseY);
+            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, partialTicks);
         } else {
-            this.recipeBookComponent.render(poseStack, p_97859_, p_97860_, p_97861_);
-            super.render(poseStack, p_97859_, p_97860_, p_97861_);
-            this.recipeBookComponent.renderGhostRecipe(poseStack, this.leftPos, this.topPos, true, p_97861_);
+            this.recipeBookComponent.render(guiGraphics, mouseX, mouseY, partialTicks);
+            super.render(guiGraphics, mouseX, mouseY, partialTicks);
+            this.recipeBookComponent.renderGhostRecipe(guiGraphics, this.leftPos, this.topPos, true, partialTicks);
         }
 
-        this.renderTooltip(poseStack, p_97859_, p_97860_);
-        this.recipeBookComponent.renderTooltip(poseStack, this.leftPos, this.topPos, p_97859_, p_97860_);
-    }
-
-    protected void renderBg(PoseStack poseStack, float p_97854_, int p_97855_, int p_97856_) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, this.texture);
-        int i = this.leftPos;
-        int j = this.topPos;
-        this.blit(poseStack, i, j, 0, 0, this.imageWidth, this.imageHeight);
-        this.blit(poseStack, i + 57, j + 37, 176, 0, 14, 14);
-        int l = this.menu.getCookingProgress();
-        this.blit(poseStack, i + 79, j + 35, 176, 14, l + 1, 16);
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
+        this.recipeBookComponent.renderTooltip(guiGraphics, this.leftPos, this.topPos, mouseX, mouseY);
     }
 
     @Override
+    protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, this.texture);
+
+        int x = this.leftPos;
+        int y = this.topPos;
+
+        // Draw the background texture
+        guiGraphics.blit(this.texture, x, y, 0, 0, this.imageWidth, this.imageHeight);
+
+        // Draw the progress indicator
+        int progress = this.menu.getCookingProgress();
+        guiGraphics.blit(this.texture, x + 79, y + 35, 176, 14, progress + 1, 16);
+    }
+
+
     protected void renderLabels(PoseStack p_97808_, int p_97809_, int p_97810_) {
     }
 
@@ -108,7 +117,7 @@ public class CinderFurnaceScreen extends AbstractContainerScreen<CinderFurnaceCo
     }
 
     public void removed() {
-        this.recipeBookComponent.removed();
+        this.recipeBookComponent.recipesUpdated();
         super.removed();
     }
 }

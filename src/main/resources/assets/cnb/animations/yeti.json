@@ -833,10 +833,5 @@
           }
         }
       }
-	},
-	"geckolib_format_version": 2,
-	"geometry.animations": {
-		"texturewidth": 64,
-		"textureheight": 64
 	}
 }

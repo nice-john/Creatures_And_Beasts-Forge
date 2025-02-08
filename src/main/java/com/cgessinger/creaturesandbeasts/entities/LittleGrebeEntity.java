@@ -47,15 +47,14 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.builder.ILoopType;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
 import java.util.Random;
@@ -63,12 +62,12 @@ import java.util.UUID;
 
 import static com.cgessinger.creaturesandbeasts.init.CNBTags.Items.LITTLE_GREBE_FOOD;
 
-public class LittleGrebeEntity extends Animal implements IAnimatable {
+public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     private static final EntityDataAccessor<BlockPos> TRAVEL_POS = SynchedEntityData.defineId(LittleGrebeEntity.class, EntityDataSerializers.BLOCK_POS);
     private final UUID healthReductionUUID = UUID.fromString("189faad9-35de-4e15-a598-82d147b996d7");
     public float flapSpeed;
     private float nextFlap = 1.0F;
-    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this); // Properly define the cache
 
     public LittleGrebeEntity(EntityType<LittleGrebeEntity> type, Level worldIn) {
         super(type, worldIn);
@@ -131,11 +130,11 @@ public class LittleGrebeEntity extends Animal implements IAnimatable {
     @Override
     public void aiStep() {
         super.aiStep();
-        this.flapSpeed += (this.onGround ? -1.0F : 4.0F) * 0.3F;
+        this.flapSpeed += (this.onGround() ? -1.0F : 4.0F) * 0.3F;
         this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
 
         Vec3 vec3 = this.getDeltaMovement();
-        if (!this.onGround && !this.isBaby() && vec3.y < 0.0D) {
+        if (!this.onGround() && !this.isBaby() && vec3.y < 0.0D) {
             this.setDeltaMovement(vec3.multiply(1.0D, 0.6D, 1.0D));
         }
     }
@@ -227,18 +226,18 @@ public class LittleGrebeEntity extends Animal implements IAnimatable {
 
     }
 
-    private <E extends IAnimatable> PlayState animationPredicate(AnimationEvent<E> event) {
-        if (!(this.isOnGround() || this.isInWater() || this.isBaby())) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("little_grebe.fall", ILoopType.EDefaultLoopTypes.LOOP));
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
+        if (!(this.onGround() || this.isInWater() || this.isBaby())) {
+            event.getController().setAnimation(RawAnimation.begin().thenLoop("little_grebe.fall"));
             return PlayState.CONTINUE;
         } else if (this.isInWater()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("little_grebe.swim", ILoopType.EDefaultLoopTypes.LOOP));
+            event.getController().setAnimation(RawAnimation.begin().thenLoop("little_grebe.swim"));
             return PlayState.CONTINUE;
-        } else if (!(animationSpeed > -0.15F && animationSpeed < 0.15F)) {
+        } else if (!(walkAnimation.speed() > -0.15F && walkAnimation.speed() < 0.15F)) {
             if (this.isBaby()) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("little_grebe_chick.walk", ILoopType.EDefaultLoopTypes.LOOP));
+                event.getController().setAnimation(RawAnimation.begin().thenLoop("little_grebe_chick.walk"));
             } else {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("little_grebe.walk", ILoopType.EDefaultLoopTypes.LOOP));
+                event.getController().setAnimation(RawAnimation.begin().thenLoop("little_grebe.walk"));
             }
             return PlayState.CONTINUE;
         }
@@ -246,13 +245,18 @@ public class LittleGrebeEntity extends Animal implements IAnimatable {
     }
 
     @Override
-    public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache; // Return the cache instance
+    }
+
+    @Override
+    public double getTick(Object o) {
+        return 0;
     }
 
     static class LittleGrebeRandomStrollGoal extends RandomStrollGoal {

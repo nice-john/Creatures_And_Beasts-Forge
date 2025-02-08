@@ -47,7 +47,7 @@ public class CinderFurnaceContainer extends RecipeBookMenu<Container> {
         checkContainerSize(container, SLOT_COUNT);
         this.container = container;
         this.data = data;
-        this.level = inventory.player.level;
+        this.level = inventory.player.level();
         this.addSlot(new Slot(container, INGREDIENT_SLOT, 56, 17));
         this.addSlot(new CinderFurnaceResultSlot(inventory.player, container, RESULT_SLOT, 116, 35));
 
@@ -200,7 +200,7 @@ public class CinderFurnaceContainer extends RecipeBookMenu<Container> {
         }
 
         public void checkTakeAchievements(ItemStack stack) {
-            stack.onCraftedBy(this.player.level, this.player, this.removeCount);
+            stack.onCraftedBy(this.player.level(), this.player, this.removeCount);
             if (this.player instanceof ServerPlayer serverPlayer && this.container instanceof CindershellEntity cindershellEntity) {
                 cindershellEntity.awardUsedRecipesAndPopExperience(serverPlayer);
             }

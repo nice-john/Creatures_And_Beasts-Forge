@@ -7,10 +7,10 @@ import com.cgessinger.creaturesandbeasts.util.SporelingType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
+import software.bernie.geckolib.model.GeoModel;
 
 @OnlyIn(Dist.CLIENT)
-public class SporelingModel extends AnimatedGeoModel<SporelingEntity> {
+public class SporelingModel extends GeoModel<SporelingEntity> {
     private static final ResourceLocation SPORELING_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/sporeling.json");
 
     private static final ResourceLocation GOOMY_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy.geo.json");

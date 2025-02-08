@@ -3,9 +3,9 @@ package com.cgessinger.creaturesandbeasts.client.entity.model;
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
 import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
+import software.bernie.geckolib.model.GeoModel;
 
-public class CactemModel extends AnimatedGeoModel<CactemEntity> {
+public class CactemModel extends GeoModel<CactemEntity> {
     private static final ResourceLocation ELDER_CACTEM_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/elder_cactem.geo.json");
     private static final ResourceLocation WARRIOR_CACTEM_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/warrior_cactem.geo.json");
     private static final ResourceLocation BABY_CACTEM_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/baby_cactem.geo.json");

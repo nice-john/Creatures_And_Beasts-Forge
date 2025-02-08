@@ -42,10 +42,10 @@ public class ConvertItemGoal extends Goal {
             return false;
         }
         if (this.itemInstance == null) {
-            List<ItemEntity> list = this.entityIn.level.getEntitiesOfClass(ItemEntity.class, this.entityIn.getBoundingBox().inflate(this.range, 3.0D, this.range));
+            List<ItemEntity> list = this.entityIn.level().getEntitiesOfClass(ItemEntity.class, this.entityIn.getBoundingBox().inflate(this.range, 3.0D, this.range));
 
             for (ItemEntity item : list) {
-                if (item.getItem().sameItem(Items.DIRT.getDefaultInstance()) || (item.getItem().isEnchanted() && hasCurse(item.getItem()))) {
+                if (item.getItem().is(Items.DIRT) || (item.getItem().isEnchanted() && hasCurse(item.getItem()))) {
                     this.path = this.navigation.createPath(item.getOnPos(), 0);
                     this.itemInstance = item;
                     return path != null;
@@ -89,7 +89,7 @@ public class ConvertItemGoal extends Goal {
     public void convertItem() {
         entityIn.setInspecting(false);
 
-        if (entityIn.getHolding().sameItem(Items.DIRT.getDefaultInstance())) {
+        if (entityIn.getHolding().is(Items.DIRT)) {
             entityIn.spawnAtLocation(new ItemStack(Items.MYCELIUM, 1));
         } else {
             ItemStack returnItem = entityIn.getHolding().copy();
@@ -110,7 +110,7 @@ public class ConvertItemGoal extends Goal {
             }
 
             entityIn.spawnAtLocation(returnItem);
-            if (entityIn.level instanceof ServerLevel serverLevel) {
+            if (entityIn.level() instanceof ServerLevel serverLevel) {
                 ExperienceOrb.award(serverLevel, entityIn.position(), entityIn.getRandom().nextInt(16) + 1);
             }
         }
@@ -143,7 +143,7 @@ public class ConvertItemGoal extends Goal {
 
                     } else if (convertTime % 3 == 0) {
                         entityIn.lookAt(EntityAnchorArgument.Anchor.EYES, itemInstance.position());
-                        entityIn.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, itemInstance.getItem()), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
+                        entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, itemInstance.getItem()), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
                     }
                 }
 

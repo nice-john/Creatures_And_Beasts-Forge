@@ -20,7 +20,7 @@ public class FindWaterOneDeepGoal extends TryFindWaterGoal {
 
     @Override
     public void start() {
-        BlockPos blockpos = lookForWaterOneDeep(this.creature.level, this.creature, 16);
+        BlockPos blockpos = lookForWaterOneDeep(this.creature.level(), this.creature, 16);
 
         if (blockpos != null) {
             this.creature.getNavigation().moveTo(blockpos.getX(), blockpos.getY(), blockpos.getZ(), this.creature.isInWater() ? 1.5F : 1.0F);
@@ -31,16 +31,22 @@ public class FindWaterOneDeepGoal extends TryFindWaterGoal {
     public boolean canUse() {
         BlockPos pos = this.creature.blockPosition();
         boolean isValidPos = checkValidPos(pos);
-        return this.creature.isOnGround() && !isValidPos;
+        return this.creature.onGround() && !isValidPos;
     }
 
     private boolean checkValidPos(BlockPos pos) {
-        return this.creature.level.getFluidState(pos).is(FluidTags.WATER) && this.creature.isOnGround() && this.creature.level.getBlockState(pos.above()).isAir();
+        return this.creature.level().getFluidState(pos).is(FluidTags.WATER) && this.creature.onGround() && this.creature.level().getBlockState(pos.above()).isAir();
     }
 
     @Nullable
     protected BlockPos lookForWaterOneDeep(BlockGetter blockGetter, Entity entity, int horizontalRange) {
         BlockPos blockpos = entity.blockPosition();
-        return !blockGetter.getBlockState(blockpos).getCollisionShape(blockGetter, blockpos).isEmpty() ? null : BlockPos.findClosestMatch(entity.blockPosition(), horizontalRange, 10, (pos) -> blockGetter.getFluidState(pos).is(FluidTags.WATER) && blockGetter.getBlockState(pos.below()).getMaterial().isSolid() && blockGetter.getBlockState(pos.above()).isAir()).orElse(null);
+        return !blockGetter.getBlockState(blockpos).getCollisionShape(blockGetter, blockpos).isEmpty() ? null :
+                BlockPos.findClosestMatch(entity.blockPosition(), horizontalRange, 10, (pos) ->
+                        blockGetter.getFluidState(pos).is(FluidTags.WATER) &&
+                                blockGetter.getBlockState(pos.below()).isSolid() && // Updated to use isSolid()
+                                blockGetter.getBlockState(pos.above()).isAir()
+                ).orElse(null);
+
     }
 }

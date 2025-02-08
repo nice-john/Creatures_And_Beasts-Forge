@@ -1,18 +1,23 @@
 package com.cgessinger.creaturesandbeasts.client.entity.model;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
+import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
+import com.cgessinger.creaturesandbeasts.entities.LilytadEntity;
 import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBLizardTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.processor.IBone;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
-import software.bernie.geckolib3.model.provider.data.EntityModelData;
+import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.model.GeoModel;
+import software.bernie.geckolib.model.data.EntityModelData;
+
+
+import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
 
 @OnlyIn(Dist.CLIENT)
-public class LizardModel extends AnimatedGeoModel<LizardEntity> {
+public class LizardModel extends GeoModel<LizardEntity> {
     private static final ResourceLocation LIZARD_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/lizard.geo.json");
     private static final ResourceLocation MUSHROOM_LIZARD_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/mushroom_lizard.geo.json");
     private static final ResourceLocation SAD_LIZARD_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/sad_lizard.geo.json");
@@ -40,14 +45,17 @@ public class LizardModel extends AnimatedGeoModel<LizardEntity> {
     }
 
     @Override
-    public void setCustomAnimations(LizardEntity animatable, int instanceId, AnimationEvent animationEvent) {
-        super.setCustomAnimations(animatable, instanceId, animationEvent);
+    public void setCustomAnimations(LizardEntity animatable, long instanceId, AnimationState<LizardEntity> animationState) {
+        super.setCustomAnimations(animatable, instanceId, animationState);
 
-        IBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
+        CoreGeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
 
-        EntityModelData extraData = (EntityModelData) animationEvent.getExtraDataOfType(EntityModelData.class).get(0);
+        if (head_rotation != null) {
+            // Use the correct DataTicket for EntityModelData
+            EntityModelData extraData = animationState.getData(ENTITY_MODEL_DATA);
 
-        head_rotation.setRotationX(extraData.headPitch * ((float) Math.PI / 180F));
-        head_rotation.setRotationY(extraData.netHeadYaw * ((float) Math.PI / 180F));
+            head_rotation.setRotX(extraData.headPitch() * ((float) Math.PI / 180F));
+            head_rotation.setRotY(extraData.netHeadYaw() * ((float) Math.PI / 180F));
+        }
     }
 }

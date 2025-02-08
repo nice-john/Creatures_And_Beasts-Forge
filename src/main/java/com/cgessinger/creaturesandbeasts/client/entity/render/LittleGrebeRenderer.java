@@ -11,7 +11,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
 @OnlyIn(Dist.CLIENT)
 public class LittleGrebeRenderer extends GeoEntityRenderer<LittleGrebeEntity> {
@@ -22,7 +23,31 @@ public class LittleGrebeRenderer extends GeoEntityRenderer<LittleGrebeEntity> {
     }
 
     @Override
-    public RenderType getRenderType(LittleGrebeEntity animatable, float partialTicks, PoseStack stack, @Nullable MultiBufferSource renderTypeBuffer, @Nullable VertexConsumer vertexBuilder, int packedLightIn, ResourceLocation textureLocation) {
-        return RenderType.entityCutoutNoCull(textureLocation);
+    public RenderType getRenderType(LittleGrebeEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
+        return RenderType.entityCutoutNoCull(texture);
+    }
+
+    @Override
+    public void preRender(
+            PoseStack poseStack,
+            LittleGrebeEntity animatable,
+            BakedGeoModel model,
+            MultiBufferSource bufferSource,
+            VertexConsumer buffer,
+            boolean isReRender,
+            float partialTick,
+            int packedLight,
+            int packedOverlay,
+            float red,
+            float green,
+            float blue,
+            float alpha
+    ) {
+        // Example scaling logic: adjust size if the entity is a baby
+        if (animatable.isBaby()) {
+            poseStack.scale(0.5F, 0.5F, 0.5F);
+        }
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
     }
 }
+

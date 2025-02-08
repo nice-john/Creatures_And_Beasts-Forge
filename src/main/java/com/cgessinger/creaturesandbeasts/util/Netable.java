@@ -43,7 +43,7 @@ public interface Netable {
             player.addItem(lizardItem);
             itemstack.hurtAndBreak(1, player, (player1) -> { player1.broadcastBreakEvent(hand); });
             spawnParticles(ParticleTypes.HAPPY_VILLAGER, entity);
-            Level level = entity.level;
+            Level level = entity.level();
 
             entity.discard();
             return Optional.of(InteractionResult.sidedSuccess(level.isClientSide));
@@ -58,7 +58,7 @@ public interface Netable {
             double d0 = random.nextGaussian() * 0.02D;
             double d1 = random.nextGaussian() * 0.02D;
             double d2 = random.nextGaussian() * 0.02D;
-            entity.level.addParticle(data, entity.getRandomX(1.0D), entity.getRandomY() + 0.5D, entity.getRandomZ(1.0D), d0, d1, d2);
+            entity.level().addParticle(data, entity.getRandomX(1.0D), entity.getRandomY() + 0.5D, entity.getRandomZ(1.0D), d0, d1, d2);
         }
     }
 }

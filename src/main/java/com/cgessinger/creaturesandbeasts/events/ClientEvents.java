@@ -23,7 +23,17 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import software.bernie.geckolib3.renderers.geo.GeoArmorRenderer;
+import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
+import com.cgessinger.creaturesandbeasts.client.entity.render.*;
+import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
+import com.cgessinger.creaturesandbeasts.items.*;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import software.bernie.geckolib.renderer.GeoArmorRenderer;
+
 
 @Mod.EventBusSubscriber(modid = CreaturesAndBeasts.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientEvents {
@@ -48,10 +58,10 @@ public class ClientEvents {
         event.registerLayerDefinition(CactemSpearModel.LAYER_LOCATION, CactemSpearModel::createLayer);
     }
 
-    @SubscribeEvent
-    public static void registerRenderers(final EntityRenderersEvent.AddLayers event) {
-        GeoArmorRenderer.registerArmorRenderer(FlowerCrownItem.class, FlowerCrownRenderer::new);
-        GeoArmorRenderer.registerArmorRenderer(GlowingFlowerCrownItem.class, FlowerCrownRenderer::new);
-        GeoArmorRenderer.registerArmorRenderer(SporelingBackpackItem.class, SporelingBackpackRenderer::new);
-    }
+    /*@SubscribeEvent
+    public static void registerArmorRenderers(EntityRenderersEvent.AddLayers event) {
+        GeoArmorRenderer.registerFor(FlowerCrownItem.class, () -> new FlowerCrownRenderer());
+        GeoArmorRenderer.registerFor(GlowingFlowerCrownItem.class, () -> new FlowerCrownRenderer());
+        GeoArmorRenderer.registerFor(SporelingBackpackItem.class, () -> new SporelingBackpackRenderer());
+    }*/
 }

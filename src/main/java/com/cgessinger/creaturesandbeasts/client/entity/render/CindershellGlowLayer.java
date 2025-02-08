@@ -5,35 +5,62 @@ import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import software.bernie.geckolib3.renderers.geo.GeoLayerRenderer;
-import software.bernie.geckolib3.renderers.geo.IGeoRenderer;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.model.GeoModel;
+import software.bernie.geckolib.renderer.GeoRenderer;
+import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
 @OnlyIn(Dist.CLIENT)
-public class CindershellGlowLayer extends GeoLayerRenderer<CindershellEntity> {
+public class CindershellGlowLayer extends GeoRenderLayer<CindershellEntity> {
     private static final ResourceLocation GLOW_LAYER = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell_glow.png");
-    private static final ResourceLocation CINDERSHELL_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell.geo.json");
-    private static final ResourceLocation CINDERSHELL_FURNACE_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell_furnace.geo.json");
 
-    public CindershellGlowLayer(IGeoRenderer<CindershellEntity> entityRendererIn) {
-        super(entityRendererIn);
+    public CindershellGlowLayer(GeoRenderer<CindershellEntity> renderer) {
+        super(renderer);
     }
 
-    @Override
-    public void render(PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn, CindershellEntity entityLivingBaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-        if (!entityLivingBaseIn.isBaby()) {
-            RenderType renderType = RenderType.eyes(GLOW_LAYER);
-            matrixStackIn.pushPose();
-            this.getRenderer().render(this.getEntityModel().getModel(entityLivingBaseIn.hasFurnace() ? CINDERSHELL_FURNACE_MODEL : CINDERSHELL_MODEL), entityLivingBaseIn, partialTicks, renderType, matrixStackIn, bufferIn, bufferIn.getBuffer(renderType), packedLightIn, LivingEntityRenderer.getOverlayCoords(entityLivingBaseIn, 0.0F), 1f, 1f, 1f, 1f);
-            matrixStackIn.popPose();
+
+    public void render(
+            PoseStack poseStack,
+            CindershellEntity entity,
+            BakedGeoModel model,
+            RenderType renderType,
+            MultiBufferSource bufferSource,
+            MultiBufferSource.BufferSource buffer,
+            float partialTick,
+            int packedLight,
+            int packedOverlay
+    ) {
+        if (!entity.isBaby()) {
+            // Create a glow render type for the glow texture
+            RenderType glowRenderType = RenderType.eyes(GLOW_LAYER);
+
+            // Push the pose stack for transformations
+            poseStack.pushPose();
+
+            // Use the baked model for rendering
+            this.getRenderer().reRender(
+                    model,
+                    poseStack,
+                    bufferSource,
+                    entity,
+                    glowRenderType,
+                    bufferSource.getBuffer(glowRenderType),
+                    partialTick,
+                    packedLight,
+                    packedOverlay,
+                    1.0f, // Red
+                    1.0f, // Green
+                    1.0f, // Blue
+                    1.0f  // Alpha
+            );
+
+            // Pop the pose stack after rendering
+            poseStack.popPose();
         }
     }
-
-    @Override
-    public RenderType getRenderType(ResourceLocation textureLocation) {
-        return RenderType.eyes(textureLocation);
-    }
 }
+
+

@@ -61,19 +61,19 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.builder.ILoopType;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
 
 import javax.annotation.Nullable;
 
-public class LizardEntity extends Animal implements IAnimatable, Netable {
+public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     private static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LizardEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Boolean> PARTYING = SynchedEntityData.defineId(LizardEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> SAD = SynchedEntityData.defineId(LizardEntity.class, EntityDataSerializers.BOOLEAN);
@@ -81,8 +81,9 @@ public class LizardEntity extends Animal implements IAnimatable, Netable {
     private static final EntityDataAccessor<Boolean> LAYING_EGG = SynchedEntityData.defineId(LizardEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> FROM_NET = SynchedEntityData.defineId(LizardEntity.class, EntityDataSerializers.BOOLEAN);
 
-    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private LizardEntity partner;
+
 
     public BlockPos jukeboxPosition;
     int layEggCounter;
@@ -171,11 +172,12 @@ public class LizardEntity extends Animal implements IAnimatable, Netable {
         super.aiStep();
 
         if (this.jukeboxPosition != null) {
-            BlockEntity te = this.level.getBlockEntity(this.jukeboxPosition);
+            BlockEntity te = this.level().getBlockEntity(this.jukeboxPosition);
             Vec3 pos = this.position();
-            if (!this.jukeboxPosition.closerThan(new Vec3i(pos.x, pos.y, pos.z), 10.0D) || !(te instanceof JukeboxBlockEntity)) {
+            if (!this.jukeboxPosition.closerThan(new Vec3i((int) pos.x, (int) pos.y, (int) pos.z), 10.0D) || !(te instanceof JukeboxBlockEntity)) {
                 this.setPartying(false, null);
             }
+
         }
 
         if (this.isPartying() || this.entityData.get(LAYING_EGG)) {
@@ -184,7 +186,7 @@ public class LizardEntity extends Animal implements IAnimatable, Netable {
 
         if (this.isAlive() && this.isLayingEgg() && this.layEggCounter >= 1 && this.layEggCounter % 5 == 0) {
             BlockPos blockpos = this.blockPosition().below();
-            this.level.levelEvent(2001, blockpos, Block.getId(this.level.getBlockState(blockpos)));
+            this.level().levelEvent(2001, blockpos, Block.getId(this.level().getBlockState(blockpos)));
         }
     }
 
@@ -269,7 +271,7 @@ public class LizardEntity extends Animal implements IAnimatable, Netable {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack item = player.getItemInHand(hand);
 
-        if (item.sameItem(CNBItems.APPLE_SLICE.get().getDefaultInstance()) && this.getSad()) {
+        if (item.is(CNBItems.APPLE_SLICE.get()) && this.getSad()) {
             this.setSad(false);
             this.usePlayerItem(player, hand, item);
             spawnParticles(ParticleTypes.HEART);
@@ -429,7 +431,7 @@ public class LizardEntity extends Animal implements IAnimatable, Netable {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.sameItem(CNBItems.APPLE_SLICE.get().getDefaultInstance());
+        return stack.is(CNBItems.APPLE_SLICE.get());
     }
 
     public void spawnParticles(ParticleOptions data) {
@@ -437,7 +439,7 @@ public class LizardEntity extends Animal implements IAnimatable, Netable {
             double d0 = this.random.nextGaussian() * 0.02D;
             double d1 = this.random.nextGaussian() * 0.02D;
             double d2 = this.random.nextGaussian() * 0.02D;
-            this.level.addParticle(data, this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), d0, d1, d2);
+            this.level().addParticle(data, this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), d0, d1, d2);
         }
     }
 
@@ -464,29 +466,36 @@ public class LizardEntity extends Animal implements IAnimatable, Netable {
         return new ItemStack(this.getLizardType().getSpawnItem());
     }
 
-    private <E extends IAnimatable> PlayState animationPredicate(AnimationEvent<E> event) {
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
         if (this.entityData.get(LAYING_EGG)) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("lizard_dig", ILoopType.EDefaultLoopTypes.LOOP));
+            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_dig"));
             return PlayState.CONTINUE;
-        } else if (!(animationSpeed > -0.13F && animationSpeed < 0.13F)) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("lizard_walk", ILoopType.EDefaultLoopTypes.LOOP));
+        } else if (!(walkAnimation.speed() > -0.13F && walkAnimation.speed() < 0.13F)) {
+            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_walk"));
             return PlayState.CONTINUE;
         } else if (this.isPartying()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("lizard_dance", ILoopType.EDefaultLoopTypes.LOOP));
+            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_dance"));
             return PlayState.CONTINUE;
         }
         return PlayState.STOP;
     }
 
     @Override
-    public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        AnimationController<LizardEntity> controller = new AnimationController<>(this, "controller", 0, this::animationPredicate);
+        controllers.add(controller);
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
+
+    @Override
+    public double getTick(Object o) {
+        return 0;
+    }
+
 
     static class LizardBreedGoal extends BreedGoal {
         private final LizardEntity lizard;
@@ -552,7 +561,7 @@ public class LizardEntity extends Animal implements IAnimatable, Netable {
                 if (this.lizard.layEggCounter < 1) {
                     this.lizard.setLayingEgg(true);
                 } else if (this.lizard.layEggCounter > this.adjustedTickDelay(200)) {
-                    Level level = this.lizard.level;
+                    Level level = this.lizard.level();
                     level.playSound(null, blockpos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.random.nextFloat() * 0.2F);
                     level.setBlock(this.blockPos.above(), CNBBlocks.LIZARD_EGGS.get().defaultBlockState().setValue(LizardEggBlock.EGGS, this.lizard.random.nextInt(6) + 1), 3);
 

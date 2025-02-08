@@ -1,14 +1,15 @@
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
-        maven { url  = 'https://plugins.gradle.org/m2/' }
+        maven { url = 'https://plugins.gradle.org/m2/' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
         maven { url = 'https://repo.spongepowered.org/maven/' }
         jcenter()
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath group: 'org.spongepowered',                   name: 'mixingradle', version: '0.7-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT' // Use the Mixin Gradle plugin
         classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.4.0'
     }
 }
@@ -18,9 +19,8 @@ plugins {
 }
 
 apply plugin: 'net.minecraftforge.gradle'
-// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
-apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'org.spongepowered.mixin' // Apply the Mixin plugin
 apply plugin: 'com.matthewprenger.cursegradle'
 
 import groovy.json.JsonSlurper
@@ -33,7 +33,7 @@ archivesBaseName = "CNB-1.19"
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'official', version: '1.19'
+    mappings channel: 'official', version: '1.20.1'
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
@@ -42,7 +42,7 @@ minecraft {
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
-            arg '-mixin.config=creatures-and-beasts.mixins.json'
+            //arg '-mixin.config=creatures-and-beasts.mixins.json'
 
             mods {
                 cnb {
@@ -56,7 +56,7 @@ minecraft {
 
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
-            arg '-mixin.config=creatures-and-beasts.mixins.json'
+            //arg '-mixin.config=creatures-and-beasts.mixins.json'
 
             mods {
                 cnb {
@@ -83,7 +83,7 @@ minecraft {
 }
 
 mixin {
-    add sourceSets.main, 'creatures-and-beasts.refmap.json'
+    //add sourceSets.main, 'creatures-and-beasts.refmap.json'
 }
 
 configurations {
@@ -106,16 +106,24 @@ reobf {
 
 repositories {
     maven { url = 'https://repo.spongepowered.org/maven/' }
-    maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    maven {
+        name = 'GeckoLib'
+        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex("software\\.bernie.*")
+            includeGroup("com.eliotlash.mclib")
+        }
+    }
     maven { url = 'https://maven.infernalstudios.org/releases' }
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.2-43.2.0'
-    annotationProcessor 'org.spongepowered:mixin:0.8.4:processor'
-
+    minecraft 'net.minecraftforge:forge:1.20.1-47.3.0'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    implementation 'org.codehaus.groovy:groovy-json:3.0.9'
     // Geckolib for ingame animations
-    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19:3.1.39')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.6')
+    implementation("com.eliotlash.mclib:mclib:20")
 
     implementation 'org.infernalstudios:config:3.0.3'
     packIntoJar 'org.infernalstudios:config:3.0.3'
@@ -125,14 +133,14 @@ dependencies {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "cnb",
-            "Specification-Vendor": "bonsaistudios",
-            "Specification-Version": "1", // We are version 1 of ourselves
-            "Implementation-Title": "cnb",
-            "Implementation-Version": "${version}",
-            "Implementation-Vendor" :"bonsaistudios",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            'MixinConfigs'          : 'creatures-and-beasts.mixins.json'
+                "Specification-Title": "cnb",
+                "Specification-Vendor": "bonsaistudios",
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": "cnb",
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor" :"bonsaistudios",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                //'MixinConfigs'          : 'creatures-and-beasts.mixins.json'
         ])
     }
 
@@ -144,13 +152,13 @@ jar.finalizedBy('reobfJar')
 tasks.build.dependsOn shadowJar
 tasks.build.dependsOn reobfShadowJar
 
-//This minifies the jsons, which makes the end jar smaller. 
+//This minifies the jsons, which makes the end jar smaller.
 processResources {
-	doLast {
+    doLast {
         def jsonMinifyStart = System.currentTimeMillis()
         def jsonMinified = 0
         def jsonBytesSaved = 0
-        fileTree(dir: outputs.files.asPath, include: '**/*.json').each { 
+        fileTree(dir: outputs.files.asPath, include: '**/*.json').each {
             File file = it
             jsonMinified++
             def oldLength = file.length()
@@ -158,26 +166,5 @@ processResources {
             jsonBytesSaved += oldLength - file.length()
         }
         println('Minified ' + jsonMinified + ' json files. Saved ' + jsonBytesSaved + ' bytes. Took ' + (System.currentTimeMillis() - jsonMinifyStart) + 'ms.')
-    }
-}
-
-curseforge {
-    def curseProp = new Properties()
-    File secretPropsFile = file("key.properties")
-    curseProp.load(secretPropsFile.newInputStream())
-
-    project {
-        apiKey = curseProp.getProperty('curseKey')
-        id = "414401"
-        releaseType = "release"
-        changelogType = 'html'
-        changelog = '<h2>Big Changes!</h2>'
-        addGameVersion("1.19")
-        addGameVersion("Forge")
-        addGameVersion("Java 17")
-
-        relations {
-            requiredDependency 'geckolib'     
-        }
     }
 }

@@ -1,17 +1,21 @@
 package com.cgessinger.creaturesandbeasts.client.entity.model;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
+import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
 import com.cgessinger.creaturesandbeasts.entities.LittleGrebeEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.processor.IBone;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
-import software.bernie.geckolib3.model.provider.data.EntityModelData;
+import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.model.GeoModel;
+import software.bernie.geckolib.model.data.EntityModelData;
+
+
+import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
 
 @OnlyIn(Dist.CLIENT)
-public class LittleGrebeModel extends AnimatedGeoModel<LittleGrebeEntity> {
+public class LittleGrebeModel extends GeoModel<LittleGrebeEntity> {
     private static final ResourceLocation LITTLE_GREBE_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe.geo.json");
     private static final ResourceLocation LITTLE_GREBE_CHICK_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe_chick.geo.json");
 
@@ -36,14 +40,18 @@ public class LittleGrebeModel extends AnimatedGeoModel<LittleGrebeEntity> {
     }
 
     @Override
-    public void setCustomAnimations(LittleGrebeEntity animatable, int instanceId, AnimationEvent animationEvent) {
-        super.setCustomAnimations(animatable, instanceId, animationEvent);
+    public void setCustomAnimations(LittleGrebeEntity animatable, long instanceId, AnimationState<LittleGrebeEntity> animationState) {
+        super.setCustomAnimations(animatable, instanceId, animationState);
 
-        IBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
+        CoreGeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
 
-        EntityModelData extraData = (EntityModelData) animationEvent.getExtraDataOfType(EntityModelData.class).get(0);
+        if (head_rotation != null) {
+            // Use the correct DataTicket for EntityModelData
+            EntityModelData extraData = animationState.getData(ENTITY_MODEL_DATA);
 
-        head_rotation.setRotationX(extraData.headPitch * ((float) Math.PI / 180F));
-        head_rotation.setRotationY(extraData.netHeadYaw * ((float) Math.PI / 180F));
+            head_rotation.setRotX(extraData.headPitch() * ((float) Math.PI / 180F));
+            head_rotation.setRotY(extraData.netHeadYaw() * ((float) Math.PI / 180F));
+        }
     }
+
 }

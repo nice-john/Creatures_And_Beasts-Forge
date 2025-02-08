@@ -20,6 +20,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBSporelingTypes;
 import com.cgessinger.creaturesandbeasts.world.gen.ModEntitySpawns;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -45,12 +46,14 @@ import java.io.IOException;
 public class CreaturesAndBeasts {
     public static final String MOD_ID = "cnb";
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final CreativeModeTab TAB = new CreativeModeTab("cnb_tab") {
-        @Override
-        public ItemStack makeIcon() {
-            return new ItemStack(CNBItems.GREBE_SPAWN_EGG.get());
-        }
-    };
+    public static final CreativeModeTab TAB = CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.cnb_tab")) // Display name
+            .icon(() -> new ItemStack(CNBItems.GREBE_SPAWN_EGG.get())) // Icon for the tab
+            .displayItems((params, output) -> {
+                // Add items to the Creative Tab
+                output.accept(CNBItems.GREBE_SPAWN_EGG.get());
+            })
+            .build();
 
     public CreaturesAndBeasts() {
         final IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();

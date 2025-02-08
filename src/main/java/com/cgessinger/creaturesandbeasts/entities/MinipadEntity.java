@@ -50,28 +50,30 @@ import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.common.IForgeShearable;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class MinipadEntity extends Animal implements IForgeShearable, IAnimatable {
+public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> GLOWING = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
 
-    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
+
     private int shearedTimer;
 
-    public MinipadEntity(EntityType<MinipadEntity> type, Level worldIn) {
+    public MinipadEntity(EntityType<? extends Animal> type, Level worldIn) {
         super(type, worldIn);
         this.shearedTimer = 0;
         this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
@@ -79,13 +81,13 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
         this.lookControl = new LookControl(this) {
             @Override
             public void tick() {
-                MinipadEntity minipad = (MinipadEntity) this.mob;
-                if (minipad.shouldLookAround()) {
+                if (MinipadEntity.this.shouldLookAround()) {
                     super.tick();
                 }
             }
         };
     }
+
 
     @Override
     protected void defineSynchedData() {
@@ -136,12 +138,12 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
     @Override
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide() && --this.shearedTimer == 0) {
+        if (!this.level().isClientSide() && --this.shearedTimer == 0) {
             this.setSheared(false);
         }
 
-        if (!this.level.isClientSide()) {
-            long time = this.level.getDayTime();
+        if (!this.level().isClientSide()) {
+            long time = this.level().getDayTime();
             this.setGlowing(time >= 13000 && time <= 23000);
         }
     }
@@ -154,10 +156,10 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
         SimpleParticleType particle = this.getMinipadType().getParticle();
         if (particle != null && this.isGlowing() && !this.getSheared()) {
             if (this.random.nextDouble() < 0.1) {
-                this.level.addParticle(particle, this.getX() + (this.random.nextDouble() * 0.5D - 0.25), this.getY() + 0.8 + (this.random.nextDouble() * 0.1D - 0.05), this.getZ() + (this.random.nextDouble() * 0.5D - 0.25), this.getDeltaMovement().x, this.getDeltaMovement().y, this.getDeltaMovement().z);
+                this.level().addParticle(particle, this.getX() + (this.random.nextDouble() * 0.5D - 0.25), this.getY() + 0.8 + (this.random.nextDouble() * 0.1D - 0.05), this.getZ() + (this.random.nextDouble() * 0.5D - 0.25), this.getDeltaMovement().x, this.getDeltaMovement().y, this.getDeltaMovement().z);
             }
             if (this.random.nextDouble() < 0.07) {
-                this.level.addParticle(particle, this.getX() + (this.random.nextDouble() * 24D - 12), this.getY() + this.random.nextDouble() * 7.5D, this.getZ() + (this.random.nextDouble() * 24D - 12), this.getDeltaMovement().x, this.getDeltaMovement().y, this.getDeltaMovement().z);
+                this.level().addParticle(particle, this.getX() + (this.random.nextDouble() * 24D - 12), this.getY() + this.random.nextDouble() * 7.5D, this.getZ() + (this.random.nextDouble() * 24D - 12), this.getDeltaMovement().x, this.getDeltaMovement().y, this.getDeltaMovement().z);
             }
         }
 
@@ -187,9 +189,9 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
 
     @Override
     protected void pushEntities() {
-        List<Entity> list = this.level.getEntities(this, this.getBoundingBox().inflate(0.2, 0, 0.2), EntitySelector.pushableBy(this));
+        List<Entity> list = this.level().getEntities(this, this.getBoundingBox().inflate(0.2, 0, 0.2), EntitySelector.pushableBy(this));
         if (!list.isEmpty()) {
-            int i = this.level.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+            int i = this.level().getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
             if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {
                 int j = 0;
 
@@ -200,7 +202,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
                 }
 
                 if (j > i - 1) {
-                    this.hurt(DamageSource.CRAMMING, 6.0F);
+                    this.hurt(this.damageSources().cramming(), 6.0F);
                 }
             }
 
@@ -229,13 +231,12 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
     private void floatMinipad() {
         if (this.isInWater()) {
             CollisionContext collisioncontext = CollisionContext.of(this);
-            if (collisioncontext.isAbove(LiquidBlock.STABLE_SHAPE, this.blockPosition(), true) && !this.level.getFluidState(this.blockPosition().above()).is(FluidTags.WATER)) {
-                this.onGround = true;
+            if (collisioncontext.isAbove(LiquidBlock.STABLE_SHAPE, this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.WATER)) {
+                this.setOnGround(true); // Use setOnGround instead of onGround
             } else {
                 this.setDeltaMovement(this.getDeltaMovement().scale(0.5D).add(0.0D, 0.1D, 0.0D));
             }
         }
-
     }
 
     @Override
@@ -293,7 +294,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
             this.setSheared(true);
             java.util.List<ItemStack> items = new java.util.ArrayList<>();
 
-            if (this.level.getDayTime() > 13000) {
+            if (this.level().getDayTime() > 13000) {
                 items.add(new ItemStack(this.getMinipadType().getGlowShearItem()));
             } else {
                 items.add(new ItemStack(this.getMinipadType().getShearItem()));
@@ -305,17 +306,17 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
     }
 
     public boolean shouldLookAround() {
-        return !this.level.getFluidState(this.blockPosition()).is(FluidTags.WATER);
+        return !this.level().getFluidState(this.blockPosition()).is(FluidTags.WATER);
     }
 
     @Override
     public int getExperienceReward() {
-        return 2 + this.level.random.nextInt(3);
+        return 2 + this.level().random.nextInt(3);
     }
 
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
-        if (!blockIn.getMaterial().isLiquid()) {
+        if (!this.level().getFluidState(pos).is(FluidTags.WATER)) { // Check if the block is not a liquid
             this.playSound(CNBSoundEvents.MINIPAD_STEP.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
         }
     }
@@ -337,31 +338,41 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
         return CNBSoundEvents.MINIPAD_HURT.get();
     }
 
-    private <E extends IAnimatable> PlayState animationPredicate(AnimationEvent<E> event) {
-        if (this.isInWater() && !(animationSpeed > -0.15F && animationSpeed < 0.15F)) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("minipad_swim"));
+
+
+
+    // Animation predicate for handling animations
+    private PlayState animationPredicate(AnimationState<MinipadEntity> event) {
+        if (this.isInWater() && !(walkAnimation.speed() > -0.15F && walkAnimation.speed() < 0.15F)) {
+            event.getController().setAnimation(RawAnimation.begin().thenPlay("minipad_swim"));
             return PlayState.CONTINUE;
         } else if (this.isInWater()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("minipad_float"));
+            event.getController().setAnimation(RawAnimation.begin().thenPlay("minipad_float"));
             return PlayState.CONTINUE;
-        } else if (!(animationSpeed > -0.15F && animationSpeed < 0.15F)) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("minipad_walk"));
+        } else if (!(walkAnimation.speed() > -0.15F && walkAnimation.speed() < 0.15F)) {
+            event.getController().setAnimation(RawAnimation.begin().thenPlay("minipad_walk"));
             return PlayState.CONTINUE;
         }
         return PlayState.STOP;
     }
 
     @Override
-    public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
-    static class MinipadFloatGoal extends FloatGoal {
+    @Override
+    public double getTick(Object o) {
+        return 0;
+    }
+}
+
+     class MinipadFloatGoal extends FloatGoal {
         private final MinipadEntity minipad;
 
         public MinipadFloatGoal(MinipadEntity minipad) {
@@ -379,7 +390,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
         }
     }
 
-    static class MinipadPanicGoal extends PanicGoal {
+     class MinipadPanicGoal extends PanicGoal {
         private final MinipadEntity minipad;
 
         public MinipadPanicGoal(MinipadEntity minipad, double speedModifier) {
@@ -417,7 +428,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
         }
     }
 
-    static class MinipadRandomStrollGoal extends RandomStrollGoal {
+     class MinipadRandomStrollGoal extends RandomStrollGoal {
         private final MinipadEntity minipad;
         private final int intervalLand;
         private final int intervalWater;
@@ -491,7 +502,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
         }
     }
 
-    static class MinipadTryFindWaterGoal extends TryFindWaterGoal {
+     class MinipadTryFindWaterGoal extends TryFindWaterGoal {
         private final MinipadEntity minipad;
         private final double speedModifier;
 
@@ -504,10 +515,10 @@ public class MinipadEntity extends Animal implements IForgeShearable, IAnimatabl
         @Override
         public void start() {
                 BlockPos blockpos = this.minipad.blockPosition();
-                BlockPos waterPos = this.minipad.level.getBlockState(blockpos).getCollisionShape(this.minipad.level, blockpos).isEmpty() ? null : BlockPos.findClosestMatch(this.minipad.blockPosition(), 16, 5, (pos) -> this.minipad.level.getFluidState(pos).is(FluidTags.WATER)).orElse(null);
+                BlockPos waterPos = this.minipad.level().getBlockState(blockpos).getCollisionShape(this.minipad.level(), blockpos).isEmpty() ? null : BlockPos.findClosestMatch(this.minipad.blockPosition(), 16, 5, (pos) -> this.minipad.level().getFluidState(pos).is(FluidTags.WATER)).orElse(null);
                 if (waterPos != null) {
                     this.minipad.getNavigation().moveTo(waterPos.getX(), waterPos.getY(), waterPos.getZ(), this.speedModifier);
                 }
         }
     }
-}
+

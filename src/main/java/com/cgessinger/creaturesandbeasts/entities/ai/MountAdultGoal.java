@@ -18,7 +18,7 @@ public class MountAdultGoal extends Goal {
     @Override
     public boolean canUse() {
         if (!this.childAnimal.isPassenger() && this.childAnimal.isBaby()) {
-            List<LittleGrebeEntity> entities = this.childAnimal.level.getEntitiesOfClass(LittleGrebeEntity.class, this.childAnimal.getBoundingBox().inflate(10, 3, 10));
+            List<LittleGrebeEntity> entities = this.childAnimal.level().getEntitiesOfClass(LittleGrebeEntity.class, this.childAnimal.getBoundingBox().inflate(10, 3, 10));
 
             for (LittleGrebeEntity entity : entities) {
                 if (!entity.isBaby() && !entity.isVehicle()) {
@@ -35,7 +35,7 @@ public class MountAdultGoal extends Goal {
      */
     @Override
     public void tick() {
-        List<LittleGrebeEntity> list = this.childAnimal.level.getEntitiesOfClass(LittleGrebeEntity.class, this.childAnimal.getBoundingBox());
+        List<LittleGrebeEntity> list = this.childAnimal.level().getEntitiesOfClass(LittleGrebeEntity.class, this.childAnimal.getBoundingBox());
 
         for (LittleGrebeEntity grebe : list) {
             if (!grebe.equals(this.childAnimal) && !grebe.isBaby() && !grebe.isVehicle()) {

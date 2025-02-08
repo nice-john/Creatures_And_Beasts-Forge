@@ -1,17 +1,20 @@
 package com.cgessinger.creaturesandbeasts.client.entity.model;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
+import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
 import com.cgessinger.creaturesandbeasts.entities.YetiEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.processor.IBone;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
-import software.bernie.geckolib3.model.provider.data.EntityModelData;
+import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.model.GeoModel;
+import software.bernie.geckolib.model.data.EntityModelData;
+
+import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
 
 @OnlyIn(Dist.CLIENT)
-public class YetiModel extends AnimatedGeoModel<YetiEntity> {
+public class YetiModel extends GeoModel<YetiEntity> {
     private static final ResourceLocation YETI_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/yeti.geo.json");
     private static final ResourceLocation BABY_YETI_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/baby_yeti.geo.json");
 
@@ -36,18 +39,18 @@ public class YetiModel extends AnimatedGeoModel<YetiEntity> {
     }
 
     @Override
-    public void setCustomAnimations(YetiEntity animatable, int instanceId, AnimationEvent animationEvent) {
-        super.setCustomAnimations(animatable, instanceId, animationEvent);
+    public void setCustomAnimations(YetiEntity animatable, long instanceId, AnimationState<YetiEntity> animationState) {
+        super.setCustomAnimations(animatable, instanceId, animationState);
 
-        IBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
+        CoreGeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
 
-        EntityModelData extraData = (EntityModelData) animationEvent.getExtraDataOfType(EntityModelData.class).get(0);
+        EntityModelData extraData = animationState.getData(ENTITY_MODEL_DATA);
 
-        head_rotation.setRotationX(extraData.headPitch * ((float) Math.PI / 180F));
+        head_rotation.setRotX(extraData.headPitch() * ((float) Math.PI / 180F));
         if (animatable.isBaby()) {
-            head_rotation.setRotationZ(extraData.netHeadYaw * ((float) Math.PI / 180F));
+            head_rotation.setRotZ(extraData.netHeadYaw() * ((float) Math.PI / 180F));
         } else {
-            head_rotation.setRotationY(extraData.netHeadYaw * ((float) Math.PI / 180F));
+            head_rotation.setRotY(extraData.netHeadYaw() * ((float) Math.PI / 180F));
         }
     }
 }

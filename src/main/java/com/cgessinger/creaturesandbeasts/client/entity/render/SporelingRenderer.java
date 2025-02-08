@@ -4,21 +4,22 @@ import com.cgessinger.creaturesandbeasts.client.entity.model.SporelingModel;
 import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.geo.render.built.GeoBone;
-import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
+import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
+
+import javax.annotation.Nullable;
 
 @OnlyIn(Dist.CLIENT)
 public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {
@@ -29,8 +30,8 @@ public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {
     }
 
     @Override
-    public RenderType getRenderType(SporelingEntity animatable, float partialTicks, PoseStack stack, @Nullable MultiBufferSource renderTypeBuffer, @Nullable VertexConsumer vertexBuilder, int packedLightIn, ResourceLocation textureLocation) {
-        return RenderType.entityCutoutNoCull(textureLocation);
+    public RenderType getRenderType(SporelingEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
+        return RenderType.entityCutoutNoCull(texture);
     }
 
     @Override
@@ -41,15 +42,15 @@ public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {
         if (entity.getVehicle() instanceof Player player && player.isCrouching()) {
             stack.pushPose();
             float yRotLerped = Mth.rotLerp(partialTicks, entity.yRotO, entity.getYRot());
-            stack.mulPose(Vector3f.XP.rotationDegrees(-25.0F * Mth.cos(yRotLerped * Mth.DEG_TO_RAD)));
-            stack.mulPose(Vector3f.ZP.rotationDegrees(-25.0F * Mth.sin(yRotLerped * Mth.DEG_TO_RAD)));
+            stack.mulPose(Axis.XP.rotationDegrees(-25.0F * Mth.cos(yRotLerped * Mth.DEG_TO_RAD)));
+            stack.mulPose(Axis.ZP.rotationDegrees(-25.0F * Mth.sin(yRotLerped * Mth.DEG_TO_RAD)));
             isRidingCrouch = true;
         }
 
         if (entity.getVehicle() instanceof Player player && player.getAttackAnim(partialTicks) > 0) {
             stack.pushPose();
             float rotation = player.getAttackAnim(partialTicks);
-            stack.mulPose(Vector3f.YP.rotationDegrees(-Mth.sin(Mth.sqrt(rotation) * ((float)Math.PI * 2F)) * 0.2F * Mth.RAD_TO_DEG));
+            stack.mulPose(Axis.YP.rotationDegrees(-Mth.sin(Mth.sqrt(rotation) * ((float) Math.PI * 2F)) * 0.2F * Mth.RAD_TO_DEG));
             isRidingAttacking = true;
         }
 
@@ -64,19 +65,28 @@ public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {
     }
 
     @Override
-    public void renderRecursively(GeoBone bone, PoseStack stack, VertexConsumer bufferIn, int packedLightIn, int packedOverlayIn, float red, float green, float blue, float alpha) {
+    public void renderRecursively(PoseStack poseStack, SporelingEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
         if (bone.getName().equals("itemHolder")) {
-            stack.pushPose();
-            stack.scale(0.5F, 0.5F, 0.5F);
-            stack.translate(0.6F, 0.1F, -0.1F);
-            stack.mulPose(Vector3f.XP.rotationDegrees(-90.0F));
-            Minecraft.getInstance().getItemRenderer().renderStatic(this.animatable.getItemBySlot(EquipmentSlot.MAINHAND), TransformType.THIRD_PERSON_LEFT_HAND, packedLightIn, packedOverlayIn, stack, this.rtb, 0);
-            stack.popPose();
+            poseStack.pushPose();
+            poseStack.scale(0.5F, 0.5F, 0.5F);
+            poseStack.translate(0.6F, 0.1F, -0.1F);
+            poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
+            Minecraft.getInstance().getItemRenderer().renderStatic(
+                    animatable.getItemBySlot(EquipmentSlot.MAINHAND),
+                    ItemDisplayContext.THIRD_PERSON_LEFT_HAND,
+                    packedLight,
+                    packedOverlay,
+                    poseStack,
+                    bufferSource,
+                    Minecraft.getInstance().level,
+                    0
+            );
+            poseStack.popPose();
 
-            // restore the render buffer - GeckoLib expects this state otherwise you'll have weird texture issues
-            bufferIn = rtb.getBuffer(RenderType.entityTranslucent(whTexture));
+            // Restore the render buffer to prevent texture issues
+            buffer = bufferSource.getBuffer(RenderType.entityTranslucent(getTextureLocation(animatable)));
         }
 
-        super.renderRecursively(bone, stack, bufferIn, packedLightIn, packedOverlayIn, red, green, blue, alpha);
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
     }
 }

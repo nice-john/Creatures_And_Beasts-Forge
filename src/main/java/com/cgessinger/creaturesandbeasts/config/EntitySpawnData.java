@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -32,7 +33,10 @@ public record EntitySpawnData(ResourceLocation entityType, ResourceLocation biom
 
     @Nullable
     public ResourceKey<Biome> getBiome() {
-        return ResourceKey.create(Registry.BIOME_REGISTRY, biome);
+        if (this.biome == null) {
+            return null; // Return null if the biome is not set
+        }
+        return ResourceKey.create(Registries.BIOME, this.biome); // Use Registries.BIOME and pass the biome ResourceLocation
     }
 
     public String getCategoryName() {

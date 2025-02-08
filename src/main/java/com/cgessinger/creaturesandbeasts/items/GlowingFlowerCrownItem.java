@@ -7,12 +7,16 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 public class GlowingFlowerCrownItem extends FlowerCrownItem {
-    public GlowingFlowerCrownItem(ArmorMaterial material, Ingredient repairItems, EquipmentSlot slot, Properties properties) {
-        super(material, repairItems, slot, properties);
+    private final Ingredient repairItems; // Mark final for immutability
+
+    // Updated constructor to accept repairItems
+    public GlowingFlowerCrownItem(ArmorMaterial material, Ingredient repairItems, Type type, Properties properties) {
+        super(material, repairItems, type, properties); // Pass repairItems to the superclass
+        this.repairItems = repairItems; // Initialize repairItems
     }
 
     @Override
-    public boolean isEnchantable(ItemStack p_41456_) {
+    public boolean isEnchantable(ItemStack stack) {
         return false;
     }
 
@@ -23,6 +27,13 @@ public class GlowingFlowerCrownItem extends FlowerCrownItem {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return true;
+        return true; // Ensure the glowing effect
+    }
+
+    @Override
+    public boolean isValidRepairItem(ItemStack stackInput, ItemStack repairStack) {
+        // Ensure repairItems is not null before testing
+        return this.repairItems != null && this.repairItems.test(repairStack);
     }
 }
+

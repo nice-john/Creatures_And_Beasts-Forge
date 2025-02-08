@@ -21,6 +21,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -57,16 +58,11 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.HitResult;
-import software.bernie.geckolib3.core.AnimationState;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.Animation;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.*;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
 
@@ -75,7 +71,7 @@ import static com.cgessinger.creaturesandbeasts.util.SporelingType.SporelingHost
 import static com.cgessinger.creaturesandbeasts.util.SporelingType.SporelingHostility.HOSTILE;
 import static com.cgessinger.creaturesandbeasts.util.SporelingType.SporelingHostility.NEUTRAL;
 
-public class SporelingEntity extends TamableAnimal implements IAnimatable {
+public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     private static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(SporelingEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(SporelingEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> WAVING = SynchedEntityData.defineId(SporelingEntity.class, EntityDataSerializers.BOOLEAN);
@@ -89,7 +85,7 @@ public class SporelingEntity extends TamableAnimal implements IAnimatable {
     private final PanicGoal panicGoal = new PanicGoal(this, 1.25D);
     private final ConvertItemGoal convertItemGoal = new ConvertItemGoal(this, 16.0D, 1.3D);
 
-    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int attackTimer;
     private int waveTimer;
 
@@ -204,7 +200,7 @@ public class SporelingEntity extends TamableAnimal implements IAnimatable {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
-        if (this.level.isClientSide) {
+        if (this.level().isClientSide) {
             if (this.isTame()) {
                 InteractionResult interactionresult = super.mobInteract(player, hand);
                 if (!interactionresult.consumesAction() && this.isOwnedBy(player)) {
@@ -253,9 +249,9 @@ public class SporelingEntity extends TamableAnimal implements IAnimatable {
                     this.navigation.stop();
                     this.setTarget(null);
                     this.setOrderedToSit(true);
-                    this.level.broadcastEntityEvent(this, (byte)7);
+                    this.level().broadcastEntityEvent(this, (byte)7);
                 } else {
-                    this.level.broadcastEntityEvent(this, (byte)6);
+                    this.level().broadcastEntityEvent(this, (byte)6);
                 }
 
                 return InteractionResult.SUCCESS;
@@ -281,8 +277,8 @@ public class SporelingEntity extends TamableAnimal implements IAnimatable {
 
     @Override
     protected void actuallyHurt(DamageSource damageSource, float damage) {
-        if (damageSource.isFire() && this.getSporelingType().getHostility() != FRIENDLY) {
-            return;
+        if (damageSource.is(DamageTypes.IN_FIRE) && this.getSporelingType().getHostility() != FRIENDLY) {
+            return; // Ignore fire damage if the Sporeling is not friendly
         }
         super.actuallyHurt(damageSource, damage);
     }
@@ -479,61 +475,77 @@ public class SporelingEntity extends TamableAnimal implements IAnimatable {
         return SporelingType.getById(this.entityData.get(TYPE));
     }
 
-    public <E extends IAnimatable> PlayState animationPredicate(AnimationEvent<E> event) {
-        Animation currentAnimation = event.getController().getCurrentAnimation();
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
+        AnimationProcessor.QueuedAnimation currentAnimation = event.getController().getCurrentAnimation();
 
         if (this.isPassenger()) {
             return PlayState.STOP;
         }
 
         if (this.isInSittingPose()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_sit").addAnimation("sporeling_sitting"));
-        } else if (currentAnimation != null && (currentAnimation.animationName.equals("sporeling_sitting") || (currentAnimation.animationName.equals("sporeling_stand") && !event.getController().getAnimationState().equals(AnimationState.Stopped))) && !this.isInSittingPose()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_stand"));
+            event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_sitting"));
+        } else if (currentAnimation != null &&
+                (currentAnimation.animation().name().equals("sporeling_sitting") ||
+                        currentAnimation.animation().name().equals("sporeling_stand")) &&
+                !this.isInSittingPose()) {
+            event.getController().setAnimation(RawAnimation.begin().thenPlay("sporeling_stand"));
         } else if (this.isAttacking()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_bite"));
+            event.getController().setAnimation(RawAnimation.begin().thenPlay("sporeling_bite"));
         } else if (this.isWaving() && this.getHolding().isEmpty()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_wave"));
+            event.getController().setAnimation(RawAnimation.begin().thenPlay("sporeling_wave"));
         } else if (this.isInspecting()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_convert"));
-        } else if (!(animationSpeed > -0.15F && animationSpeed < 0.15F)) {
+            event.getController().setAnimation(RawAnimation.begin().thenPlay("sporeling_convert"));
+        } else if (!(walkAnimation.speed() > -0.15F && walkAnimation.speed() < 0.15F)) {
             if (this.isRunning()) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_run"));
+                event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_run"));
             } else {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_walk"));
+                event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_walk"));
             }
         } else {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_idle"));
+            event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_idle"));
         }
 
         return PlayState.CONTINUE;
     }
 
-    public <E extends IAnimatable> PlayState backpackAnimationPredicate(AnimationEvent<E> event) {
+    /**
+     * Handles backpack animations based on the Sporeling's vehicle state.
+     */
+    private <E extends GeoAnimatable> PlayState backpackAnimationPredicate(AnimationState<E> event) {
         Entity vehicle = this.getVehicle();
 
         if (vehicle != null) {
-            if (!vehicle.isOnGround() && vehicle.fallDistance > 0.1F) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_backpack_air"));
+            if (!vehicle.onGround() && vehicle.fallDistance > 0.1F) {
+                event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_backpack_air"));
             } else {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("sporeling_backpack_idle"));
+                event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_backpack_idle"));
             }
             return PlayState.CONTINUE;
         }
 
-        event.getController().markNeedsReload();
         return PlayState.STOP;
     }
 
+    /**
+     * Registers animation controllers for the Sporeling entity.
+     */
     @Override
-    public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController<>(this, "controller", 0, this::animationPredicate));
-        animationData.addAnimationController(new AnimationController<>(this, "backpackController", 6, this::backpackAnimationPredicate));
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+        controllers.add(new AnimationController<>(this, "backpackController", 6, this::backpackAnimationPredicate));
+    }
+
+    /**
+     * Provides the instance cache for animations.
+     */
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public double getTick(Object o) {
+        return 0;
     }
 
     static class WaveGoal extends LookAtPlayerGoal {

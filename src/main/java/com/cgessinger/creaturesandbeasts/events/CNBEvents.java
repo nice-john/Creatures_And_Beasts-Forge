@@ -17,7 +17,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.items.HealSpellBookItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.IndirectEntityDamageSource;
+
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -34,6 +34,10 @@ import net.minecraftforge.event.entity.living.LootingLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.UUID;
 
@@ -65,8 +69,11 @@ public class CNBEvents {
     @SubscribeEvent
     public void onLootingCalculate(LootingLevelEvent event) {
         DamageSource damageSource = event.getDamageSource();
-        if (damageSource instanceof IndirectEntityDamageSource indirectDamage && indirectDamage.getDirectEntity() instanceof ThrownCactemSpearEntity thrownSpear) {
-            event.setLootingLevel(EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MOB_LOOTING, thrownSpear.getSpear()));
+        // Check if the damage source is indirect and the direct entity is a ThrownCactemSpearEntity
+        if (damageSource.getDirectEntity() instanceof ThrownCactemSpearEntity thrownSpear) {
+            // Get the looting level from the spear item
+            int lootingLevel = EnchantmentHelper.getTagEnchantmentLevel(Enchantments.MOB_LOOTING, thrownSpear.getSpear());
+            event.setLootingLevel(lootingLevel);
         }
     }
 
@@ -84,7 +91,7 @@ public class CNBEvents {
         EquipmentSlot equipmentSlot = null;
         if (input.getItem() instanceof ArmorItem) {
             ArmorItem armorItem = (ArmorItem) input.getItem();
-            equipmentSlot = armorItem.getSlot();
+            equipmentSlot = armorItem.getEquipmentSlot();
         }
 
 		if (equipmentSlot != null && tag != null && event.getSlotType().equals(equipmentSlot) && tag.contains("HideAmount")) {
@@ -121,7 +128,7 @@ public class CNBEvents {
             event.setCost(CNBConfig.hideCost);
             event.setMaterialCost(1);
             event.setOutput(output);
-        } else if (event.getLeft().getItem() instanceof HealSpellBookItem && event.getRight().getItem() instanceof HealSpellBookItem && event.getLeft().sameItem(event.getRight())) {
+        } else if (event.getLeft().getItem() instanceof HealSpellBookItem && event.getRight().getItem() instanceof HealSpellBookItem && event.getLeft().is(event.getRight().getItem())) {
             ItemStack output;
             int cost;
             if (event.getLeft().is(CNBItems.HEAL_SPELL_BOOK_1.get())) {

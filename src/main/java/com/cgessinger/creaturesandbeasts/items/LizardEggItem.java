@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.Block;
 public class LizardEggItem extends BlockItem {
 
     public LizardEggItem(Block block) {
-        super(block, new Item.Properties().stacksTo(16).tab(CreaturesAndBeasts.TAB));
+        super(block, new Item.Properties().stacksTo(16));
     }
 
     public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {

@@ -43,24 +43,24 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.IForgeShearable;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.builder.ILoopType;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class LilytadEntity extends Animal implements IForgeShearable, IAnimatable {
+public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.BOOLEAN);
-    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     private int shearedTimer;
 
     public LilytadEntity(EntityType<LilytadEntity> type, Level worldIn) {
@@ -118,12 +118,12 @@ public class LilytadEntity extends Animal implements IForgeShearable, IAnimatabl
         this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0D) {
             @Override
             public boolean canUse() {
-                return !this.mob.level.getFluidState(this.mob.blockPosition()).is(FluidTags.WATER) && super.canUse();
+                return !this.mob.level().getFluidState(this.mob.blockPosition()).is(FluidTags.WATER) && super.canUse();
             }
 
             @Override
             public boolean canContinueToUse() {
-                return !this.mob.level.getFluidState(this.mob.blockPosition()).is(FluidTags.WATER) && super.canContinueToUse();
+                return !this.mob.level().getFluidState(this.mob.blockPosition()).is(FluidTags.WATER) && super.canContinueToUse();
             }
         });
         this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0F));
@@ -133,7 +133,7 @@ public class LilytadEntity extends Animal implements IForgeShearable, IAnimatabl
     @Override
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide() && --this.shearedTimer == 0) {
+        if (!this.level().isClientSide() && --this.shearedTimer == 0) {
             this.setSheared(false);
         }
     }
@@ -162,9 +162,9 @@ public class LilytadEntity extends Animal implements IForgeShearable, IAnimatabl
 
     @Override
     protected void pushEntities() {
-        List<Entity> list = this.level.getEntities(this, this.getBoundingBox().inflate(0.2, 0, 0.2), EntitySelector.pushableBy(this));
+        List<Entity> list = this.level().getEntities(this, this.getBoundingBox().inflate(0.2, 0, 0.2), EntitySelector.pushableBy(this));
         if (!list.isEmpty()) {
-            int i = this.level.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+            int i = this.level().getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
             if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {
                 int j = 0;
 
@@ -175,7 +175,7 @@ public class LilytadEntity extends Animal implements IForgeShearable, IAnimatabl
                 }
 
                 if (j > i - 1) {
-                    this.hurt(DamageSource.CRAMMING, 6.0F);
+                    this.hurt(this.damageSources().cramming(), 6.0F);
                 }
             }
 
@@ -245,7 +245,7 @@ public class LilytadEntity extends Animal implements IForgeShearable, IAnimatabl
     }
 
     public boolean shouldLookAround() {
-        return !this.level.getFluidState(this.blockPosition()).is(FluidTags.WATER);
+        return !this.level().getFluidState(this.blockPosition()).is(FluidTags.WATER);
     }
 
     @Nullable
@@ -266,23 +266,29 @@ public class LilytadEntity extends Animal implements IForgeShearable, IAnimatabl
         return CNBSoundEvents.LILYTAD_DEATH.get();
     }
 
-    private <E extends IAnimatable> PlayState animationPredicate(AnimationEvent<E> event) {
-        if (!(animationSpeed > -0.05F && animationSpeed < 0.05F)) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("lilytad.walk", ILoopType.EDefaultLoopTypes.LOOP));
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
+        if (!(walkAnimation.speed() > -0.05F && walkAnimation.speed() < 0.05F)) {
+            event.getController().setAnimation(RawAnimation.begin().thenLoop("lilytad.walk"));
             return PlayState.CONTINUE;
         }
         return PlayState.STOP;
     }
 
     @Override
-    public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
+
+    @Override
+    public double getTick(Object o) {
+        return 0;
+    }
+
 
     static class LilytadPanicGoal extends PanicGoal {
         private final LilytadEntity lilytad;
@@ -318,7 +324,7 @@ public class LilytadEntity extends Animal implements IForgeShearable, IAnimatabl
         @Nullable
         private static BlockPos generateRandomPosTowardDirection(LilytadEntity lilytad, int horizontalRange, boolean flag, BlockPos posTowards) {
             BlockPos blockpos = RandomPos.generateRandomPosTowardDirection(lilytad, horizontalRange, lilytad.getRandom(), posTowards);
-            return !GoalUtils.isOutsideLimits(blockpos, lilytad) && !GoalUtils.isRestricted(flag, lilytad, blockpos) && !GoalUtils.hasMalus(lilytad, blockpos) && (!GoalUtils.isNotStable(lilytad.getNavigation(), blockpos) || (GoalUtils.isWater(lilytad, blockpos) && lilytad.level.getBlockState(blockpos.below()).canOcclude() && lilytad.level.getBlockState(blockpos.above()).isAir())) ? blockpos : null;
+            return !GoalUtils.isOutsideLimits(blockpos, lilytad) && !GoalUtils.isRestricted(flag, lilytad, blockpos) && !GoalUtils.hasMalus(lilytad, blockpos) && (!GoalUtils.isNotStable(lilytad.getNavigation(), blockpos) || (GoalUtils.isWater(lilytad, blockpos) && lilytad.level().getBlockState(blockpos.below()).canOcclude() && lilytad.level().getBlockState(blockpos.above()).isAir())) ? blockpos : null;
         }
     }
 }

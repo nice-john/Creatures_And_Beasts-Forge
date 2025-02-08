@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -81,15 +82,16 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.SoundKeyframeEvent;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.keyframe.event.SoundKeyframeEvent;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -98,14 +100,14 @@ import java.util.UUID;
 
 import static com.cgessinger.creaturesandbeasts.init.CNBTags.Items.CINDERSHELL_FOOD;
 
-public class CindershellEntity extends Animal implements IAnimatable, Bucketable, ContainerListener, Container, RecipeHolder, StackedContentsCompatible, MenuProvider {
+public class CindershellEntity extends Animal implements GeoAnimatable, Bucketable, ContainerListener, Container, RecipeHolder, StackedContentsCompatible, MenuProvider {
     private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData.defineId(CindershellEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> FROM_BUCKET = SynchedEntityData.defineId(CindershellEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> FURNACE = SynchedEntityData.defineId(CindershellEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Optional<UUID>> PLAYER = SynchedEntityData.defineId(CindershellEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
     private final UUID healthReductionUUID = UUID.fromString("189faad9-35de-4e15-a598-82d147b996d7");
-    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     protected CinderFurnaceContainer inventory;
     private Player playerInMenu;
     private int eatTimer;
@@ -154,6 +156,7 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
                 .add(Attributes.KNOCKBACK_RESISTANCE, 100D);
     }
 
+
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
@@ -200,8 +203,8 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
         }
         this.setFurnace(tag.getBoolean("HasFurnace"), playerUUID);
         if (this.hasFurnace()) {
-            if (tag.contains("Player") && this.level.getPlayerByUUID(tag.getUUID("Player")) != null) {
-                this.inventory = this.createMenu(this.getId(), this.level.getPlayerByUUID(tag.getUUID("Player")).getInventory(), this.level.getPlayerByUUID(tag.getUUID("Player")));
+            if (tag.contains("Player") && this.level().getPlayerByUUID(tag.getUUID("Player")) != null) {
+                this.inventory = this.createMenu(this.getId(), this.level().getPlayerByUUID(tag.getUUID("Player")).getInventory(), this.level().getPlayerByUUID(tag.getUUID("Player")));
             } else  {
                 this.inventory = this.createMenu(this.getId(), new Inventory(null), null);
             }
@@ -259,12 +262,12 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
         super.tick();
 
         if (this.hasFurnace() && this.random.nextDouble() <= 0.25) {
-            this.level.addParticle(ParticleTypes.LARGE_SMOKE, this.getX() + (this.random.nextDouble() * 0.5D - 0.25), this.getY() + 2.5 + (this.random.nextDouble() * 0.1D - 0.05), this.getZ() + (this.random.nextDouble() * 0.5D - 0.25), this.getDeltaMovement().x, 0, this.getDeltaMovement().z);
+            this.level().addParticle(ParticleTypes.LARGE_SMOKE, this.getX() + (this.random.nextDouble() * 0.5D - 0.25), this.getY() + 2.5 + (this.random.nextDouble() * 0.1D - 0.05), this.getZ() + (this.random.nextDouble() * 0.5D - 0.25), this.getDeltaMovement().x, 0, this.getDeltaMovement().z);
         }
 
-        if (!this.level.isClientSide && this.hasFurnace()) {
+        if (!this.level().isClientSide && this.hasFurnace()) {
             if (this.inventory.getSlot(0).hasItem()) {
-                Recipe<?> recipe = this.level.getRecipeManager().getRecipeFor((RecipeType<AbstractCookingRecipe>)this.inventory.getRecipeType(), this, this.level).orElse(null);
+                Recipe<?> recipe = this.level().getRecipeManager().getRecipeFor((RecipeType<AbstractCookingRecipe>)this.inventory.getRecipeType(), this, this.level()).orElse(null);
 
                 if (this.canBurn(recipe, this.inventory.getItems(), 64)) {
                     if (this.random.nextDouble() < 0.1D) {
@@ -273,7 +276,7 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
                     ++this.cookingProgress;
                     if (this.cookingProgress >= this.cookingTotalTime) {
                         this.cookingProgress = 0;
-                        this.cookingTotalTime = getTotalCookTime(this.level, this.inventory.getRecipeType(), this);
+                        this.cookingTotalTime = getTotalCookTime(this.level(), this.inventory.getRecipeType(), this);
                         if (this.smelt(recipe, this.items, 64)) {
                             this.setRecipeUsed(recipe);
                         }
@@ -338,7 +341,7 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
     public InteractionResult tryStartEat(Player player, ItemStack stack) {
         if (stack.is(CINDERSHELL_FOOD)) {
             int i = this.getAge();
-            if (!this.level.isClientSide && i == 0 && this.canFallInLove()) {
+            if (!this.level().isClientSide && i == 0 && this.canFallInLove()) {
                 this.usePlayerItem(player, player.getUsedItemHand(), stack);
                 this.setEating(true);
                 this.setInLove(player);
@@ -351,10 +354,10 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
                 this.playSound(CNBSoundEvents.CINDERSHELL_BABY_EAT.get(), 1.3F, 1F);
                 this.usePlayerItem(player, player.getUsedItemHand(), stack);
                 this.ageUp((int) (-i / 20F * 0.1F), true);
-                return InteractionResult.sidedSuccess(this.level.isClientSide);
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
 
-            if (this.level.isClientSide) {
+            if (this.level().isClientSide) {
                 return InteractionResult.CONSUME;
             }
         }
@@ -365,21 +368,21 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack item = player.getItemInHand(hand);
 
-        if (item.sameItem(Items.LAVA_BUCKET.getDefaultInstance()) && this.isAlive() && this.isBaby()) {
+        if (item.is(Items.LAVA_BUCKET) && this.isAlive() && this.isBaby()) { // Use `is` instead of `sameItem`
             this.playSound(this.getPickupSound(), 1.0F, 1.0F);
             ItemStack bucketItem = this.getBucketItemStack();
             this.saveToBucketTag(bucketItem);
             ItemStack bucketWithData = ItemUtils.createFilledResult(item, player, bucketItem, false);
             player.setItemInHand(hand, bucketWithData);
-            Level level = this.level;
+            Level level = this.level();
 
             if (!level.isClientSide) {
-                CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)player, bucketItem);
+                CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer) player, bucketItem);
             }
 
             this.discard();
             return InteractionResult.sidedSuccess(level.isClientSide);
-        } else if (!this.isBaby() && !this.hasFurnace() && item.sameItem(CNBItems.CINDERSHELL_FURNACE.get().getDefaultInstance())) {
+        } else if (!this.isBaby() && !this.hasFurnace() && item.is(CNBItems.CINDERSHELL_FURNACE.get())) { // Use `is` instead of `sameItem`
             this.setFurnace(true, player.getUUID());
 
             this.inventory = this.createMenu(this.getId(), player.getInventory(), player);
@@ -389,17 +392,17 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
             }
 
             this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
         } else if (this.isFood(item) && !this.getEating()) {
             return this.tryStartEat(player, item);
         } else if (this.hasFurnace() && player.isSecondaryUseActive()) {
             this.dropEquipment();
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
         } else if (this.hasFurnace()) {
-            if (!this.level.isClientSide) {
+            if (!this.level().isClientSide) {
                 NetworkHooks.openScreen((ServerPlayer) player, this);
             }
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
         } else {
             return InteractionResult.PASS;
         }
@@ -416,7 +419,7 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
         if (this.hasFurnace()) {
             this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.8F);
 
-            if (!this.level.isClientSide) {
+            if (!this.level().isClientSide) {
                 this.spawnAtLocation(CNBBlocks.CINDER_FURNACE.get());
                 for (int i = 0; i < this.inventory.getSize(); i++) {
                     this.spawnAtLocation(this.inventory.getSlot(i).getItem());
@@ -457,18 +460,17 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
     @Override
     public void setItem(int slot, ItemStack stack) {
         ItemStack itemstack = this.getItem(slot);
-        boolean flag = !stack.isEmpty() && stack.sameItem(itemstack) && ItemStack.tagMatches(stack, itemstack);
+        boolean flag = !stack.isEmpty() && stack.is(itemstack.getItem()) && ItemStack.isSameItemSameTags(stack, itemstack);
         this.items.set(slot, stack);
         if (stack.getCount() > this.getMaxStackSize()) {
             stack.setCount(this.getMaxStackSize());
         }
 
         if (slot == 0 && !flag) {
-            this.dataAccess.set(1, getTotalCookTime(this.level, this.inventory.getRecipeType(), this));
+            this.dataAccess.set(1, getTotalCookTime(this.level(), this.inventory.getRecipeType(), this));
             this.dataAccess.set(0, 0);
             this.setChanged();
         }
-
     }
 
     @Override
@@ -485,7 +487,7 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
     }
 
     public static int getTotalCookTime(Level level, RecipeType<? extends AbstractCookingRecipe> recipeType, CindershellEntity container) {
-        ResourceKey<Level> dimensionKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, container.level.dimension().location());
+        ResourceKey<Level> dimensionKey = ResourceKey.create(Registries.DIMENSION, container.level().dimension().location());
         float cookTimeMultiplier = dimensionKey.equals(Level.NETHER) ? 1.0F : 1.667F;
         return (int) (level.getRecipeManager().getRecipeFor(recipeType, container, level).map(AbstractCookingRecipe::getCookingTime).orElse(200) * cookTimeMultiplier);
     }
@@ -493,7 +495,7 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
     private boolean smelt(@Nullable Recipe<?> recipe, NonNullList<ItemStack> stack, int amount) {
         if (recipe != null && this.canBurn(recipe, stack, amount)) {
             ItemStack itemstack = stack.get(0);
-            ItemStack itemstack1 = ((Recipe<CindershellEntity>) recipe).assemble(this);
+            ItemStack itemstack1 = ((Recipe<CindershellEntity>) recipe).assemble(this, this.level().registryAccess()); // Pass RegistryAccess
             ItemStack itemstack2 = stack.get(1);
             if (itemstack2.isEmpty()) {
                 stack.set(1, itemstack1.copy());
@@ -510,14 +512,14 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
 
     private boolean canBurn(@Nullable Recipe<?> recipe, NonNullList<ItemStack> items, int maxStack) {
         if (!items.get(0).isEmpty() && recipe != null) {
-            ItemStack itemstack = ((Recipe<CindershellEntity>)recipe).assemble(this);
+            ItemStack itemstack = ((Recipe<CindershellEntity>) recipe).assemble(this, this.level().registryAccess()); // Pass RegistryAccess
             if (itemstack.isEmpty()) {
                 return false;
             } else {
                 ItemStack itemstack1 = items.get(1);
                 if (itemstack1.isEmpty()) {
                     return true;
-                } else if (!itemstack1.sameItem(itemstack)) {
+                } else if (!itemstack1.is(itemstack.getItem())) { // Use `is` instead of `sameItem`
                     return false;
                 } else if (itemstack1.getCount() + itemstack.getCount() <= maxStack && itemstack1.getCount() + itemstack.getCount() <= itemstack1.getMaxStackSize()) {
                     return true;
@@ -545,7 +547,7 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
     }
 
     public void awardUsedRecipesAndPopExperience(ServerPlayer player) {
-        List<Recipe<?>> list = this.getRecipesToAwardAndPopExperience(player.getLevel(), player.position());
+        List<Recipe<?>> list = this.getRecipesToAwardAndPopExperience(player.serverLevel(), player.position()); // Use `serverLevel()` instead of `getLevel()`
         player.awardRecipes(list);
         this.recipesUsed.clear();
     }
@@ -692,8 +694,8 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
     @Override
     protected void tickDeath() {
         ++this.deathTime;
-        if (this.deathTime == 23 && !this.level.isClientSide()) {
-            this.level.broadcastEntityEvent(this, (byte)60);
+        if (this.deathTime == 23 && !this.level().isClientSide()) {
+            this.level().broadcastEntityEvent(this, (byte)60);
             this.remove(Entity.RemovalReason.KILLED);
         }
     }
@@ -801,48 +803,57 @@ public class CindershellEntity extends Animal implements IAnimatable, Bucketable
         return 25;
     }
 
-    private <E extends IAnimatable> PlayState animationPredicate(AnimationEvent<E> event) {
-        if (!(animationSpeed > -0.05F && animationSpeed < 0.05F)) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation(this.isBaby() ? "baby_cindershell_walk" : "cindershell_walk"));
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> state) {
+        if (!(walkAnimation.speed() > -0.05F && walkAnimation.speed() < 0.05F)) {
+            state.getController().setAnimation(RawAnimation.begin().thenLoop(this.isBaby() ? "baby_cindershell_walk" : "cindershell_walk"));
         } else if (this.getEating()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("cindershell_idle_eat"));
+            state.getController().setAnimation(RawAnimation.begin().thenLoop("cindershell_idle_eat"));
         } else if (this.isDeadOrDying()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("cindershell_death"));
+            state.getController().setAnimation(RawAnimation.begin().thenPlay("cindershell_death"));
         } else {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("cindershell_idle"));
+            state.getController().setAnimation(RawAnimation.begin().thenLoop("cindershell_idle"));
         }
         return PlayState.CONTINUE;
     }
 
-    private <E extends IAnimatable> PlayState eatAnimationPredicate(AnimationEvent<E> event) {
+    private <E extends GeoAnimatable> PlayState eatAnimationPredicate(AnimationState<E> state) {
         if (this.getEating()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("cindershell_eat"));
+            state.getController().setAnimation(RawAnimation.begin().thenPlay("cindershell_eat"));
             return PlayState.CONTINUE;
         }
-        event.getController().markNeedsReload();
+        state.getController().forceAnimationReset();
         return PlayState.STOP;
     }
 
-    private <E extends IAnimatable> void soundListener(SoundKeyframeEvent<E> event) {
-        LocalPlayer player = Minecraft.getInstance().player;
-        player.playSound(this.isBaby() ? CNBSoundEvents.CINDERSHELL_BABY_EAT.get() : CNBSoundEvents.CINDERSHELL_ADULT_EAT.get(), 0.4F, 1F);
+    private <E extends GeoAnimatable> void soundListener(SoundKeyframeEvent<E> event) {
+        String sound = event.getKeyframeData().getSound(); // Correctly retrieves the sound key
+        if (sound.equals("cindershell_eat")) {
+            LocalPlayer player = Minecraft.getInstance().player;
+            player.playSound(this.isBaby() ? CNBSoundEvents.CINDERSHELL_BABY_EAT.get() : CNBSoundEvents.CINDERSHELL_ADULT_EAT.get(), 0.4F, 1F);
+        }
     }
 
     @Override
-    public void registerControllers(AnimationData animationData) {
-        AnimationController<CindershellEntity> controller = new AnimationController<>(this, "controller", 0, this::animationPredicate);
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        AnimationController<CindershellEntity> mainController = new AnimationController<>(this, "controller", 0, this::animationPredicate);
         AnimationController<CindershellEntity> eatController = new AnimationController<>(this, "eatController", 0, this::eatAnimationPredicate);
 
-        eatController.registerSoundListener(this::soundListener);
+        eatController.setSoundKeyframeHandler(this::soundListener);
 
-        animationData.addAnimationController(controller);
-        animationData.addAnimationController(eatController);
+        controllers.add(mainController);
+        controllers.add(eatController);
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
+
+    @Override
+    public double getTick(Object o) {
+        return 0;
+    }
+
 
     static class CindershellFloatGoal extends FloatGoal {
         private final CindershellEntity cindershell;

@@ -54,23 +54,28 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.core.AnimationState;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.Animation;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.SoundKeyframeEvent;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.Level;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.keyframe.event.SoundKeyframeEvent;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
-public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimatable {
+public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEntity, GeoAnimatable {
     private static final EntityDataAccessor<Boolean> ELDER = SynchedEntityData.defineId(CactemEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(CactemEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> SPEAR_SHOWN = SynchedEntityData.defineId(CactemEntity.class, EntityDataSerializers.BOOLEAN);
@@ -89,7 +94,8 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
     private final RangedSpearAttackGoal spearAttackGoal = new RangedSpearAttackGoal(this, 60, 16.0F);
     private final BecomeElderGoal becomeElderGoal = new BecomeElderGoal(this, 32.0F);
 
-    private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     private final UUID healthReductionUUID = UUID.fromString("65a301bb-531d-499e-939c-eda5b857c0b4");
     private final float babyHealth = 20.0F;
 
@@ -171,11 +177,13 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
 
     @Override
     public void tick() {
-        if (!this.level.isClientSide && this.shouldUpdateGoals) {
-            this.reassessGoals();
-            this.shouldUpdateGoals = false;
+        // Check if the entity is on the server side and if goals need to be updated
+        if (!this.level().isClientSide && this.shouldUpdateGoals) {
+            this.reassessGoals(); // Reassess the entity's goals
+            this.shouldUpdateGoals = false; // Reset the flag
         }
-        
+
+        // Call the superclass tick method to handle default behavior
         super.tick();
     }
 
@@ -203,7 +211,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
 
     @Override
     public int getExperienceReward() {
-        return 3 + this.level.random.nextInt(4);
+        return 3 + this.level().random.nextInt(4);
     }
 
     @Override
@@ -237,17 +245,17 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
     @Override
     public void performRangedAttack(LivingEntity entity, float damage) {
         ItemStack itemstack = this.getProjectile(this.getItemInHand(this.getUsedItemHand()));
-        ThrownCactemSpearEntity spearEntity = new ThrownCactemSpearEntity(this.level, this, itemstack);
+        ThrownCactemSpearEntity spearEntity = new ThrownCactemSpearEntity(this.level(), this, itemstack);
         double d0 = entity.getX() - this.getX();
         double d1 = entity.getY(0.3333333333333333D) - spearEntity.getY();
         double d2 = entity.getZ() - this.getZ();
         double d3 = Math.sqrt(d0 * d0 + d2 * d2);
-        spearEntity.shoot(d0, d1 + d3 * (double)0.2F, d2, 1.6F, (float)(14 - this.level.getDifficulty().getId() * 4));
-        this.level.addFreshEntity(spearEntity);
+        spearEntity.shoot(d0, d1 + d3 * (double)0.2F, d2, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
+        this.level().addFreshEntity(spearEntity);
     }
 
     private void performHeal(float range) {
-        List<? extends CactemEntity> list = this.level.getEntitiesOfClass(CactemEntity.class, this.getBoundingBox().inflate(range, 4, range));
+        List<? extends CactemEntity> list = this.level().getEntitiesOfClass(CactemEntity.class, this.getBoundingBox().inflate(range, 4, range));
         for(CactemEntity nearbyCactem : list) {
             nearbyCactem.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 1));
         }
@@ -255,7 +263,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
 
     private void spawnHealParticles() {
         for (float i = 0; i < Mth.TWO_PI; i += this.random.nextFloat() * 0.8F + 0.5F) {
-            this.level.addParticle(CNBParticleTypes.CACTEM_HEAL_PARTICLE.get(), this.getX() + Mth.cos(i) * 1.25D, this.getY(), this.getZ() + Mth.sin(i) * 1.25D, 0.0D, 0.0D, 0.0D);
+            this.level().addParticle(CNBParticleTypes.CACTEM_HEAL_PARTICLE.get(), this.getX() + Mth.cos(i) * 1.25D, this.getY(), this.getZ() + Mth.sin(i) * 1.25D, 0.0D, 0.0D, 0.0D);
         }
     }
 
@@ -290,7 +298,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
         this.getAttribute(Attributes.MAX_HEALTH).removeModifier(this.healthReductionUUID);
         this.setHealth(percentHealth * (float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
 
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide) {
             this.shouldUpdateGoals = true;
         }
     }
@@ -348,8 +356,17 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
     }
 
     public boolean isSpearShown() {
-        return this.entityData.get(SPEAR_SHOWN);
+        return true;
+        // Check if the entity is properly initialized
+        //if (this.entity == null || this.entityData == null) {
+        //    return false; // Default to false if the entity or entityData is not initialized
+        //}
+
+        //Boolean spearShown = this.entityData.get(SPEAR_SHOWN);
+        //return spearShown != null && spearShown; // Return the value or default to false
     }
+
+
 
     public void setSpearShown(boolean isShown) {
         this.entityData.set(SPEAR_SHOWN, isShown);
@@ -387,76 +404,99 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
         }
     }
 
-    private <E extends IAnimatable> PlayState animationPredicate(AnimationEvent<E> event) {
-        if (this.isHealing()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_elder_heal"));
-        } else if (this.isTrading()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_admire"));
-        } else if (!(animationSpeed > -0.075F && animationSpeed < 0.075F)) {
-            if (this.isElder()) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_elder_walk"));
-            } else if (this.isBaby()) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_baby_run"));
-            } else if (this.isAttacking() || !this.isSpearShown()) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_run_throw"));
-            } else {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_run"));
-                this.setIdleAnim(this.random.nextInt(2));
-            }
-        } else {
-            if (this.isElder()) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_idle_2"));
-            } else if (this.isBaby()) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_idle"));
-            } else {
-                if (this.getIdleAnim() == 0) {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_idle"));
+
+
+        // Animation predicate for general animations
+        private <E extends GeoEntity> PlayState animationPredicate(AnimationState<E> event) {
+            if (this.isHealing()) {
+                event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_elder_heal"));
+            } else if (this.isTrading()) {
+                event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_admire"));
+            } else if (!(walkAnimation.speed() > -0.075F && walkAnimation.speed() < 0.075F)) {
+                if (this.isElder()) {
+                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_elder_walk"));
+                } else if (this.isBaby()) {
+                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_baby_run"));
+                } else if (this.isAttacking() || !this.isSpearShown()) {
+                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_run_throw"));
                 } else {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_idle_2"));
+                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_run"));
+                    this.setIdleAnim(this.random.nextInt(2));
+                }
+            } else {
+                if (this.isElder()) {
+                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
+                } else if (this.isBaby()) {
+                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
+                } else {
+                    if (this.getIdleAnim() == 0) {
+                        event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
+                    } else {
+                        event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
+                    }
                 }
             }
-        }
-        return PlayState.CONTINUE;
-    }
-
-    private <E extends IAnimatable> PlayState attackAnimationPredicate(AnimationEvent<E> event) {
-        Animation currentAnim = event.getController().getCurrentAnimation();
-
-        if (this.isAttacking() || (currentAnim != null && currentAnim.animationName.equals("cactem_throw") && event.getController().getAnimationState().equals(AnimationState.Running))) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("cactem_throw"));
             return PlayState.CONTINUE;
         }
 
-        event.getController().markNeedsReload();
-        this.setSpearShown(true);
-        return PlayState.STOP;
-    }
+        // Animation predicate for attack animations
+        private <E extends GeoEntity> PlayState attackAnimationPredicate(AnimationState<E> event) {
+            var controller = event.getController();
+            var currentAnimation = controller.getCurrentAnimation();
 
-    private <E extends IAnimatable> void soundListener(SoundKeyframeEvent<E> event) {
+            if (this.isAttacking() || (currentAnimation != null && "cactem_throw".equals(currentAnimation.animation().name()) && controller.getAnimationState().equals(AnimationController.State.RUNNING))) {
+                controller.setAnimation(RawAnimation.begin().thenPlay("cactem_throw"));
+                return PlayState.CONTINUE;
+            }
+
+            controller.forceAnimationReset();
+            this.setSpearShown(true);
+            return PlayState.STOP;
+        }
+
+        // Sound listener for keyframe events
+        private <E extends GeoEntity> void soundListener(AnimationState<E> event) {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (event.getController().getCurrentAnimation() != null) {
+                String sound = event.getController().getCurrentAnimation().animation().name();
+
+                if (sound.equals("cactem_heal")) {
+                    player.playSound(CNBSoundEvents.CACTEM_HEAL.get(), 1.0F, 1.0F);
+                } else if (sound.equals("spear_throw")) {
+                    player.playSound(CNBSoundEvents.SPEAR_THROW.get(), 1.0F, 1.0F);
+                }
+            }
+        }
+
+    private void soundListener(SoundKeyframeEvent<CactemEntity> event) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (event.sound.equals("cactem_heal")) {
+        String soundKey = event.getKeyframeData().getSound(); // Correctly retrieves the sound key.
+
+        if (soundKey.equals("cactem_heal")) {
             player.playSound(CNBSoundEvents.CACTEM_HEAL.get(), 1.0F, 1.0F);
-        } else if (event.sound.equals("spear_throw")) {
+        } else if (soundKey.equals("spear_throw")) {
             player.playSound(CNBSoundEvents.SPEAR_THROW.get(), 1.0F, 1.0F);
         }
     }
 
-    @Override
-    public void registerControllers(AnimationData animationData) {
-        AnimationController<CactemEntity> controller = new AnimationController<>(this, "controller", 0, this::animationPredicate);
-        AnimationController<CactemEntity> attackController = new AnimationController<>(this, "attackController", 0, this::attackAnimationPredicate);
-
-        controller.registerSoundListener(this::soundListener);
-        attackController.registerSoundListener(this::soundListener);
-
-        animationData.addAnimationController(controller);
-        animationData.addAnimationController(attackController);
-    }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
-    }
+        public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+            AnimationController<CactemEntity> controller = new AnimationController<>(this, "controller", 0, this::animationPredicate);
+            AnimationController<CactemEntity> attackController = new AnimationController<>(this, "attackController", 0, this::attackAnimationPredicate);
+
+            controller.setSoundKeyframeHandler(this::soundListener);
+            attackController.setSoundKeyframeHandler(this::soundListener);
+
+            controllers.add(controller);
+            controllers.add(attackController);
+        }
+
+        @Override
+        public AnimatableInstanceCache getAnimatableInstanceCache() {
+            return this.cache;
+        }
+
 
     static class FollowElderGoal extends Goal {
         public static final int HORIZONTAL_SCAN_RANGE = 32;
@@ -474,7 +514,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
         }
 
         public boolean canUse() {
-            List<? extends CactemEntity> list = this.cactem.level.getEntitiesOfClass(CactemEntity.class, this.cactem.getBoundingBox().inflate(HORIZONTAL_SCAN_RANGE, VERTICAL_SCAN_RANGE, HORIZONTAL_SCAN_RANGE));
+            List<? extends CactemEntity> list = this.cactem.level().getEntitiesOfClass(CactemEntity.class, this.cactem.getBoundingBox().inflate(HORIZONTAL_SCAN_RANGE, VERTICAL_SCAN_RANGE, HORIZONTAL_SCAN_RANGE));
             CactemEntity followTarget = null;
             double closestElderDistance = Double.MAX_VALUE;
 
@@ -546,14 +586,19 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
 
         @Override
         public boolean canUse() {
+            // Check if the entity already has a target or if an item is already being tracked
             if (this.itemInstance == null && this.entityIn.getTarget() == null) {
-                List<ItemEntity> list = this.entityIn.level.getEntitiesOfClass(ItemEntity.class, this.entityIn.getBoundingBox().inflate(this.range, 3.0D, this.range));
+                // Get all item entities within the specified range
+                List<ItemEntity> list = this.entityIn.level().getEntitiesOfClass(ItemEntity.class, this.entityIn.getBoundingBox().inflate(this.range, 3.0D, this.range));
 
+                // Iterate through the list of item entities
                 for (ItemEntity item : list) {
-                    if (item.getItem().sameItem(Items.TOTEM_OF_UNDYING.getDefaultInstance())) {
+                    // Check if the item is a Totem of Undying
+                    if (item.getItem().is(Items.TOTEM_OF_UNDYING)) {
+                        // Create a path to the item
                         this.path = this.navigation.createPath(item.getOnPos(), 0);
                         this.itemInstance = item;
-                        return path != null;
+                        return this.path != null; // Return true if a valid path is found
                     }
                 }
             }
@@ -625,7 +670,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
 
                         } else if (tradeTime % 3 == 0) {
                             entityIn.lookAt(EntityAnchorArgument.Anchor.EYES, itemInstance.position());
-                            entityIn.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, itemInstance.getItem()), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
+                            entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, itemInstance.getItem()), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
                         }
                     }
 
@@ -665,7 +710,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
                 livingentity = null;
             }
 
-            boolean cactemNeedsHealing = this.cactemNeedsHeal(this.cactem, this.cactem.level);
+            boolean cactemNeedsHealing = this.cactemNeedsHeal(this.cactem, this.cactem.level());
             if (livingentity == null && !cactemNeedsHealing) {
                 return false;
             } else if (cactemNeedsHealing) {
@@ -710,7 +755,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
                     this.cactem.stopUsingItem();
                     this.cactem.healCooldown = this.healIntervalMin + this.cactem.random.nextInt(this.healIntervalDiff + 1);
                 }
-            } else if (this.cactem.healCooldown <= 0 && this.cactemNeedsHeal(this.cactem, this.cactem.level)) {
+            } else if (this.cactem.healCooldown <= 0 && this.cactemNeedsHeal(this.cactem, this.cactem.level())) {
                 this.cactem.getNavigation().stop();
                 this.cactem.setHealing(true);
                 this.cactem.startUsingItem(this.cactem.getUsedItemHand());
@@ -882,7 +927,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, IAnimat
         }
 
         private boolean isElderNear() {
-            List<? extends CactemEntity> list = this.cactem.level.getEntitiesOfClass(CactemEntity.class, this.cactem.getBoundingBox().inflate(this.elderRadius, 16.0F, this.elderRadius));
+            List<? extends CactemEntity> list = this.cactem.level().getEntitiesOfClass(CactemEntity.class, this.cactem.getBoundingBox().inflate(this.elderRadius, 16.0F, this.elderRadius));
             for (CactemEntity nearbyCactem : list) {
                 if (nearbyCactem.isElder()) {
                     return true;
