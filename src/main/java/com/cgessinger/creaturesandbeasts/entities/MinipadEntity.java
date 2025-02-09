@@ -3,6 +3,7 @@ package com.cgessinger.creaturesandbeasts.entities;
 import com.cgessinger.creaturesandbeasts.init.CNBMinipadTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
 import com.cgessinger.creaturesandbeasts.util.MinipadType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
@@ -367,9 +368,10 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
-    public double getTick(Object o) {
-        return 0;
+    public double getTick(Object animatable) {
+        return this.tickCount + Minecraft.getInstance().getFrameTime();
     }
+
 }
 
      class MinipadFloatGoal extends FloatGoal {

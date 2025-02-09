@@ -285,9 +285,10 @@ public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
-    public double getTick(Object o) {
-        return 0;
+    public double getTick(Object animatable) {
+        return this.tickCount; // Use the entity's internal tick count
     }
+
 
 
     static class LilytadPanicGoal extends PanicGoal {

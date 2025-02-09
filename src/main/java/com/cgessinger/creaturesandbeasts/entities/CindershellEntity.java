@@ -850,9 +850,10 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     }
 
     @Override
-    public double getTick(Object o) {
-        return 0;
+    public double getTick(Object animatable) {
+        return this.tickCount; // Use the entity's internal tick count
     }
+
 
 
     static class CindershellFloatGoal extends FloatGoal {

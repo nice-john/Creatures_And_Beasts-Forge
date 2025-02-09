@@ -9,17 +9,17 @@ import software.bernie.geckolib.model.GeoModel;
 
 @OnlyIn(Dist.CLIENT)
 public class FlowerCrownModel extends GeoModel<FlowerCrownItem> {
-    private final ResourceLocation FLOWER_CROWN_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/armor/flower_crown.geo.json");
-    private final ResourceLocation FLOWER_CROWN_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/armor/flower_crown.png");
-    private final ResourceLocation FLOWER_CROWN_ANIMATION = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/flower_crown.json");
+    private static final ResourceLocation FLOWER_CROWN_MODEL = new ResourceLocation("cnb", "geo/armor/flower_crown.geo.json");
+    private static final ResourceLocation FLOWER_CROWN_TEXTURE = new ResourceLocation("cnb", "textures/armor/flower_crown.png");
+    private static final ResourceLocation FLOWER_CROWN_ANIMATION = new ResourceLocation("cnb", "animations/flower_crown.json");
 
     @Override
-    public ResourceLocation getModelResource(FlowerCrownItem object) {
+    public ResourceLocation getModelResource(FlowerCrownItem animatable) {
         return FLOWER_CROWN_MODEL;
     }
 
     @Override
-    public ResourceLocation getTextureResource(FlowerCrownItem object) {
+    public ResourceLocation getTextureResource(FlowerCrownItem animatable) {
         return FLOWER_CROWN_TEXTURE;
     }
 
@@ -28,3 +28,4 @@ public class FlowerCrownModel extends GeoModel<FlowerCrownItem> {
         return FLOWER_CROWN_ANIMATION;
     }
 }
+

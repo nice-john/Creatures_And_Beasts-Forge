@@ -162,7 +162,7 @@ processResources {
             File file = it
             jsonMinified++
             def oldLength = file.length()
-            file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
+            fileTree(dir: outputs.files.singleFile, include: '**/*.json')
             jsonBytesSaved += oldLength - file.length()
         }
         println('Minified ' + jsonMinified + ' json files. Saved ' + jsonBytesSaved + ' bytes. Took ' + (System.currentTimeMillis() - jsonMinifyStart) + 'ms.')

@@ -8,6 +8,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBLizardTypes;
 import com.cgessinger.creaturesandbeasts.util.LizardType;
 import com.cgessinger.creaturesandbeasts.util.Netable;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
@@ -88,8 +89,8 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     public BlockPos jukeboxPosition;
     int layEggCounter;
 
-    public LizardEntity(EntityType<LizardEntity> type, Level worldIn) {
-        super(type, worldIn);
+    public LizardEntity(EntityType<? extends LizardEntity> entityType, Level level) {
+        super(entityType, level);
 
         this.lookControl = new LookControl(this) {
             @Override
@@ -470,7 +471,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         if (this.entityData.get(LAYING_EGG)) {
             event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_dig"));
             return PlayState.CONTINUE;
-        } else if (!(walkAnimation.speed() > -0.13F && walkAnimation.speed() < 0.13F)) {
+        } else if (event.isMoving()) {
             event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_walk"));
             return PlayState.CONTINUE;
         } else if (this.isPartying()) {
@@ -482,9 +483,10 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        AnimationController<LizardEntity> controller = new AnimationController<>(this, "controller", 0, this::animationPredicate);
-        controllers.add(controller);
+        controllers.add(new AnimationController<>(this, "controller", 4, this::animationPredicate));
+
     }
+
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
@@ -492,9 +494,11 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public double getTick(Object o) {
-        return 0;
+    public double getTick(Object animatable) {
+        return this.tickCount; // Use the entity's internal tick count
     }
+
+
 
 
     static class LizardBreedGoal extends BreedGoal {

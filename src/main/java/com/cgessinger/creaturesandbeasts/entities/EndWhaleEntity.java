@@ -437,9 +437,10 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     @Override
-    public double getTick(Object o) {
-        return 0;
+    public double getTick(Object animatable) {
+        return this.tickCount; // Use the entity's internal tick count
     }
+
 
 
     static class EndWhaleLookControl extends LookControl {
@@ -452,6 +453,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
         @Override
         public void tick() {
+            super.tick();
             if (this.endWhale.yBodyRot != this.endWhale.getYHeadRot()) {
                 this.endWhale.yHeadRot = Mth.rotLerp(0.05F, this.endWhale.getYHeadRot(), this.endWhale.yBodyRot);
             }

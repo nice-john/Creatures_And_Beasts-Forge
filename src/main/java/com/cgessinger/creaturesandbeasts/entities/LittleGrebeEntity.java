@@ -255,9 +255,10 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    public double getTick(Object o) {
-        return 0;
+    public double getTick(Object animatable) {
+        return this.tickCount; // Use the entity's internal tick count
     }
+
 
     static class LittleGrebeRandomStrollGoal extends RandomStrollGoal {
         private static final Random rand = new Random();

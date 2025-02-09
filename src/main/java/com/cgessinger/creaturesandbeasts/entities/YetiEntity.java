@@ -515,9 +515,11 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     @Override
-    public double getTick(Object o) {
-        return 0;
+    public double getTick(Object animatable) {
+        return this.tickCount; // Use the entity's internal tick count
     }
+
+
 
 
     static class TargetPlayerGoal extends NearestAttackableTargetGoal<Player> {

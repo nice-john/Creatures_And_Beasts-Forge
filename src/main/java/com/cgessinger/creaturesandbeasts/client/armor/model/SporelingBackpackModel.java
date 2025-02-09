@@ -1,14 +1,13 @@
 package com.cgessinger.creaturesandbeasts.client.armor.model;
 
-import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.items.SporelingBackpackItem;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 
 public class SporelingBackpackModel extends GeoModel<SporelingBackpackItem> {
-    private static final ResourceLocation SPORELING_BACKPACK_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/armor/sporeling_backpack.geo.json");
-    private static final ResourceLocation SPORELING_BACKPACK_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/armor/sporeling_backpack.png");
-    private static final ResourceLocation SPORELING_BACKPACK_ANIMATION = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/sporeling_backpack.json");
+    private static final ResourceLocation SPORELING_BACKPACK_MODEL = new ResourceLocation("cnb", "geo/armor/sporeling_backpack.geo.json");
+    private static final ResourceLocation SPORELING_BACKPACK_TEXTURE = new ResourceLocation("cnb", "textures/armor/sporeling_backpack.png");
+    private static final ResourceLocation SPORELING_BACKPACK_ANIMATION = new ResourceLocation("cnb", "animations/sporeling_backpack.json");
 
     @Override
     public ResourceLocation getModelResource(SporelingBackpackItem animatable) {

@@ -1,6 +1,7 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
 import com.cgessinger.creaturesandbeasts.client.entity.model.LizardModel;
+import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
 import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -23,13 +24,31 @@ public class LizardRenderer extends GeoEntityRenderer<LizardEntity> {
     }
 
     @Override
-    public RenderType getRenderType(LizardEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
+    public RenderType getRenderType(LizardEntity animatable, ResourceLocation texture, MultiBufferSource bufferSource, float partialTick) {
         return RenderType.entityCutoutNoCull(texture);
     }
 
     @Override
-    public void preRender(PoseStack poseStack, LizardEntity animatable, BakedGeoModel model, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        float scale = animatable.isBaby() ? 0.4F : 0.8F;
-        poseStack.scale(scale, scale, scale);
+    public void preRender(
+            PoseStack poseStack,
+            LizardEntity animatable,
+            BakedGeoModel model,
+            MultiBufferSource bufferSource,
+            VertexConsumer buffer,
+            boolean isReRender,
+            float partialTick,
+            int packedLight,
+            int packedOverlay,
+            float red,
+            float green,
+            float blue,
+            float alpha
+    ) {
+        // Custom pre-render logic
+        if (animatable.isBaby()) {
+            poseStack.scale(0.5F, 0.5F, 0.5F); // Example of scaling the entity for baby models
+        }
+
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
     }
 }

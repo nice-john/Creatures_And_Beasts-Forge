@@ -4,19 +4,7 @@ import com.cgessinger.creaturesandbeasts.capabilities.CinderSwordCapability;
 import com.cgessinger.creaturesandbeasts.client.CNBClient;
 import com.cgessinger.creaturesandbeasts.config.CNBConfig;
 import com.cgessinger.creaturesandbeasts.events.CNBEvents;
-import com.cgessinger.creaturesandbeasts.init.CNBBiomeModifiers;
-import com.cgessinger.creaturesandbeasts.init.CNBBlocks;
-import com.cgessinger.creaturesandbeasts.init.CNBContainerTypes;
-import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
-import com.cgessinger.creaturesandbeasts.init.CNBItems;
-import com.cgessinger.creaturesandbeasts.init.CNBLilytadTypes;
-import com.cgessinger.creaturesandbeasts.init.CNBLizardTypes;
-import com.cgessinger.creaturesandbeasts.init.CNBLootModifiers;
-import com.cgessinger.creaturesandbeasts.init.CNBMinipadTypes;
-import com.cgessinger.creaturesandbeasts.init.CNBPaintingTypes;
-import com.cgessinger.creaturesandbeasts.init.CNBParticleTypes;
-import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
-import com.cgessinger.creaturesandbeasts.init.CNBSporelingTypes;
+import com.cgessinger.creaturesandbeasts.init.*;
 import com.cgessinger.creaturesandbeasts.world.gen.ModEntitySpawns;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -76,6 +64,7 @@ public class CreaturesAndBeasts {
         CNBLizardTypes.registerAll();
         CNBLilytadTypes.registerAll();
         CNBMinipadTypes.registerAll();
+        CNBCreativeTabs.CREATIVE_TABS.register(FMLJavaModLoadingContext.get().getModEventBus());
 
         MinecraftForge.EVENT_BUS.register(new CNBEvents());
 
@@ -113,6 +102,8 @@ public class CreaturesAndBeasts {
             ItemProperties.register(CNBItems.CACTEM_SPEAR.get(), new ResourceLocation("throwing"), (item, resourceLocation, entity, itemPropertyFunction) -> entity != null && entity.isUsingItem() && entity.getUseItem() == item ? 1.0F : 0.0F);
         });
     }
+
+
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
         CinderSwordCapability.register(event);

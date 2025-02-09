@@ -15,8 +15,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class EndWhaleModel extends GeoModel<EndWhaleEntity> {
     private static final ResourceLocation END_WHALE_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/end_whale/end_whale.geo.json");
-    private static final ResourceLocation END_WHALE_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/end_whale.png");
-    private static final ResourceLocation END_WHALE_ANIMATION = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/end_whale.animation.json");
+    private static final ResourceLocation END_WHALE_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/end_whale/end_whale.png");
+    private static final ResourceLocation END_WHALE_ANIMATION = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/end_whale.json");
 
     @Override
     public ResourceLocation getModelResource(EndWhaleEntity endWhaleEntity) {

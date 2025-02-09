@@ -14,14 +14,14 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
 @Mixin(GeoEntityRenderer.class)
 public class MixinGeoEntityRenderer<T extends LivingEntity & GeoEntity> {
 
-    //@ModifyVariable(
-        //    method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-        //    at = @At(value = "STORE"),
-       //     remap = false
-    //)
+    /*@ModifyVariable(
+            method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At(value = "STORE"),
+            remap = false
+    )*/
     private boolean CNB_stopSporelingRotatingOnPlayer(boolean value, T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         if (entity instanceof SporelingEntity && entity.getVehicle() instanceof Player) {
-            return false; // Prevent rotation if the Sporeling is riding a Player
+            return true; // Rotation if the Sporeling is riding a Player
         } else {
             return value; // Otherwise, use the default behavior
         }

@@ -5,6 +5,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
 import com.cgessinger.creaturesandbeasts.init.CNBSporelingTypes;
 import com.cgessinger.creaturesandbeasts.util.SporelingType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -15,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -261,6 +263,8 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         }
     }
 
+
+
     @Override
     public boolean isFood(ItemStack stack) {
         return false;
@@ -460,7 +464,35 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
             this.stopRiding();
             this.setOrderedToSit(false);
         }
+        if (this.getVehicle() instanceof Player player) {
+            // Offset for positioning the Sporeling on the player's back
+            double offsetX = 0.0; // Horizontal offset (side-to-side)
+            double offsetY = 0.3; // Vertical offset (up-down)
+            double offsetZ = -0.5; // Depth offset (front-back)
+
+            // Get the player's body rotation (instead of head rotation)
+            float yaw = player.yBodyRot * ((float) Math.PI / 180F);
+            double xOffset = offsetX * Math.cos(yaw) - offsetZ * Math.sin(yaw);
+            double zOffset = offsetX * Math.sin(yaw) + offsetZ * Math.cos(yaw);
+
+            // Update the Sporeling's position relative to the player
+            this.setPos(
+                    player.getX() + xOffset,
+                    player.getY() + player.getEyeHeight() - 1.2D + offsetY,
+                    player.getZ() + zOffset
+            );
+
+            // Make the Sporeling look around randomly
+            if (this.level().getGameTime() % 20 == 0) {
+                double targetYaw = player.yBodyRot + (this.random.nextDouble() - 0.5) * 60;
+                double targetPitch = (this.random.nextDouble() - 0.5) * 20;
+
+                this.setYRot(Mth.lerp(0.1F, this.getYRot(), (float) targetYaw));
+                this.setXRot(Mth.lerp(0.1F, this.getXRot(), (float) targetPitch));
+            }
+        }
     }
+
 
     @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
@@ -544,9 +576,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     @Override
-    public double getTick(Object o) {
-        return 0;
+    public double getTick(Object animatable) {
+        return this.tickCount; // Use the entity's internal tick count
     }
+
+
+
 
     static class WaveGoal extends LookAtPlayerGoal {
         private final SporelingEntity sporeling;
