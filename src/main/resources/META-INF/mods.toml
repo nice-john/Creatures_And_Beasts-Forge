@@ -17,7 +17,7 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
 [[dependencies.cnb]]
     modId = "forge"
     mandatory = true
-    versionRange = "[47.0.0,47.3.29)"
+    versionRange = "[47.0.0,47.3.29]"
     ordering = "NONE"
     side = "BOTH"
 
@@ -31,6 +31,6 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
 [[dependencies.cnb]]
     modId="geckolib"
     mandatory=true
-    versionRange="[4.0,4.4.9)"
+    versionRange="[4.0,4.7]"
     ordering="BEFORE"
     side="BOTH"
