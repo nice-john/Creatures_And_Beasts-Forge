@@ -69,13 +69,14 @@ public class CNBEvents {
     @SubscribeEvent
     public void onLootingCalculate(LootingLevelEvent event) {
         DamageSource damageSource = event.getDamageSource();
-        // Check if the damage source is indirect and the direct entity is a ThrownCactemSpearEntity
+        if (damageSource == null) return; // Prevent null crash
+
         if (damageSource.getDirectEntity() instanceof ThrownCactemSpearEntity thrownSpear) {
-            // Get the looting level from the spear item
             int lootingLevel = EnchantmentHelper.getTagEnchantmentLevel(Enchantments.MOB_LOOTING, thrownSpear.getSpear());
             event.setLootingLevel(lootingLevel);
         }
     }
+
 
     @SubscribeEvent
     public void onItemUnequip(LivingEvent.LivingTickEvent event) {

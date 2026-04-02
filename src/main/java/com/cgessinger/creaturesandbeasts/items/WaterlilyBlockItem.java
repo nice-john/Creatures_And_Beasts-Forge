@@ -14,6 +14,12 @@ public class WaterlilyBlockItem extends BlockItem {
         super(block, properties);
     }
 
+    protected boolean canSurvive(BlockPlaceContext context, BlockState state) {
+        // Ensure the block can only be placed in water
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        return level.getFluidState(pos).is(FluidTags.WATER);
+    }
     @Override
     protected boolean canPlace(BlockPlaceContext context, BlockState state) {
         // Ensure the block can only be placed in water
@@ -21,5 +27,6 @@ public class WaterlilyBlockItem extends BlockItem {
         BlockPos pos = context.getClickedPos();
         return level.getFluidState(pos).is(FluidTags.WATER) && state.canSurvive(level, pos);
     }
+
 }
 

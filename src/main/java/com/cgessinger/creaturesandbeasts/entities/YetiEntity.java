@@ -56,6 +56,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -98,6 +99,19 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         super(type, worldIn);
         this.setTame(false);
         this.eatTimer = 0;
+        this.setTame(false);
+        this.eatTimer = 0;
+
+        // Step over full blocks smoothly
+        this.setMaxUpStep(1.3F);
+
+        // (optional) teach pathfinder to avoid problem blocks
+        this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
+        this.setPathfindingMalus(BlockPathTypes.WATER_BORDER, -1.0F);
+        this.setPathfindingMalus(BlockPathTypes.LAVA, -1.0F);
+        this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 0.0F);
+        this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, 0.0F);
+        this.setPathfindingMalus(BlockPathTypes.LEAVES, -1.0F);
     }
 
     @Override
@@ -286,7 +300,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             this.setPassive(false);
             this.navigation.stop();
             this.setTarget(null);
-            this.level().broadcastEntityEvent(this, (byte)7);
+            this.level().broadcastEntityEvent(this, (byte) 7);
         }
     }
 
@@ -368,6 +382,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         return !this.isTame() && !this.hasCustomName();
     }
 
+    // 2) performAttack: level -> level()
     private void performAttack() {
         List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(1.5D, 1.0D, 1.5D));
 
@@ -375,14 +390,20 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             if ((entity instanceof Player && entity.getUUID().equals(this.getOwnerUUID())) || (entity instanceof YetiEntity && Objects.equals(this.getOwnerUUID(), ((YetiEntity) entity).getOwnerUUID()))) {
                 continue;
             }
+
+            this.playSound(CNBSoundEvents.YETI_HIT.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
+
             this.doHurtTarget(entity);
         }
     }
 
+
+    // 3) hurt: level -> level()
     @Override
     public boolean hurt(DamageSource source, float amount) {
         if (this.isBaby()) {
-            List<YetiEntity> list = this.level().getEntitiesOfClass(YetiEntity.class, this.getBoundingBox().inflate(8.0D, 4.0D, 8.0D));
+            List<YetiEntity> list = this.level().getEntitiesOfClass(
+                    YetiEntity.class, this.getBoundingBox().inflate(8.0D, 4.0D, 8.0D));
 
             for (YetiEntity yeti : list) {
                 if (!yeti.isBaby() && !yeti.isTame()) {
@@ -458,37 +479,34 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
 
-
     private <E extends GeoAnimatable> void soundListener(SoundKeyframeEvent<E> event) {
-        String sound = event.getKeyframeData().getSound(); // Retrieve the sound data
+        String sound = event.getKeyframeData().getSound(); // already working
+
         if ("hit.ground.sound".equals(sound)) {
+            // play the sound (as before)
             this.playSound(CNBSoundEvents.YETI_HIT.get(), 0.4F, 1.0F);
+
+            // spawn the particles at the same moment (client-only)
+            if (this.level().isClientSide) {
+                net.minecraft.client.particle.ParticleEngine pe = net.minecraft.client.Minecraft.getInstance().particleEngine;
+                net.minecraft.core.BlockPos pos = this.blockPosition();
+                for (int x = pos.getX() - 1; x <= pos.getX() + 1; x++) {
+                    for (int z = pos.getZ() - 1; z <= pos.getZ() + 1; z++) {
+                        net.minecraft.core.BlockPos p = new net.minecraft.core.BlockPos(x, pos.getY() - 1, z);
+                        pe.destroy(p, this.level().getBlockState(p));
+                    }
+                }
+            }
         } else if ("yeti_ambient".equals(sound)) {
             this.playSound(CNBSoundEvents.YETI_AMBIENT.get(), 1.0F, 1.0F);
         }
     }
 
 
-    private static final DataTicket<String> CUSTOM_PARTICLE_EFFECT = new DataTicket<>("custom_particle_effect", String.class);
 
-    /*private <E extends GeoAnimatable> void particleListener(ParticleKeyframeEvent<E> event) {
-        // Retrieve the effect name using the custom DataTicket
-        String effect = event.getData(CUSTOM_PARTICLE_EFFECT);
-        ParticleEngine manager = Minecraft.getInstance().particleEngine;
-        BlockPos pos = this.blockPosition();
-
-        if ("hit.ground.particle".equals(effect)) {
-            for (int x = pos.getX() - 1; x <= pos.getX() + 1; x++) {
-                for (int z = pos.getZ() - 1; z <= pos.getZ() + 1; z++) {
-                    BlockPos newPos = new BlockPos(x, pos.getY() - 1, z);
-                    manager.destroy(newPos, this.level().getBlockState(newPos));
-                }
-            }
-        } else if ("eat.particle".equals(effect)) {
-            spawnParticles(ParticleTypes.HAPPY_VILLAGER);
-        }
+    private static float parseFloatSafe(String s, float def) {
+        try { return Float.parseFloat(s); } catch (Exception e) { return def; }
     }
-*/
 
     public void spawnParticles(ParticleOptions data) {
         for (int i = 0; i < 7; ++i) {
@@ -520,8 +538,6 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
 
-
-
     static class TargetPlayerGoal extends NearestAttackableTargetGoal<Player> {
         private final YetiEntity yeti;
 
@@ -533,12 +549,10 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         @Override
         public boolean canUse() {
             if (!this.yeti.isBaby() && !this.yeti.isPassive() && super.canUse()) {
-                for (YetiEntity yeti : yeti.level().getEntitiesOfClass(YetiEntity.class, yeti.getBoundingBox().inflate(8.0D, 4.0D, 8.0D))) {
-                    if (yeti.isBaby()) {
-                        return true;
-                    }
+                for (YetiEntity y : yeti.level().getEntitiesOfClass(YetiEntity.class,
+                        yeti.getBoundingBox().inflate(8.0D, 4.0D, 8.0D))) {
+                    if (y.isBaby()) return true;
                 }
-
             }
             return false;
         }
@@ -564,7 +578,10 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
         @Override
         public boolean canUse() {
-            if (this.yeti.getTarget() instanceof TamableAnimal tamableAnimal && this.yeti.isTame() && this.yeti.getOwner() != null && this.yeti.getOwner().equals(tamableAnimal.getOwner())) {
+            if (this.yeti.getTarget() instanceof TamableAnimal tam
+                    && this.yeti.isTame()
+                    && this.yeti.getOwner() != null
+                    && this.yeti.getOwner().equals(tam.getOwner())) {
                 return false;
             }
             return super.canUse() && !this.yeti.isBaby() && this.yeti.getTarget() != this.yeti.getOwner();
@@ -572,8 +589,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
         @Override
         protected void checkAndPerformAttack(LivingEntity entity, double distance) {
-            double d0 = this.getAttackReachSqr(entity);
-            if (distance <= d0 && this.yeti.attackTimer <= 0 && this.ticksUntilNextAttack <= 0) {
+            double reach = this.getAttackReachSqr(entity);
+            if (distance <= reach && this.yeti.attackTimer <= 0 && this.ticksUntilNextAttack <= 0) {
                 this.resetAttackCooldown();
             }
         }

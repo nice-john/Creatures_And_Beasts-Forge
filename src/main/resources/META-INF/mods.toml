@@ -1,11 +1,11 @@
 modLoader="javafml"
 loaderVersion="[47]"
 license="LGPLv3"
-issueTrackerURL="https://github.com/CreaturesAndBeasts/Creatures_And_Beasts-Forge/issues"
+issueTrackerURL="https://github.com/nice-john/Creatures_And_Beasts-Forge/issues"
 [[mods]]
 modId="cnb"
 version="${file.jarVersion}"
-displayName="Creatures and Beasts"
+displayName="Creatures and Beasts: Unofficial Port"
 # updateJSONURL="http://myurl.me/"
 displayURL="https://github.com/CreaturesAndBeasts/Creatures_And_Beasts-Forge"
 logoFile="logo.png"
@@ -17,7 +17,7 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
 [[dependencies.cnb]]
     modId = "forge"
     mandatory = true
-    versionRange = "[47.0.0,47.3.29]"
+    versionRange = "[47.0.0,47.9.0]"
     ordering = "NONE"
     side = "BOTH"
 
@@ -31,6 +31,6 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
 [[dependencies.cnb]]
     modId="geckolib"
     mandatory=true
-    versionRange="[4.0,4.7]"
+    versionRange="[4.0,4.9]"
     ordering="BEFORE"
     side="BOTH"

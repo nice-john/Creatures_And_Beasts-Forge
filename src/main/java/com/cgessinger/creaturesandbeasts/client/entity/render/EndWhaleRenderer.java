@@ -34,22 +34,26 @@ public class EndWhaleRenderer extends GeoEntityRenderer<EndWhaleEntity> {
     @Override
     protected void applyRotations(EndWhaleEntity endWhale, PoseStack matrixStackIn, float ageInTicks, float rotationYaw, float partialTicks) {
         super.applyRotations(endWhale, matrixStackIn, ageInTicks, rotationYaw, partialTicks);
-        float whaleRotY = endWhale.getViewYRot(partialTicks);
-        float wantedRotY;
-        float whaleRotX = endWhale.getViewXRot(partialTicks);
-        float wantedRotX;
+
+        // Only apply visual roll/tilt when ridden, not rotation changes
         Entity rider = endWhale.getFirstPassenger();
 
         if (rider != null) {
-            wantedRotY = rider.getViewYRot(partialTicks);
-            wantedRotX = rider.getViewXRot(partialTicks);
-        } else {
-            wantedRotY = endWhale.yBodyRot;
-            wantedRotX = endWhale.getXRot();
+            // Get smooth interpolated rotations
+            float whaleRotY = Mth.rotLerp(partialTicks, endWhale.yRotO, endWhale.getYRot());
+            float wantedRotY = Mth.rotLerp(partialTicks, rider.yRotO, rider.getYRot());
+
+            float whaleRotX = Mth.lerp(partialTicks, endWhale.xRotO, endWhale.getXRot());
+            float wantedRotX = Mth.lerp(partialTicks, rider.xRotO, rider.getXRot());
+
+            // Apply ONLY the difference for banking/tilting effect
+            // Reduce these multipliers if it still looks too jerky
+            float rollAmount = Mth.wrapDegrees(whaleRotY - wantedRotY) * 0.25F; // Reduced from /2 (0.5)
+            float pitchAmount = Mth.wrapDegrees(whaleRotX - wantedRotX) * 0.5F; // Reduced from 1.0
+
+            matrixStackIn.mulPose(Axis.ZP.rotationDegrees(rollAmount));
+            matrixStackIn.mulPose(Axis.XP.rotationDegrees(pitchAmount));
         }
-
-        matrixStackIn.mulPose(Axis.ZP.rotationDegrees(Mth.wrapDegrees(whaleRotY - wantedRotY) / 2));
-        matrixStackIn.mulPose(Axis.XP.rotationDegrees(Mth.wrapDegrees(whaleRotX - wantedRotX)));
-
+        // When not ridden, no additional rotations needed - let vanilla handle it
     }
 }

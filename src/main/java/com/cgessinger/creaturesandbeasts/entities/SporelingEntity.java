@@ -457,6 +457,10 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return this.getSporelingType().getHostility() == SporelingType.SporelingHostility.HOSTILE;
     }
 
+    // Add these fields to your Sporeling class:
+    private float targetYaw = 0F;
+    private float targetPitch = 0F;
+
     @Override
     public void rideTick() {
         super.rideTick();
@@ -467,7 +471,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         if (this.getVehicle() instanceof Player player) {
             // Offset for positioning the Sporeling on the player's back
             double offsetX = 0.0; // Horizontal offset (side-to-side)
-            double offsetY = 0.3; // Vertical offset (up-down)
+            double offsetY = .8; // Vertical offset (up-down)
             double offsetZ = -0.5; // Depth offset (front-back)
 
             // Get the player's body rotation (instead of head rotation)
@@ -482,14 +486,19 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
                     player.getZ() + zOffset
             );
 
-            // Make the Sporeling look around randomly
-            if (this.level().getGameTime() % 20 == 0) {
-                double targetYaw = player.yBodyRot + (this.random.nextDouble() - 0.5) * 60;
-                double targetPitch = (this.random.nextDouble() - 0.5) * 20;
-
-                this.setYRot(Mth.lerp(0.1F, this.getYRot(), (float) targetYaw));
-                this.setXRot(Mth.lerp(0.1F, this.getXRot(), (float) targetPitch));
+            // Update target look direction every 60-100 ticks (3-5 seconds)
+            if (this.level().getGameTime() % (60 + this.random.nextInt(40)) == 0) {
+                this.targetYaw = player.yBodyRot + (float)((this.random.nextDouble() - 0.5) * 60);
+                this.targetPitch = (float)((this.random.nextDouble() - 0.5) * 20);
             }
+
+            // Smoothly interpolate towards target every tick
+            this.setYRot(Mth.rotLerp(0.05F, this.getYRot(), this.targetYaw));
+            this.setXRot(Mth.lerp(0.05F, this.getXRot(), this.targetPitch));
+
+            // Also update old rotations for smooth rendering
+            this.yRotO = Mth.rotLerp(0.05F, this.yRotO, this.targetYaw);
+            this.xRotO = Mth.lerp(0.05F, this.xRotO, this.targetPitch);
         }
     }
 
