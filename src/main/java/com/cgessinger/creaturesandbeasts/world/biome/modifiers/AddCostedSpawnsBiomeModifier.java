@@ -10,17 +10,17 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraftforge.common.world.BiomeModifier;
-import net.minecraftforge.common.world.MobSpawnSettingsBuilder;
-import net.minecraftforge.common.world.ModifiableBiomeInfo;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.world.BiomeModifier;
+import net.neoforged.neoforge.common.world.MobSpawnSettingsBuilder;
+import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.List;
 
 public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityType, List<CostSpawnerData> spawnerData) implements BiomeModifier {
 
     public static final Codec<AddCostedSpawnsBiomeModifier> CODEC = RecordCodecBuilder.create(builder -> builder.group(
-            ForgeRegistries.ENTITY_TYPES.getCodec().fieldOf("entityType").forGetter(AddCostedSpawnsBiomeModifier::entityType),
+            BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entityType").forGetter(AddCostedSpawnsBiomeModifier::entityType),
             CostSpawnerData.LIST_CODEC.fieldOf("spawns").forGetter(AddCostedSpawnsBiomeModifier::spawnerData)
     ).apply(builder, AddCostedSpawnsBiomeModifier::new));
 

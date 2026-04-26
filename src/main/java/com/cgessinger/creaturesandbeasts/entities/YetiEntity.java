@@ -56,17 +56,17 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.keyframe.event.ParticleKeyframeEvent;
-import software.bernie.geckolib.core.keyframe.event.SoundKeyframeEvent;
-import software.bernie.geckolib.core.object.DataTicket;
-import software.bernie.geckolib.core.object.PlayState;
+import net.minecraft.world.level.pathfinder.PathType;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.keyframe.event.ParticleKeyframeEvent;
+import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
+import software.bernie.geckolib.constant.dataticket.DataTicket;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import software.bernie.geckolib.constant.DataTickets;
 
@@ -97,30 +97,30 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
     public YetiEntity(EntityType<YetiEntity> type, Level worldIn) {
         super(type, worldIn);
-        this.setTame(false);
+        this.setTame(false, false);
         this.eatTimer = 0;
-        this.setTame(false);
+        this.setTame(false, false);
         this.eatTimer = 0;
 
         // Step over full blocks smoothly
-        this.setMaxUpStep(1.3F);
+        /* TODO[1.21.1 port]: setMaxUpStep removed; use Attributes.STEP_HEIGHT modifier */
 
         // (optional) teach pathfinder to avoid problem blocks
-        this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
-        this.setPathfindingMalus(BlockPathTypes.WATER_BORDER, -1.0F);
-        this.setPathfindingMalus(BlockPathTypes.LAVA, -1.0F);
-        this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 0.0F);
-        this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, 0.0F);
-        this.setPathfindingMalus(BlockPathTypes.LEAVES, -1.0F);
+        this.setPathfindingMalus(PathType.WATER, -1.0F);
+        this.setPathfindingMalus(PathType.WATER_BORDER, -1.0F);
+        this.setPathfindingMalus(PathType.LAVA, -1.0F);
+        this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
+        this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
+        this.setPathfindingMalus(PathType.LEAVES, -1.0F);
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, false);
-        this.entityData.define(EATING, false);
-        this.entityData.define(PASSIVE, false);
-        this.entityData.define(HELD_ITEM, ItemStack.EMPTY);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, false);
+        builder.define(EATING, false);
+        builder.define(PASSIVE, false);
+        builder.define(HELD_ITEM, ItemStack.EMPTY);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     @Override
-    public boolean canBeLeashed(Player player) {
+    public boolean canBeLeashed() {
         return false;
     }
 
@@ -240,7 +240,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             spawnDataIn = new AgeableMobGroupData(1.0F);
         }
 
-        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
     }
 
     @Override
@@ -276,9 +276,10 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         super.setAge(age);
         double MAX_HEALTH = this.getAttribute(Attributes.MAX_HEALTH).getValue();
         if (isBaby() && MAX_HEALTH > this.babyHealth) {
-            Multimap<Attribute, AttributeModifier> multimap = HashMultimap.create();
-            multimap.put(Attributes.MAX_HEALTH, new AttributeModifier(this.healthReductionUUID, "yeti_health_reduction", this.babyHealth - MAX_HEALTH, AttributeModifier.Operation.ADDITION));
-            this.getAttributes().addTransientAttributeModifiers(multimap);
+            this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(new AttributeModifier(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_health_reduction"),
+                    this.babyHealth - MAX_HEALTH,
+                    AttributeModifier.Operation.ADD_VALUE));
             this.setHealth(this.babyHealth);
         }
     }
@@ -290,7 +291,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     protected void ageBoundaryReached() {
         super.ageBoundaryReached();
         float percentHealth = this.getHealth() / this.babyHealth;
-        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(this.healthReductionUUID);
+        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_health_reduction"));
         this.setHealth(percentHealth * (float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
         this.setEating(false);
         this.setHolding(ItemStack.EMPTY);
@@ -597,13 +598,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             return super.canUse() && !this.yeti.isBaby() && this.yeti.getTarget() != this.yeti.getOwner();
         }
 
-        @Override
-        protected void checkAndPerformAttack(LivingEntity entity, double distance) {
-            double reach = this.getAttackReachSqr(entity);
-            if (distance <= reach && this.yeti.attackTimer <= 0 && this.ticksUntilNextAttack <= 0) {
-                this.resetAttackCooldown();
-            }
-        }
+        // TODO[1.21.1 port]: re-implement custom attack timing. MeleeAttackGoal.getAttackReachSqr/ticksUntilNextAttack
+        // are no longer accessible; consider overriding canPerformAttack(LivingEntity) instead.
 
         @Override
         public void stop() {

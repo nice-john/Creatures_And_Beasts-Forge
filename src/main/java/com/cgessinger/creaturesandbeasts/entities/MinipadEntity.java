@@ -47,24 +47,24 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraftforge.common.IForgeShearable;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import net.neoforged.neoforge.common.IShearable;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimatable {
+public class MinipadEntity extends Animal implements IShearable, GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> GLOWING = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
@@ -77,7 +77,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
     public MinipadEntity(EntityType<? extends Animal> type, Level worldIn) {
         super(type, worldIn);
         this.shearedTimer = 0;
-        this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.setPathfindingMalus(PathType.WATER, 0.0F);
 
         this.lookControl = new LookControl(this) {
             @Override
@@ -91,11 +91,11 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
 
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TYPE, CNBMinipadTypes.PINK.getId().toString());
-        this.entityData.define(SHEARED, false);
-        this.entityData.define(GLOWING, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TYPE, CNBMinipadTypes.PINK.getId().toString());
+        builder.define(SHEARED, false);
+        builder.define(GLOWING, false);
     }
 
     @Override
@@ -167,7 +167,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag tag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
         switch (this.random.nextInt(3)) {
             case 0:
             default:
@@ -181,7 +181,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
                 break;
         }
 
-        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData, tag);
+        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
     }
 
     public static boolean checkMinipadSpawnRules(EntityType<MinipadEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
@@ -219,10 +219,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
         return this.isAlive();
     }
 
-    @Override
-    public boolean canBreatheUnderwater() {
-        return true;
-    }
+    // TODO[1.21.1 port]: canBreatheUnderwater no longer overrideable
 
     @Override
     public boolean canStandOnFluid(FluidState fluidState) {
@@ -311,7 +308,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
-    public int getExperienceReward() {
+    public int getBaseExperienceReward() {
         return 2 + this.level().random.nextInt(3);
     }
 
@@ -369,7 +366,7 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
 
     @Override
     public double getTick(Object animatable) {
-        return this.tickCount + Minecraft.getInstance().getFrameTime();
+        return this.tickCount + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
     }
 
 }

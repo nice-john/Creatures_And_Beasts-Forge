@@ -46,13 +46,13 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.EnumSet;
@@ -68,7 +68,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     public EndWhaleEntity(EntityType<EndWhaleEntity> entityType, Level level) {
         super(entityType, level);
-        this.setTame(false);
+        this.setTame(false, false);
         this.moveControl = new FlyingMoveControl(this, 2, true);
         this.lookControl = new EndWhaleLookControl(this);
         this.setNoGravity(true); // flyers feel better with gravity disabled
@@ -89,9 +89,9 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(SADDLED, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SADDLED, false);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.getBoolean("Saddled")) {
-            this.equipSaddle(SoundSource.PLAYERS);
+            this.equipSaddle(ItemStack.EMPTY, SoundSource.PLAYERS);
         }
     }
 
@@ -120,7 +120,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     @Override public boolean isSaddleable() { return this.isTame(); }
 
     @Override
-    public void equipSaddle(@Nullable SoundSource soundSource) {
+    public void equipSaddle(ItemStack stack, @Nullable SoundSource soundSource) {
         this.entityData.set(SADDLED, true);
         this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, 1.0F);
     }
@@ -145,7 +145,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     public void positionPassenger(Entity rider) {
         if (this.hasPassenger(rider)) {
-            double verticalOffset = this.getPassengersRidingOffset() + rider.getMyRidingOffset();
+            double verticalOffset = this.getPassengersRidingOffset() + 0.0;
             float whaleRoll = this.getWhaleRoll(rider) * Mth.DEG_TO_RAD;
             float whalePitch = this.getWhalePitch(rider) * Mth.DEG_TO_RAD;
 
@@ -172,9 +172,9 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         rider.setYHeadRot(rider.getYRot());
     }
 
-    @Override
+    // TODO[1.21.1 port]: getPassengersRidingOffset removed; use getPassengerAttachmentPoint
     public double getPassengersRidingOffset() {
-        return this.getDimensions(this.getPose()).height * 0.70D;
+        return this.getDimensions(this.getPose()).height() * 0.70D;
     }
 
     private float getWhaleRoll(Entity rider) {
@@ -199,7 +199,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     public boolean rideableUnderWater() { return true; }
-    @Override public boolean canBreatheUnderwater() { return true; }
+    // TODO[1.21.1 port]: canBreatheUnderwater is now non-overrideable; use canDrownInFluidType / setAirSupply
 
     // Movement
     public void travel(Vec3 travelVector) {
@@ -293,7 +293,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         } else if (!this.isTame()) {
             if (itemstack.is(END_WHALE_FOOD)) {
                 if (!player.getAbilities().instabuild) itemstack.shrink(1);
-                if (this.random.nextInt(10) == 0 && !net.minecraftforge.event.ForgeEventFactory.onAnimalTame(this, player)) {
+                if (this.random.nextInt(10) == 0 && !net.neoforged.neoforge.event.EventHooks.onAnimalTame(this, player)) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);
@@ -318,7 +318,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob endWhale) { return null; }
 
     @Override
-    public int getExperienceReward() {
+    public int getBaseExperienceReward() {
         return 12 + this.level().random.nextInt(5);
     }
 
@@ -373,9 +373,9 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         return this.level().isClientSide ? this.tickCount + clientPartialTick() : this.tickCount;
     }
 
-    @net.minecraftforge.api.distmarker.OnlyIn(net.minecraftforge.api.distmarker.Dist.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     private static float clientPartialTick() {
-        return net.minecraft.client.Minecraft.getInstance().getPartialTick();
+        return net.minecraft.client.Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
     }
 
     // ---------------- Controls/Goals ----------------

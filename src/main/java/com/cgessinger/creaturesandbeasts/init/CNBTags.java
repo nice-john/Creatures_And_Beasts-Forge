@@ -16,8 +16,7 @@ public class CNBTags {
         public static final TagKey<Item> SPORELING_FOOD = tag("sporeling_food");
 
         private static TagKey<Item> tag(String name) {
-            return ItemTags.create(new ResourceLocation(CreaturesAndBeasts.MOD_ID, name));
+            return ItemTags.create(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name));
         }
     }
-
 }

@@ -4,10 +4,10 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
 import com.cgessinger.creaturesandbeasts.entities.LittleGrebeEntity;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
-import software.bernie.geckolib.core.animation.AnimationState;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.model.data.EntityModelData;
 
@@ -16,13 +16,13 @@ import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
 
 @OnlyIn(Dist.CLIENT)
 public class LittleGrebeModel extends GeoModel<LittleGrebeEntity> {
-    private static final ResourceLocation LITTLE_GREBE_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe.geo.json");
-    private static final ResourceLocation LITTLE_GREBE_CHICK_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe_chick.geo.json");
+    private static final ResourceLocation LITTLE_GREBE_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe.geo.json");
+    private static final ResourceLocation LITTLE_GREBE_CHICK_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe_chick.geo.json");
 
-    private static final ResourceLocation LITTLE_GREBE_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/little_grebe/little_grebe.png");
-    private static final ResourceLocation LITTLE_GREBE_CHICK_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/little_grebe/little_grebe_chick.png");
+    private static final ResourceLocation LITTLE_GREBE_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/little_grebe/little_grebe.png");
+    private static final ResourceLocation LITTLE_GREBE_CHICK_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/little_grebe/little_grebe_chick.png");
 
-    private static final ResourceLocation LITTLE_GREBE_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/little_grebe.json");
+    private static final ResourceLocation LITTLE_GREBE_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/little_grebe.json");
 
     @Override
     public ResourceLocation getModelResource(LittleGrebeEntity entity) {
@@ -43,7 +43,7 @@ public class LittleGrebeModel extends GeoModel<LittleGrebeEntity> {
     public void setCustomAnimations(LittleGrebeEntity animatable, long instanceId, AnimationState<LittleGrebeEntity> animationState) {
         super.setCustomAnimations(animatable, instanceId, animationState);
 
-        CoreGeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
+        GeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
 
         if (head_rotation != null) {
             // Use the correct DataTicket for EntityModelData

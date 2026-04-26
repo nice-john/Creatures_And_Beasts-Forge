@@ -57,13 +57,7 @@ public class ConvertItemGoal extends Goal {
     }
 
     private boolean hasCurse(ItemStack stack) {
-        Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
-        for (Map.Entry<Enchantment, Integer> entry : map.entrySet()) {
-            if (entry.getKey().isCurse()) {
-                return true;
-            }
-        }
-
+        // TODO[1.21.1 port]: Enchantment.isCurse() removed; replace with tag check (EnchantmentTags.CURSE).
         return false;
     }
 
@@ -92,23 +86,9 @@ public class ConvertItemGoal extends Goal {
         if (entityIn.getHolding().is(Items.DIRT)) {
             entityIn.spawnAtLocation(new ItemStack(Items.MYCELIUM, 1));
         } else {
+            // TODO[1.21.1 port]: re-implement curse-stripping. Old code stripped curse enchantments and
+            // damaged the item; needs ItemEnchantments DataComponent rewrite.
             ItemStack returnItem = entityIn.getHolding().copy();
-
-            Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(returnItem);
-            for (Map.Entry<Enchantment, Integer> entry : map.entrySet()) {
-                if (entry.getKey().isCurse()) {
-                    map.remove(entry.getKey(), entry.getValue());
-                    if (returnItem.isDamageableItem()) {
-                        float percent = entityIn.getRandom().nextFloat() * 0.5F;
-                        int damage = (int) (percent * returnItem.getMaxDamage() + returnItem.getDamageValue());
-                        int setDamage = Math.min(damage, (int) (returnItem.getMaxDamage() * 0.9F));
-                        returnItem.setDamageValue(Math.max(returnItem.getDamageValue(), setDamage));
-                    }
-                    EnchantmentHelper.setEnchantments(map, returnItem);
-                    break;
-                }
-            }
-
             entityIn.spawnAtLocation(returnItem);
             if (entityIn.level() instanceof ServerLevel serverLevel) {
                 ExperienceOrb.award(serverLevel, entityIn.position(), entityIn.getRandom().nextInt(16) + 1);

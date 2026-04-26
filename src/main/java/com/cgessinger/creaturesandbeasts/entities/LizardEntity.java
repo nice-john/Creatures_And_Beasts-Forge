@@ -62,13 +62,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 
@@ -105,14 +105,14 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TYPE, CNBLizardTypes.DESERT.getId().toString());
-        this.entityData.define(HAS_EGG, false);
-        this.entityData.define(LAYING_EGG, false);
-        this.entityData.define(FROM_NET, false);
-        this.entityData.define(PARTYING, false);
-        this.entityData.define(SAD, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TYPE, CNBLizardTypes.DESERT.getId().toString());
+        builder.define(HAS_EGG, false);
+        builder.define(LAYING_EGG, false);
+        builder.define(FROM_NET, false);
+        builder.define(PARTYING, false);
+        builder.define(SAD, false);
     }
 
     @Override
@@ -196,14 +196,12 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
         Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
 
-        if (reason == MobSpawnType.SPAWN_EGG && dataTag != null && dataTag.contains("LizardType")) {
-            LizardType type = LizardType.getById(dataTag.getString("LizardType"));
-            if (type != null) {
-                this.setLizardType(type);
-            }
+        // TODO[1.21.1 port]: restore variant tagging via DataComponent (was: dataTag.getString("LizardType"))
+        if (false) {
+            // placeholder
         } else {
             if (biome.is(Biomes.DESERT) || biome.is(BiomeTags.IS_BADLANDS)) {
                 if (random.nextBoolean()) {
@@ -241,15 +239,9 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         // 1/10 chance to change variant to sad lizard variant
         this.setSad(this.getRandom().nextInt(10) == 0);
 
-        if (dataTag != null && dataTag.contains("Health")) {
-            this.setHealth(dataTag.getFloat("Health"));
-        }
+        // TODO[1.21.1 port]: restore Health/Name carryover from spawn-egg item NBT via DataComponent
 
-        if (dataTag != null && dataTag.contains("Name")) {
-            this.setCustomName(Component.nullToEmpty(dataTag.getString("Name")));
-        }
-
-        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
     }
 
     @Override
@@ -264,7 +256,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public boolean canBeLeashed(Player player) {
+    public boolean canBeLeashed() {
         return false;
     }
 
@@ -294,10 +286,10 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
 
     @Override
     public void saveToNetTag(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = new net.minecraft.nbt.CompoundTag() /* TODO[1.21.1 port]: was stack.getOrCreateTag() */;
 
         if (this.hasCustomName()) {
-            stack.setHoverName(this.getCustomName());
+            /* TODO[1.21.1 port]: was setHoverName */ if (false) stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, this.getCustomName());
         }
         if (this.isNoAi()) {
             tag.putBoolean("NoAI", this.isNoAi());

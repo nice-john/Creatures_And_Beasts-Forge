@@ -49,7 +49,7 @@ public class CNBEntityBucketItem extends BucketItem {
         Entity entity = this.entityTypeSupplier.get().spawn(worldIn, stack, null, pos, MobSpawnType.BUCKET, true, true);
         if (entity instanceof Bucketable) {
             Bucketable bucketable = (Bucketable) entity;
-            bucketable.loadFromBucketTag(stack.getOrCreateTag());
+            bucketable.loadFromBucketTag(new net.minecraft.nbt.CompoundTag() /* TODO[1.21.1 port]: was stack.getOrCreateTag() */);
             bucketable.setFromBucket(true);
         }
     }

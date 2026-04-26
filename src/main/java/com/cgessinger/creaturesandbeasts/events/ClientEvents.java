@@ -19,23 +19,14 @@ import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
 import com.cgessinger.creaturesandbeasts.items.GlowingFlowerCrownItem;
 import com.cgessinger.creaturesandbeasts.items.SporelingBackpackItem;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import com.cgessinger.creaturesandbeasts.client.entity.render.*;
-import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
-import com.cgessinger.creaturesandbeasts.items.*;
-import net.minecraft.client.renderer.entity.ThrownItemRenderer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import software.bernie.geckolib.renderer.GeoArmorRenderer;
 
 
-@Mod.EventBusSubscriber(modid = CreaturesAndBeasts.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = CreaturesAndBeasts.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientEvents {
 
     @SubscribeEvent

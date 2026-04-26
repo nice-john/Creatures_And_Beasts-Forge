@@ -44,7 +44,7 @@ public class LizardEggItem extends BlockItem {
     public InteractionResult useOn(UseOnContext context) {
         if (context.isSecondaryUseActive()) {
             InteractionResult interactionresult = this.place(new BlockPlaceContext(context));
-            if (!interactionresult.consumesAction() && this.isEdible()) {
+            if (!interactionresult.consumesAction() && true /* TODO[1.21.1 port]: was isEdible() */) {
                 InteractionResult interactionresult1 = this.use(context.getLevel(), context.getPlayer(), context.getHand()).getResult();
                 return interactionresult1 == InteractionResult.CONSUME ? InteractionResult.CONSUME_PARTIAL : interactionresult1;
             } else {

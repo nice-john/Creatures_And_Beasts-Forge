@@ -54,20 +54,20 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.GeoAnimatable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.keyframe.event.SoundKeyframeEvent;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 
@@ -114,14 +114,14 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ELDER, false);
-        this.entityData.define(ATTACKING, false);
-        this.entityData.define(SPEAR_SHOWN, true);
-        this.entityData.define(HEALING, false);
-        this.entityData.define(TRADING, false);
-        this.entityData.define(IDLE_ANIM, 0);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ELDER, false);
+        builder.define(ATTACKING, false);
+        builder.define(SPEAR_SHOWN, true);
+        builder.define(HEALING, false);
+        builder.define(TRADING, false);
+        builder.define(IDLE_ANIM, 0);
     }
 
     @Override
@@ -205,12 +205,12 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    public boolean canBeLeashed(Player player) {
+    public boolean canBeLeashed() {
         return false;
     }
 
     @Override
-    public int getExperienceReward() {
+    public int getBaseExperienceReward() {
         return 3 + this.level().random.nextInt(4);
     }
 
@@ -220,7 +220,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroup, @Nullable CompoundTag tag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroup) {
         double elderChance = level.getRandom().nextDouble();
 
         if (spawnGroup == null) {
@@ -239,7 +239,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
         this.reassessGoals();
 
-        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroup, tag);
+        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroup);
     }
 
     @Override
@@ -272,9 +272,10 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         super.setAge(age);
         double MAX_HEALTH = this.getAttribute(Attributes.MAX_HEALTH).getValue();
         if (isBaby() && MAX_HEALTH > this.babyHealth) {
-            Multimap<Attribute, AttributeModifier> multimap = HashMultimap.create();
-            multimap.put(Attributes.MAX_HEALTH, new AttributeModifier(this.healthReductionUUID, "cactem_health_reduction", this.babyHealth - MAX_HEALTH, AttributeModifier.Operation.ADDITION));
-            this.getAttributes().addTransientAttributeModifiers(multimap);
+            this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(new AttributeModifier(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "cactem_health_reduction"),
+                    this.babyHealth - MAX_HEALTH,
+                    AttributeModifier.Operation.ADD_VALUE));
             this.setHealth(this.babyHealth);
         }
     }
@@ -295,7 +296,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         }
 
         float percentHealth = this.getHealth() / this.babyHealth;
-        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(this.healthReductionUUID);
+        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "cactem_health_reduction"));
         this.setHealth(percentHealth * (float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
 
         if (!this.level().isClientSide) {
@@ -309,8 +310,8 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
-        return dimensions.height * 0.5F;
+    /* TODO[1.21.1 port]: getStandingEyeHeight removed */ protected float getStandingEyeHeight_REMOVED(Pose pose, EntityDimensions dimensions) {
+        return dimensions.height() * 0.5F;
     }
 
     @Nullable

@@ -42,21 +42,21 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.IForgeShearable;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import net.neoforged.neoforge.common.IShearable;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimatable {
+public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.BOOLEAN);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -79,10 +79,10 @@ public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TYPE, CNBLilytadTypes.PINK.getId().toString());
-        this.entityData.define(SHEARED, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TYPE, CNBLilytadTypes.PINK.getId().toString());
+        builder.define(SHEARED, false);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag tag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
         switch (this.random.nextInt(3)) {
             case 0:
             default:
@@ -153,7 +153,7 @@ public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimata
                 break;
         }
 
-        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData, tag);
+        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
     }
 
     public static boolean checkLilytadSpawnRules(EntityType<LilytadEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
@@ -191,10 +191,7 @@ public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimata
         return this.isAlive();
     }
 
-    @Override
-    public boolean canBreatheUnderwater() {
-        return true;
-    }
+    // TODO[1.21.1 port]: canBreatheUnderwater no longer overrideable
 
     @Override
     public boolean isPushedByFluid() {

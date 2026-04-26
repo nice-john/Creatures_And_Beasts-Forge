@@ -16,14 +16,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class CinderFurnaceScreen extends AbstractContainerScreen<CinderFurnaceContainer> implements RecipeUpdateListener {
     public final AbstractFurnaceRecipeBookComponent recipeBookComponent;
     private boolean widthTooNarrow;
-    private final ResourceLocation texture = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/gui/container/cinder_furnace.png");;
+    private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/gui/container/cinder_furnace.png");;
 
     public CinderFurnaceScreen(CinderFurnaceContainer cinderFurnaceContainer, Inventory inventory, Component component) {
         super(cinderFurnaceContainer, inventory, component);

@@ -1,88 +1,69 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.function.Supplier;
+import java.util.EnumMap;
+import java.util.List;
 
-public enum CNBArmorMaterials implements ArmorMaterial {
-    FLOWER_CROWN("flower_crown", 2, new int[]{1, 2, 3, 1}, 5, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.EMPTY),
-    SPORELING_BACKPACK("sporeling_backpack", 3, new int[]{0, 0, 1, 0}, 2, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.LEATHER));
+public class CNBArmorMaterials {
+    public static final DeferredRegister<ArmorMaterial> ARMOR_MATERIALS =
+            DeferredRegister.create(Registries.ARMOR_MATERIAL, CreaturesAndBeasts.MOD_ID);
 
-    private static final int[] MAX_DAMAGE_ARRAY = new int[]{13, 15, 16, 11};
-    private final String name;
-    private final int maxDamageFactor;
-    private final int[] damageReductionAmountArray;
-    private final int enchantability;
-    private final SoundEvent soundEvent;
-    private final float toughness;
-    private final float knockbackResistance;
-    private final Supplier<Ingredient> repairIngredient;
+    public static final Holder<ArmorMaterial> FLOWER_CROWN = register(
+            "flower_crown",
+            mapOf(1, 2, 3, 1),
+            5,
+            0.0F,
+            0.0F,
+            () -> Ingredient.EMPTY
+    );
 
-    CNBArmorMaterials(String name, int maxDamageFactor, int[] damageReductionAmountArray, int enchantability, SoundEvent soundEvent, float toughness, float knockbackResistance, Supplier<Ingredient> repairIngredient) {
-        this.name = name;
-        this.maxDamageFactor = maxDamageFactor;
-        this.damageReductionAmountArray = damageReductionAmountArray;
-        this.enchantability = enchantability;
-        this.soundEvent = soundEvent;
-        this.toughness = toughness;
-        this.knockbackResistance = knockbackResistance;
-        this.repairIngredient = repairIngredient;
+    public static final Holder<ArmorMaterial> SPORELING_BACKPACK = register(
+            "sporeling_backpack",
+            mapOf(0, 0, 1, 0),
+            2,
+            0.0F,
+            0.0F,
+            () -> Ingredient.of(Items.LEATHER)
+    );
+
+    private static EnumMap<ArmorItem.Type, Integer> mapOf(int feet, int legs, int chest, int head) {
+        EnumMap<ArmorItem.Type, Integer> map = new EnumMap<>(ArmorItem.Type.class);
+        map.put(ArmorItem.Type.BOOTS, feet);
+        map.put(ArmorItem.Type.LEGGINGS, legs);
+        map.put(ArmorItem.Type.CHESTPLATE, chest);
+        map.put(ArmorItem.Type.HELMET, head);
+        map.put(ArmorItem.Type.BODY, chest);
+        return map;
     }
 
-
-    public int getDurabilityForSlot(EquipmentSlot slotIn) {
-        return MAX_DAMAGE_ARRAY[slotIn.getIndex()] * this.maxDamageFactor;
-    }
-
-
-    public int getDefenseForSlot(EquipmentSlot slotIn) {
-        return this.damageReductionAmountArray[slotIn.getIndex()];
-    }
-
-    @Override
-    public int getDurabilityForType(ArmorItem.Type p_266807_) {
-        return 0;
-    }
-
-    @Override
-    public int getDefenseForType(ArmorItem.Type p_267168_) {
-        return 0;
-    }
-
-    @Override
-    public int getEnchantmentValue() {
-        return this.enchantability;
-    }
-
-    @Override
-    public SoundEvent getEquipSound() {
-        return this.soundEvent;
-    }
-
-    @Override
-    public Ingredient getRepairIngredient() {
-        return this.repairIngredient.get();
-    }
-
-    @Override
-    public String getName() {
-        return CreaturesAndBeasts.MOD_ID + ':' + this.name;
-    }
-
-    @Override
-    public float getToughness() {
-        return this.toughness;
-    }
-
-    @Override
-    public float getKnockbackResistance() {
-        return this.knockbackResistance;
+    private static DeferredHolder<ArmorMaterial, ArmorMaterial> register(
+            String name,
+            EnumMap<ArmorItem.Type, Integer> defense,
+            int enchantability,
+            float toughness,
+            float knockbackResistance,
+            java.util.function.Supplier<Ingredient> repairIngredient
+    ) {
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name);
+        return ARMOR_MATERIALS.register(name, () -> new ArmorMaterial(
+                defense,
+                enchantability,
+                Holder.direct(SoundEvents.ARMOR_EQUIP_LEATHER.value()),
+                repairIngredient,
+                List.of(new ArmorMaterial.Layer(id)),
+                toughness,
+                knockbackResistance
+        ));
     }
 }

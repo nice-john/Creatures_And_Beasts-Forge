@@ -1,22 +1,25 @@
 package com.cgessinger.creaturesandbeasts.init;
 
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
 
 import java.util.function.Supplier;
 
 public enum CNBItemTiers implements Tier {
-    CINDER(3, 800, 8.0F, 1.0F, 10, () -> Ingredient.of(CNBItems.CINDERSHELL_SHELL_SHARD.get()));
+    CINDER(BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 800, 8.0F, 1.0F, 10, () -> Ingredient.of(CNBItems.CINDERSHELL_SHELL_SHARD.get()));
 
-    private final int harvestLevel;
+    private final TagKey<Block> incorrectBlocksForDrops;
     private final int maxUses;
     private final float efficiency;
     private final float attackDamage;
     private final int enchantability;
     private final Supplier<Ingredient> repairMaterial;
 
-    CNBItemTiers(int harvestLevel, int maxUses, float efficiency, float attackDamage, int enchantability, Supplier<Ingredient> repairMaterialIn) {
-        this.harvestLevel = harvestLevel;
+    CNBItemTiers(TagKey<Block> incorrectBlocksForDrops, int maxUses, float efficiency, float attackDamage, int enchantability, Supplier<Ingredient> repairMaterialIn) {
+        this.incorrectBlocksForDrops = incorrectBlocksForDrops;
         this.maxUses = maxUses;
         this.efficiency = efficiency;
         this.attackDamage = attackDamage;
@@ -40,8 +43,8 @@ public enum CNBItemTiers implements Tier {
     }
 
     @Override
-    public int getLevel() {
-        return this.harvestLevel;
+    public TagKey<Block> getIncorrectBlocksForDrops() {
+        return this.incorrectBlocksForDrops;
     }
 
     @Override

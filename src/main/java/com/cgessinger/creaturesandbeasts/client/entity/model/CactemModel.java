@@ -6,15 +6,15 @@ import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 
 public class CactemModel extends GeoModel<CactemEntity> {
-    private static final ResourceLocation ELDER_CACTEM_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/elder_cactem.geo.json");
-    private static final ResourceLocation WARRIOR_CACTEM_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/warrior_cactem.geo.json");
-    private static final ResourceLocation BABY_CACTEM_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/baby_cactem.geo.json");
+    private static final ResourceLocation ELDER_CACTEM_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/elder_cactem.geo.json");
+    private static final ResourceLocation WARRIOR_CACTEM_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/warrior_cactem.geo.json");
+    private static final ResourceLocation BABY_CACTEM_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/baby_cactem.geo.json");
 
-    private static final ResourceLocation ELDER_CACTEM_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/elder_cactem.png");
-    private static final ResourceLocation WARRIOR_CACTEM_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/warrior_cactem.png");
-    private static final ResourceLocation BABY_CACTEM_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/baby_cactem.png");
+    private static final ResourceLocation ELDER_CACTEM_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/elder_cactem.png");
+    private static final ResourceLocation WARRIOR_CACTEM_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/warrior_cactem.png");
+    private static final ResourceLocation BABY_CACTEM_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/baby_cactem.png");
 
-    private static final ResourceLocation CACTEM_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/cactem.json");
+    private static final ResourceLocation CACTEM_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cactem.json");
 
     @Override
     public ResourceLocation getModelResource(CactemEntity entity) {

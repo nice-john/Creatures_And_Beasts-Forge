@@ -8,8 +8,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
@@ -38,16 +38,12 @@ public class LilytadRenderer extends GeoEntityRenderer<LilytadEntity> {
             float partialTick,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha
-    ) {
+            int colour) {
         // Example: Adjust scale based on entity's state (e.g., baby size)
         if (animatable.isBaby()) {
             poseStack.scale(0.5F, 0.5F, 0.5F); // Scale down for baby entities
         }
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 }
 

@@ -7,6 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -45,7 +46,7 @@ public class HealSpellBookItem extends Item {
         }
     }
 
-    private void applyEffects(Level level, Player player, ItemStack stack, MobEffect effect, int duration, int amplifier) {
+    private void applyEffects(Level level, Player player, ItemStack stack, Holder<MobEffect> effect, int duration, int amplifier) {
         if (!player.getCooldowns().isOnCooldown(stack.getItem())) {
             player.addEffect(new MobEffectInstance(effect, duration, amplifier));
 

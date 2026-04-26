@@ -60,10 +60,10 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.HitResult;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.*;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.*;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
@@ -98,12 +98,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TYPE, CNBSporelingTypes.RED_OVERWORLD.getId().toString());
-        this.entityData.define(ATTACKING, false);
-        this.entityData.define(WAVING, false);
-        this.entityData.define(INSPECTING, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TYPE, CNBSporelingTypes.RED_OVERWORLD.getId().toString());
+        builder.define(ATTACKING, false);
+        builder.define(WAVING, false);
+        builder.define(INSPECTING, false);
     }
 
     @Override
@@ -246,7 +246,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
                     itemstack.shrink(1);
                 }
 
-                if (this.random.nextInt(3) == 0 && !net.minecraftforge.event.ForgeEventFactory.onAnimalTame(this, player)) {
+                if (this.random.nextInt(3) == 0 && !net.neoforged.neoforge.event.EventHooks.onAnimalTame(this, player)) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);
@@ -317,11 +317,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
         Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
 
-        if (reason == MobSpawnType.SPAWN_EGG && dataTag != null && dataTag.contains("EggType")) {
-            String eggType = dataTag.getString("EggType");
+        // TODO[1.21.1 port]: restore EggType variant tagging via DataComponent.
+        String eggType = "";
+        if (false) {
             if (eggType.equals("Nether")) {
                 if (biome.is(Biomes.CRIMSON_FOREST)) {
                     this.setSporelingType(CNBSporelingTypes.CRIMSON_FUNGUS);
@@ -363,7 +364,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
 
         this.reassessGoals();
 
-        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
     }
 
     @Nullable
@@ -625,15 +626,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
             this.goalOwner = sporeling;
         }
 
-        @Override
-        protected void checkAndPerformAttack(LivingEntity entity, double distance) {
-            double d0 = this.getAttackReachSqr(entity);
-            if (distance <= d0 && this.goalOwner.attackTimer <= 0 && this.ticksUntilNextAttack <= 0) {
-                this.resetAttackCooldown();
-                this.goalOwner.playSound(CNBSoundEvents.SPORELING_BITE.get(), 1.0F, 1.0F);
-                this.goalOwner.doHurtTarget(entity);
-            }
-        }
+        // TODO[1.21.1 port]: re-implement attack timing (MeleeAttackGoal.getAttackReachSqr/ticksUntilNextAttack inaccessible).
 
         @Override
         protected void resetAttackCooldown() {

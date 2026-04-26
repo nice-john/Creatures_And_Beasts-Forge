@@ -6,8 +6,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoRenderer;
@@ -15,7 +15,7 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
 @OnlyIn(Dist.CLIENT)
 public class CindershellGlowLayer extends GeoRenderLayer<CindershellEntity> {
-    private static final ResourceLocation GLOW_LAYER = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell_glow.png");
+    private static final ResourceLocation GLOW_LAYER = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell_glow.png");
 
     public CindershellGlowLayer(GeoRenderer<CindershellEntity> renderer) {
         super(renderer);

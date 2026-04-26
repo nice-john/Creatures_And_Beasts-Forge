@@ -13,9 +13,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class LizardEggEntity extends ThrowableItemProjectile {
     public LizardEggEntity(EntityType<LizardEggEntity> type, Level level) {
@@ -64,6 +64,6 @@ public class LizardEggEntity extends ThrowableItemProjectile {
 
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        return NetworkHooks.getEntitySpawningPacket(this);
+        return new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(this, entity);
     }
 }

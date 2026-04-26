@@ -14,8 +14,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
@@ -65,7 +65,7 @@ public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {
     }
 
     @Override
-    public void renderRecursively(PoseStack poseStack, SporelingEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderRecursively(PoseStack poseStack, SporelingEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         if (bone.getName().equals("itemHolder")) {
             poseStack.pushPose();
             poseStack.scale(0.5F, 0.5F, 0.5F);
@@ -87,6 +87,6 @@ public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {
             buffer = bufferSource.getBuffer(RenderType.entityTranslucent(getTextureLocation(animatable)));
         }
 
-        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 }
