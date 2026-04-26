@@ -51,10 +51,7 @@ public class CindershellGlowLayer extends GeoRenderLayer<CindershellEntity> {
                     partialTick,
                     packedLight,
                     packedOverlay,
-                    1.0f, // Red
-                    1.0f, // Green
-                    1.0f, // Blue
-                    1.0f  // Alpha
+                    0xFFFFFFFF
             );
 
             // Pop the pose stack after rendering

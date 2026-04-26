@@ -77,7 +77,7 @@ public class HealSpellBookItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
         if (stack.is(CNBItems.HEAL_SPELL_BOOK_1.get())) {
             tooltip.add(Component.literal("\u00A72Level 1"));
         } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2.get())) {
@@ -88,7 +88,7 @@ public class HealSpellBookItem extends Item {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
         return 7200;
     }
 }

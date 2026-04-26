@@ -222,6 +222,11 @@ public class MinipadEntity extends Animal implements IShearable, GeoAnimatable {
     // TODO[1.21.1 port]: canBreatheUnderwater no longer overrideable
 
     @Override
+    public boolean isFood(ItemStack stack) {
+        return false;
+    }
+
+    @Override
     public boolean canStandOnFluid(FluidState fluidState) {
         return fluidState.is(FluidTags.WATER);
     }
@@ -279,13 +284,13 @@ public class MinipadEntity extends Animal implements IShearable, GeoAnimatable {
     }
 
     @Override
-    public boolean isShearable(@Nonnull ItemStack item, Level world, BlockPos pos) {
+    public boolean isShearable(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
         return !this.getSheared();
     }
 
     @Nonnull
     @Override
-    public List<ItemStack> onSheared(@Nullable Player player, @Nonnull ItemStack item, Level world, BlockPos pos, int fortune) {
+    public List<ItemStack> onSheared(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
         world.playSound(null, this, SoundEvents.SHEEP_SHEAR, player == null ? SoundSource.BLOCKS : SoundSource.PLAYERS, 1.0F, 1.0F);
         this.gameEvent(GameEvent.SHEAR, player);
         if (!world.isClientSide) {

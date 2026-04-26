@@ -20,7 +20,10 @@ import com.cgessinger.creaturesandbeasts.items.GlowingFlowerCrownItem;
 import com.cgessinger.creaturesandbeasts.items.SporelingBackpackItem;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.neoforged.api.distmarker.Dist;
+import com.cgessinger.creaturesandbeasts.client.gui.screens.inventory.CinderFurnaceScreen;
+import com.cgessinger.creaturesandbeasts.init.CNBContainerTypes;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import software.bernie.geckolib.renderer.GeoArmorRenderer;
@@ -47,6 +50,11 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(CactemSpearModel.LAYER_LOCATION, CactemSpearModel::createLayer);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(CNBContainerTypes.CINDER_FURNACE_CONTAINER.get(), CinderFurnaceScreen::new);
     }
 
     /*@SubscribeEvent

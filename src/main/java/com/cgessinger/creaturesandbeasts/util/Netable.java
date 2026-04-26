@@ -41,7 +41,7 @@ public interface Netable {
             entity.playSound(entity.getPickupSound(), 1.0F, 1.0F);
             entity.saveToNetTag(lizardItem);
             player.addItem(lizardItem);
-            itemstack.hurtAndBreak(1, player, (player1) -> { player1.broadcastBreakEvent(hand); });
+            itemstack.hurtAndBreak(1, player, hand == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
             spawnParticles(ParticleTypes.HAPPY_VILLAGER, entity);
             Level level = entity.level();
 

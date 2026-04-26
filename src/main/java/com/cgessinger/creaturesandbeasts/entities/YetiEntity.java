@@ -235,7 +235,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, SpawnGroupData spawnDataIn, CompoundTag dataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, SpawnGroupData spawnDataIn) {
         if (spawnDataIn == null) {
             spawnDataIn = new AgeableMobGroupData(1.0F);
         }
@@ -609,7 +609,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
         @Override
         protected void resetAttackCooldown() {
-            this.ticksUntilNextAttack = this.adjustedTickDelay(25);
+            super.resetAttackCooldown();
+            // TODO[1.21.1 port]: ticksUntilNextAttack is now private; was set to adjustedTickDelay(25)
             this.yeti.setAttacking(true);
         }
     }

@@ -177,8 +177,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
         return CNBSoundEvents.LITTLE_GREBE_HURT.get();
     }
 
-    @Override
-    public double getPassengersRidingOffset() {
+    /* TODO[1.21.1 port]: getPassengersRidingOffset removed, use getPassengerAttachmentPoint */ public double getPassengersRidingOffset() {
         return this.getBbHeight() * 0.3D;
     }
 

@@ -309,10 +309,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         return 0.0F;
     }
 
-    @Override
-    /* TODO[1.21.1 port]: getStandingEyeHeight removed */ protected float getStandingEyeHeight_REMOVED(Pose pose, EntityDimensions dimensions) {
-        return dimensions.height() * 0.5F;
-    }
+    // TODO[1.21.1 port]: getStandingEyeHeight removed; eyeHeight configured via EntityType.Builder.eyeHeight(...)
 
     @Nullable
     @Override

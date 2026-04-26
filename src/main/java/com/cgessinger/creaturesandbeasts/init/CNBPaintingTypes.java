@@ -16,6 +16,5 @@ public class CNBPaintingTypes {
     public static final DeferredHolder<PaintingVariant, PaintingVariant> LILYTAD_PAINTING =
             PAINTINGS.register("lilytad", () -> new PaintingVariant(
                     16, 16,
-                    ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lilytad"),
-                    Optional.empty(), Optional.empty()));
+                    ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lilytad")));
 }

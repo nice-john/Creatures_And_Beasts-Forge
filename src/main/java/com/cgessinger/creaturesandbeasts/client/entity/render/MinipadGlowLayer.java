@@ -43,7 +43,6 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
             poseStack.pushPose();
 
             if (!entity.getSheared()) {
-                // Render the glowing flower
                 this.getRenderer().reRender(
                         model,
                         poseStack,
@@ -54,10 +53,11 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
                         partialTick,
                         packedLight,
                         packedOverlay,
-                        1f, 1f, 1f, 1.0f
+                        0xFFFFFFFF
                 );
 
-                // Render the translucent flower with fading glow
+                int translucentAlpha = (int) (Math.pow((time - 18000) / 5000f, 2) * 0xFF);
+                int translucentColor = (Math.max(0, Math.min(0xFF, translucentAlpha)) << 24) | 0x00FFFFFF;
                 this.getRenderer().reRender(
                         model,
                         poseStack,
@@ -68,11 +68,12 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
                         partialTick,
                         packedLight,
                         packedOverlay,
-                        1f, 1f, 1f, (float) Math.pow((time - 18000) / 5000f, 2)
+                        translucentColor
                 );
             }
 
-            // Render the glowing eyes with fading
+            int eyesAlpha = (int) (((float) -Math.pow((time - 18000) / 5000f, 2) + 1) * 0xFF);
+            int eyesColor = (Math.max(0, Math.min(0xFF, eyesAlpha)) << 24) | 0x00FFFFFF;
             this.getRenderer().reRender(
                     model,
                     poseStack,
@@ -83,7 +84,7 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
                     partialTick,
                     packedLight,
                     packedOverlay,
-                    1f, 1f, 1f, (float) -Math.pow((time - 18000) / 5000f, 2) + 1
+                    eyesColor
             );
 
             poseStack.popPose();

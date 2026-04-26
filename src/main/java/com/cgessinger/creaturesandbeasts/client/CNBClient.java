@@ -1,9 +1,6 @@
 package com.cgessinger.creaturesandbeasts.client;
 
-import com.cgessinger.creaturesandbeasts.client.gui.screens.inventory.CinderFurnaceScreen;
 import com.cgessinger.creaturesandbeasts.init.CNBBlocks;
-import com.cgessinger.creaturesandbeasts.init.CNBContainerTypes;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.neoforged.api.distmarker.Dist;
@@ -12,7 +9,8 @@ import net.neoforged.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class CNBClient {
     public static void init() {
-        MenuScreens.register(CNBContainerTypes.CINDER_FURNACE_CONTAINER.get(), CinderFurnaceScreen::new);
+        // MenuScreens.register moved to ClientEvents#onRegisterMenuScreens (RegisterMenuScreensEvent)
+        // because MenuScreens.register is package-private in 1.21.1.
 
         // Waterlily textures have alpha. Without an explicit cutout layer they fall through
         // to the solid render type, which paints transparent pixels black.

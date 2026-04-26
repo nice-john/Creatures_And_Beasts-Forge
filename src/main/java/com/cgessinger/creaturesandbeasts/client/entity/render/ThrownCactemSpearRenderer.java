@@ -40,7 +40,7 @@ public class ThrownCactemSpearRenderer extends EntityRenderer<ThrownCactemSpearE
                 false,
                 spearEntity.isFoil()
         );
-        this.model.renderToBuffer(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+        this.model.renderToBuffer(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
 
         poseStack.popPose();
 

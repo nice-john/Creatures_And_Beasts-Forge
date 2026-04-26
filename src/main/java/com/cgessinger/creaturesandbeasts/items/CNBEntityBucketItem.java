@@ -28,7 +28,7 @@ public class CNBEntityBucketItem extends BucketItem {
     private final Supplier<SoundEvent> emptyingSoundSupplier;
 
     public CNBEntityBucketItem(Supplier<EntityType<?>> entityType, Fluid fluid, Supplier<SoundEvent> emptyingSound, Properties builder) {
-        super(() -> fluid, builder);
+        super(fluid, builder);
         this.entityTypeSupplier = entityType;
         this.emptyingSoundSupplier = emptyingSound;
     }

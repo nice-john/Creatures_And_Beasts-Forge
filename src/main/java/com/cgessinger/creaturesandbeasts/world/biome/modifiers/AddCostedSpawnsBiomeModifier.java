@@ -1,6 +1,7 @@
 package com.cgessinger.creaturesandbeasts.world.biome.modifiers;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -19,7 +20,7 @@ import java.util.List;
 
 public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityType, List<CostSpawnerData> spawnerData) implements BiomeModifier {
 
-    public static final Codec<AddCostedSpawnsBiomeModifier> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+    public static final MapCodec<AddCostedSpawnsBiomeModifier> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
             BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entityType").forGetter(AddCostedSpawnsBiomeModifier::entityType),
             CostSpawnerData.LIST_CODEC.fieldOf("spawns").forGetter(AddCostedSpawnsBiomeModifier::spawnerData)
     ).apply(builder, AddCostedSpawnsBiomeModifier::new));
@@ -41,7 +42,7 @@ public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityTy
     }
 
     @Override
-    public Codec<? extends BiomeModifier> codec() {
+    public MapCodec<? extends BiomeModifier> codec() {
         return CODEC;
     }
 

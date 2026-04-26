@@ -63,7 +63,7 @@ public class LizardEggEntity extends ThrowableItemProjectile {
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
+    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity entity) {
         return new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(this, entity);
     }
 }
