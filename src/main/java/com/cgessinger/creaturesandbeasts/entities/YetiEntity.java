@@ -479,6 +479,16 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
 
+    private <E extends GeoAnimatable> void particleListener(ParticleKeyframeEvent<E> event) {
+        String effect = event.getKeyframeData().getEffect();
+
+        if ("eat.particle".equals(effect)) {
+            spawnParticles(ParticleTypes.HAPPY_VILLAGER);
+        }
+        // "hit.ground.particle" is intentionally handled inside soundListener (below) so
+        // it can use Minecraft.getInstance().particleEngine on the client thread.
+    }
+
     private <E extends GeoAnimatable> void soundListener(SoundKeyframeEvent<E> event) {
         String sound = event.getKeyframeData().getSound(); // already working
 
@@ -522,7 +532,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         AnimationController<YetiEntity> controller = new AnimationController<>(this, "controller", 1, this::animationPredicate);
 
         controller.setSoundKeyframeHandler(this::soundListener);
-        //controller.setParticleKeyframeHandler(this::particleListener);
+        controller.setParticleKeyframeHandler(this::particleListener);
 
         controllers.add(controller);
     }
