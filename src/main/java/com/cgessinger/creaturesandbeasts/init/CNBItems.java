@@ -157,9 +157,9 @@ public class CNBItems {
             () -> new LizardItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties(), CNBLizardTypes.MUSHROOM));
 
     public static final DeferredItem<SporelingSpawnEggItem> SPORELING_OVERWORLD_EGG = ITEMS.register("sporeling_overworld_egg",
-            () -> new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xDE0942, 0xFFEBC4, new Item.Properties()));
+            () -> new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xDE0942, 0xFFEBC4, new Item.Properties(), "Overworld"));
     public static final DeferredItem<SporelingSpawnEggItem> SPORELING_NETHER_EGG = ITEMS.register("sporeling_nether_egg",
-            () -> new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xBF2828, 0xFF9245, new Item.Properties()));
+            () -> new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xBF2828, 0xFF9245, new Item.Properties(), "Nether"));
 
     // Block Items
     public static final DeferredItem<CinderFurnaceItem> CINDERSHELL_FURNACE = ITEMS.register("cinder_furnace",

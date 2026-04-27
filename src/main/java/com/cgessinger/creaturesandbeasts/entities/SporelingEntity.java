@@ -318,53 +318,46 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     @Nullable
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
-        Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
+        // Default: biome-driven variant. SporelingSpawnEggItem.useOn calls applyEggType(...)
+        // afterwards to override based on which spawn-egg the player used (Overworld/Nether).
+        applyVariantForBiome(worldIn);
+        this.reassessGoals();
+        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
+    }
 
-        // TODO[1.21.1 port]: restore EggType variant tagging via DataComponent.
-        String eggType = "";
-        if (false) {
-            if (eggType.equals("Nether")) {
-                if (biome.is(Biomes.CRIMSON_FOREST)) {
-                    this.setSporelingType(CNBSporelingTypes.CRIMSON_FUNGUS);
-                } else if (biome.is(Biomes.WARPED_FOREST)) {
-                    this.setSporelingType(CNBSporelingTypes.WARPED_FUNGUS);
-                } else {
-                    if (random.nextBoolean()) {
-                        this.setSporelingType(CNBSporelingTypes.RED_NETHER);
-                    } else {
-                        this.setSporelingType(CNBSporelingTypes.BROWN_NETHER);
-                    }
-                }
-            } else {
-                if (random.nextBoolean()) {
-                    this.setSporelingType(CNBSporelingTypes.RED_OVERWORLD);
-                } else {
-                    this.setSporelingType(CNBSporelingTypes.BROWN_OVERWORLD);
-                }
-            }
+    private void applyVariantForBiome(ServerLevelAccessor worldIn) {
+        Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
+        if (biome.is(Biomes.CRIMSON_FOREST)) {
+            this.setSporelingType(CNBSporelingTypes.CRIMSON_FUNGUS);
+        } else if (biome.is(Biomes.WARPED_FOREST)) {
+            this.setSporelingType(CNBSporelingTypes.WARPED_FUNGUS);
+        } else if (biome.is(BiomeTags.IS_NETHER)) {
+            this.setSporelingType(random.nextBoolean() ? CNBSporelingTypes.RED_NETHER : CNBSporelingTypes.BROWN_NETHER);
         } else {
+            this.setSporelingType(random.nextBoolean() ? CNBSporelingTypes.RED_OVERWORLD : CNBSporelingTypes.BROWN_OVERWORLD);
+        }
+    }
+
+    /**
+     * Forces the variant based on which spawn-egg item was used. Overworld eggs always produce
+     * a friendly red/brown overworld sporeling; Nether eggs pick crimson/warped/red-nether/brown-nether
+     * based on the local biome (matching original 1.18 behavior). Called from
+     * {@link com.cgessinger.creaturesandbeasts.items.SporelingSpawnEggItem} after spawn.
+     */
+    public void applyEggType(String eggType, ServerLevelAccessor worldIn) {
+        if ("Nether".equals(eggType)) {
+            Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
             if (biome.is(Biomes.CRIMSON_FOREST)) {
                 this.setSporelingType(CNBSporelingTypes.CRIMSON_FUNGUS);
             } else if (biome.is(Biomes.WARPED_FOREST)) {
                 this.setSporelingType(CNBSporelingTypes.WARPED_FUNGUS);
-            } else if (biome.is(BiomeTags.IS_NETHER)) {
-                if (random.nextBoolean()) {
-                    this.setSporelingType(CNBSporelingTypes.RED_NETHER);
-                } else {
-                    this.setSporelingType(CNBSporelingTypes.BROWN_NETHER);
-                }
             } else {
-                if (random.nextBoolean()) {
-                    this.setSporelingType(CNBSporelingTypes.RED_OVERWORLD);
-                } else {
-                    this.setSporelingType(CNBSporelingTypes.BROWN_OVERWORLD);
-                }
+                this.setSporelingType(random.nextBoolean() ? CNBSporelingTypes.RED_NETHER : CNBSporelingTypes.BROWN_NETHER);
             }
+        } else { // "Overworld" (default)
+            this.setSporelingType(random.nextBoolean() ? CNBSporelingTypes.RED_OVERWORLD : CNBSporelingTypes.BROWN_OVERWORLD);
         }
-
         this.reassessGoals();
-
-        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
     }
 
     @Nullable

@@ -47,9 +47,14 @@ public class CNBEntityBucketItem extends BucketItem {
 
     private void placeEntity(ServerLevel worldIn, ItemStack stack, BlockPos pos) {
         Entity entity = this.entityTypeSupplier.get().spawn(worldIn, stack, null, pos, MobSpawnType.BUCKET, true, true);
-        if (entity instanceof Bucketable) {
-            Bucketable bucketable = (Bucketable) entity;
-            bucketable.loadFromBucketTag(new net.minecraft.nbt.CompoundTag() /* TODO[1.21.1 port]: was stack.getOrCreateTag() */);
+        if (entity instanceof Bucketable bucketable) {
+            // 1.20.5+ vanilla migrated bucket data to DataComponents.BUCKET_ENTITY_DATA. The stored
+            // CompoundTag holds the same fields as the old getOrCreateTag() flow (NoAI/Health/etc).
+            net.minecraft.world.item.component.CustomData stored =
+                    stack.get(net.minecraft.core.component.DataComponents.BUCKET_ENTITY_DATA);
+            net.minecraft.nbt.CompoundTag tag =
+                    stored != null ? stored.copyTag() : new net.minecraft.nbt.CompoundTag();
+            bucketable.loadFromBucketTag(tag);
             bucketable.setFromBucket(true);
         }
     }
