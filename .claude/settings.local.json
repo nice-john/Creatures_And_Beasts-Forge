@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew compileJava --quiet)",
+      "Read(//c/tmp/**)",
+      "Bash(mkdir -p gl120 gl121)",
+      "Bash(unzip -o -q \"/c/Users/dad/.gradle/caches/modules-2/files-2.1/software.bernie.geckolib/geckolib-forge-1.20.1/4.8.2/395a9f21a36dc8466d67c2af67a904e7013460d1/geckolib-forge-1.20.1-4.8.2.jar\" \"software/bernie/geckolib/util/RenderUtils.class\" -d gl120)",
+      "Bash(unzip -o -q \"/c/Users/dad/.gradle/caches/modules-2/files-2.1/software.bernie.geckolib/geckolib-neoforge-1.21.1/4.8.3/fb0ac6ad63dc5f401c15c66a037c08e9709d1c42/geckolib-neoforge-1.21.1-4.8.3.jar\" \"software/bernie/geckolib/util/RenderUtil.class\" -d gl121)",
+      "Bash(javap -p -c gl120/software/bernie/geckolib/util/RenderUtils.class)",
+      "Bash(javap -p -c /tmp/gl121/software/bernie/geckolib/util/RenderUtil.class)",
+      "Bash(git ls-tree *)",
+      "Bash(unzip -o -q \"/c/Users/dad/.gradle/caches/modules-2/files-2.1/software.bernie.geckolib/geckolib-forge-1.20.1/4.8.2/395a9f21a36dc8466d67c2af67a904e7013460d1/geckolib-forge-1.20.1-4.8.2.jar\" \"software/bernie/geckolib/renderer/GeoEntityRenderer.class\" -d gl120)",
+      "Bash(javap -p /tmp/gl120/software/bernie/geckolib/renderer/GeoEntityRenderer.class)",
+      "Bash(javap -p -c /tmp/gl120/software/bernie/geckolib/renderer/GeoEntityRenderer.class)"
+    ]
+  }
+}
