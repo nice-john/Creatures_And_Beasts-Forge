@@ -32,7 +32,6 @@ import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.HoverRandomPos;
 import net.minecraft.world.entity.animal.FlyingAnimal;
@@ -54,6 +53,7 @@ import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.util.RenderUtils;
 
 import java.util.EnumSet;
 
@@ -69,7 +69,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     public EndWhaleEntity(EntityType<EndWhaleEntity> entityType, Level level) {
         super(entityType, level);
         this.setTame(false);
-        this.moveControl = new FlyingMoveControl(this, 2, true);
+        this.moveControl = new FlyingMoveControl(this, 1, true);
         this.lookControl = new EndWhaleLookControl(this);
         this.setNoGravity(true); // flyers feel better with gravity disabled
     }
@@ -369,13 +369,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     @Override
     public double getTick(Object animatable) {
-        // smooth client-side animation time
-        return this.level().isClientSide ? this.tickCount + clientPartialTick() : this.tickCount;
-    }
-
-    @net.minecraftforge.api.distmarker.OnlyIn(net.minecraftforge.api.distmarker.Dist.CLIENT)
-    private static float clientPartialTick() {
-        return net.minecraft.client.Minecraft.getInstance().getPartialTick();
+        return RenderUtils.getCurrentTick();
     }
 
     // ---------------- Controls/Goals ----------------
@@ -446,7 +440,6 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         @Override
         public boolean canUse() {
             return this.endWhale.navigation.isDone()
-                    && this.endWhale.random.nextInt(3) == 0
                     && !this.endWhale.isVehicle()
                     && !this.endWhale.isLeashed();
         }
@@ -470,8 +463,8 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         @Nullable
         private Vec3 findPos() {
             Vec3 vec3 = this.endWhale.getViewVector(0.5F);
-            Vec3 v = net.minecraft.world.entity.ai.util.HoverRandomPos.getPos(this.endWhale, 20, 20, vec3.x, vec3.z, (float) Math.PI, 50, 15);
-            v = v != null ? v : net.minecraft.world.entity.ai.util.AirAndWaterRandomPos.getPos(this.endWhale, 20, 20, -2, vec3.x, vec3.z, (float) Math.PI);
+            Vec3 v = net.minecraft.world.entity.ai.util.HoverRandomPos.getPos(this.endWhale, 30, 12, vec3.x, vec3.z, (float) (Math.PI / 6), 80, 15);
+            v = v != null ? v : net.minecraft.world.entity.ai.util.AirAndWaterRandomPos.getPos(this.endWhale, 30, 12, -2, vec3.x, vec3.z, (float) (Math.PI / 6));
             if (this.endWhale.isSaddled() && v != null && this.endWhale.getOwner() != null
                     && v.distanceTo(this.endWhale.getOwner().position()) > 100.0D) {
                 v = null;
@@ -481,9 +474,6 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     static class EndWhaleTemptGoal extends Goal {
-        private static final TargetingConditions TEMP_TARGETING =
-                TargetingConditions.forNonCombat().range(100.0D).ignoreLineOfSight();
-        private final TargetingConditions targetingConditions;
         protected final EndWhaleEntity endWhale;
         private final double speedModifier;
         @Nullable protected Player player;
@@ -495,14 +485,19 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
             this.speedModifier = speedModifier;
             this.items = temptIngredient;
             this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-            this.targetingConditions = TEMP_TARGETING.copy().selector(this::shouldFollow);
         }
 
         @Override
         public boolean canUse() {
             if (this.calmDown > 0) { --this.calmDown; return false; }
-            this.player = this.endWhale.level().getNearestPlayer(this.targetingConditions, this.endWhale);
-            return this.player != null && !this.endWhale.isVehicle();
+            if (this.endWhale.isVehicle()) return false;
+            Player nearest = this.endWhale.level().getNearestPlayer(this.endWhale, 100.0D);
+            if (nearest == null || nearest.isSpectator() || !this.shouldFollow(nearest)) {
+                this.player = null;
+                return false;
+            }
+            this.player = nearest;
+            return true;
         }
 
         private boolean shouldFollow(LivingEntity entity) {
