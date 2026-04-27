@@ -46,6 +46,7 @@ public class CreaturesAndBeasts {
     public CreaturesAndBeasts(IEventBus eventBus, ModContainer modContainer) {
         eventBus.addListener(this::commonSetup);
         eventBus.addListener(this::clientSetup);
+        eventBus.addListener(this::onEntityAttributeCreation);
 
         CNBParticleTypes.PARTICLE_TYPES.register(eventBus);
         CNBBlocks.BLOCKS.register(eventBus);
@@ -103,5 +104,17 @@ public class CreaturesAndBeasts {
                     ResourceLocation.fromNamespaceAndPath(MOD_ID, "throwing"),
                     (stack, level, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
         });
+    }
+
+    private void onEntityAttributeCreation(net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent event) {
+        event.put(CNBEntityTypes.CINDERSHELL.get(), com.cgessinger.creaturesandbeasts.entities.CindershellEntity.createAttributes().build());
+        event.put(CNBEntityTypes.SPORELING.get(), com.cgessinger.creaturesandbeasts.entities.SporelingEntity.createAttributes().build());
+        event.put(CNBEntityTypes.LITTLE_GREBE.get(), com.cgessinger.creaturesandbeasts.entities.LittleGrebeEntity.createAttributes().build());
+        event.put(CNBEntityTypes.LILYTAD.get(), com.cgessinger.creaturesandbeasts.entities.LilytadEntity.createAttributes().build());
+        event.put(CNBEntityTypes.LIZARD.get(), com.cgessinger.creaturesandbeasts.entities.LizardEntity.createAttributes().build());
+        event.put(CNBEntityTypes.YETI.get(), com.cgessinger.creaturesandbeasts.entities.YetiEntity.createAttributes().build());
+        event.put(CNBEntityTypes.MINIPAD.get(), com.cgessinger.creaturesandbeasts.entities.MinipadEntity.createAttributes().build());
+        event.put(CNBEntityTypes.END_WHALE.get(), com.cgessinger.creaturesandbeasts.entities.EndWhaleEntity.createAttributes().build());
+        event.put(CNBEntityTypes.CACTEM.get(), com.cgessinger.creaturesandbeasts.entities.CactemEntity.createAttributes().build());
     }
 }

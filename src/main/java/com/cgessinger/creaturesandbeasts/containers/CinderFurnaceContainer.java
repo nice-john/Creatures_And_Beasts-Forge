@@ -158,7 +158,9 @@ public class CinderFurnaceContainer extends AbstractContainerMenu {
         @Override
         protected void checkTakeAchievements(ItemStack stack) {
             stack.onCraftedBy(this.player.level(), this.player, this.removeCount);
-            // TODO[1.21.1 port]: when furnace feature is restored, award the cindershell's recipes here.
+            if (this.player instanceof ServerPlayer serverPlayer && this.container instanceof CindershellEntity cindershell) {
+                cindershell.awardUsedRecipesAndPopExperience(serverPlayer);
+            }
             this.removeCount = 0;
         }
     }

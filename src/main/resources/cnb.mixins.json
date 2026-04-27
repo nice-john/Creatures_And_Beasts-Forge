@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.cgessinger.creaturesandbeasts.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MixinLivingEntityRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

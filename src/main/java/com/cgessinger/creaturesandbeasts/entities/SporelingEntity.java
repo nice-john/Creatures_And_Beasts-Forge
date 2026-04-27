@@ -626,11 +626,14 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
             this.goalOwner = sporeling;
         }
 
-        // TODO[1.21.1 port]: re-implement attack timing (MeleeAttackGoal.getAttackReachSqr/ticksUntilNextAttack inaccessible).
-
+        // 1.21 made ticksUntilNextAttack private and getAttackReachSqr inaccessible on MeleeAttackGoal.
+        // We can no longer re-implement the exact "instant attack on reach" cadence from 1.20.1, but
+        // we *can* play the bite sound and mark attacking-state via resetAttackCooldown (called once
+        // each time the goal commits to a strike).
         @Override
         protected void resetAttackCooldown() {
             super.resetAttackCooldown();
+            this.goalOwner.playSound(CNBSoundEvents.SPORELING_BITE.get(), 1.0F, 1.0F);
             this.goalOwner.setAttacking(true);
         }
     }

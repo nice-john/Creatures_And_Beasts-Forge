@@ -219,7 +219,13 @@ public class MinipadEntity extends Animal implements IShearable, GeoAnimatable {
         return this.isAlive();
     }
 
-    // TODO[1.21.1 port]: canBreatheUnderwater no longer overrideable
+    // 1.21 made canBreatheUnderwater() final on LivingEntity. NeoForge's replacement is the
+    // FluidType extension: an entity can declare it doesn't drown in a given fluid type.
+    @Override
+    public boolean canDrownInFluidType(net.neoforged.neoforge.fluids.FluidType type) {
+        if (type == net.neoforged.neoforge.common.NeoForgeMod.WATER_TYPE.value()) return false;
+        return super.canDrownInFluidType(type);
+    }
 
     @Override
     public boolean isFood(ItemStack stack) {

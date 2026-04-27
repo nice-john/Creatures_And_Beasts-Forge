@@ -69,7 +69,8 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     public EndWhaleEntity(EntityType<EndWhaleEntity> entityType, Level level) {
         super(entityType, level);
         this.setTame(false, false);
-        this.moveControl = new FlyingMoveControl(this, 2, true);
+        // maxTurn: degrees of yaw correction per tick. 2 was snappy, 1 gives a slow banking feel.
+        this.moveControl = new FlyingMoveControl(this, 1, true);
         this.lookControl = new EndWhaleLookControl(this);
         this.setNoGravity(true); // flyers feel better with gravity disabled
     }
@@ -369,13 +370,10 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     @Override
     public double getTick(Object animatable) {
-        // smooth client-side animation time
-        return this.level().isClientSide ? this.tickCount + clientPartialTick() : this.tickCount;
-    }
-
-    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
-    private static float clientPartialTick() {
-        return net.minecraft.client.Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        // Canonical GeckoLib helper — returns gameTime + partialTick on the client,
+        // gameTime on the server. Keeps animation time monotonic across the client/server boundary
+        // and uses the same time source GeckoLib's renderer expects internally.
+        return software.bernie.geckolib.util.RenderUtil.getCurrentTick();
     }
 
     // ---------------- Controls/Goals ----------------
@@ -445,8 +443,10 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         }
         @Override
         public boolean canUse() {
+            // Re-roll a wander target the moment the previous path finishes — no idle delay.
+            // Combined with the forward cone in findPos() and the slow yaw rate from
+            // FlyingMoveControl, this gives a continuous gliding feel.
             return this.endWhale.navigation.isDone()
-                    && this.endWhale.random.nextInt(3) == 0
                     && !this.endWhale.isVehicle()
                     && !this.endWhale.isLeashed();
         }
@@ -470,8 +470,12 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         @Nullable
         private Vec3 findPos() {
             Vec3 vec3 = this.endWhale.getViewVector(0.5F);
-            Vec3 v = net.minecraft.world.entity.ai.util.HoverRandomPos.getPos(this.endWhale, 20, 20, vec3.x, vec3.z, (float) Math.PI, 50, 15);
-            v = v != null ? v : net.minecraft.world.entity.ai.util.AirAndWaterRandomPos.getPos(this.endWhale, 20, 20, -2, vec3.x, vec3.z, (float) Math.PI);
+            // Narrow the random angle (Math.PI = 180° spread) to a forward cone (~30°). Keeps
+            // the whale drifting roughly along its current heading instead of u-turning.
+            // Larger horizontal range/offset lets it pick farther targets so each path is a long glide.
+            float angle = (float) (Math.PI / 6.0);
+            Vec3 v = net.minecraft.world.entity.ai.util.HoverRandomPos.getPos(this.endWhale, 30, 12, vec3.x, vec3.z, angle, 80, 15);
+            v = v != null ? v : net.minecraft.world.entity.ai.util.AirAndWaterRandomPos.getPos(this.endWhale, 30, 12, -2, vec3.x, vec3.z, angle);
             if (this.endWhale.isSaddled() && v != null && this.endWhale.getOwner() != null
                     && v.distanceTo(this.endWhale.getOwner().position()) > 100.0D) {
                 v = null;
@@ -481,9 +485,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     static class EndWhaleTemptGoal extends Goal {
-        private static final TargetingConditions TEMP_TARGETING =
-                TargetingConditions.forNonCombat().range(100.0D).ignoreLineOfSight();
-        private final TargetingConditions targetingConditions;
+        private static final double RANGE = 100.0D;
         protected final EndWhaleEntity endWhale;
         private final double speedModifier;
         @Nullable protected Player player;
@@ -495,14 +497,22 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
             this.speedModifier = speedModifier;
             this.items = temptIngredient;
             this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-            this.targetingConditions = TEMP_TARGETING.copy().selector(this::shouldFollow);
         }
 
         @Override
         public boolean canUse() {
             if (this.calmDown > 0) { --this.calmDown; return false; }
-            this.player = this.endWhale.level().getNearestPlayer(this.targetingConditions, this.endWhale);
-            return this.player != null && !this.endWhale.isVehicle();
+            if (this.endWhale.isVehicle()) return false;
+
+            // Find nearest non-spectator player within RANGE who is holding the tempt ingredient.
+            // (TargetingConditions+selector was unreliable across loader versions; this is direct.)
+            Player nearest = this.endWhale.level().getNearestPlayer(this.endWhale, RANGE);
+            if (nearest == null || nearest.isSpectator() || !this.shouldFollow(nearest)) {
+                this.player = null;
+                return false;
+            }
+            this.player = nearest;
+            return true;
         }
 
         private boolean shouldFollow(LivingEntity entity) {
@@ -511,7 +521,6 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
         @Override
         public boolean canContinueToUse() {
-            // less thrashy than calling canUse() again each tick
             return this.player != null && this.player.isAlive()
                     && !this.endWhale.isVehicle() && !this.endWhale.isLeashed()
                     && this.shouldFollow(this.player)

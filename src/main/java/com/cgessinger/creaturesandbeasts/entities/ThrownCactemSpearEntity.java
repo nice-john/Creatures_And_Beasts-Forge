@@ -48,6 +48,27 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         builder.define(SPEAR, new ItemStack(CNBItems.CACTEM_SPEAR.get()));
     }
 
+    // ---- Save/load (1.21 ItemStack save/load API takes a HolderLookup.Provider) ----
+    @Override
+    public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        ItemStack spear = this.getSpear();
+        if (!spear.isEmpty()) {
+            tag.put("CactemSpear", spear.save(this.registryAccess(), new net.minecraft.nbt.CompoundTag()));
+        }
+        tag.putBoolean("DealtDamage", this.dealtDamage);
+    }
+
+    @Override
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains("CactemSpear", 10)) {
+            ItemStack.parse(this.registryAccess(), tag.getCompound("CactemSpear"))
+                    .ifPresent(stack -> this.entityData.set(SPEAR, stack));
+        }
+        this.dealtDamage = tag.getBoolean("DealtDamage");
+    }
+
     @Override
     public void tick() {
         if (this.inGroundTime > 4) {

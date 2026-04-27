@@ -309,7 +309,13 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         return 0.0F;
     }
 
-    // TODO[1.21.1 port]: getStandingEyeHeight removed; eyeHeight configured via EntityType.Builder.eyeHeight(...)
+    // 1.21 lost getStandingEyeHeight(Pose, EntityDimensions). Restore the original "eye at 50% of body
+    // height" via EntityDimensions.withEyeHeight, recomputed each pose change.
+    @Override
+    public EntityDimensions getDefaultDimensions(Pose pose) {
+        EntityDimensions base = super.getDefaultDimensions(pose);
+        return base.withEyeHeight(base.height() * 0.5F);
+    }
 
     @Nullable
     @Override

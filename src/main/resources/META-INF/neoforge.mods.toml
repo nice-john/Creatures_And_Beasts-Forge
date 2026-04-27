@@ -18,7 +18,7 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
 [[dependencies.cnb]]
     modId = "neoforge"
     type = "required"
-    versionRange = "[21.1.0,)"
+    versionRange = "[21.1.150,)"
     ordering = "NONE"
     side = "BOTH"
 
@@ -35,3 +35,9 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
     versionRange = "[4.8.3,)"
     ordering = "BEFORE"
     side = "BOTH"
+
+# End Whale rider tilt + jitter-suppression mixin. Disabled for now — re-enable
+# by uncommenting the block below. Source files (MixinLivingEntityRenderer.java
+# + cnb.mixins.json) remain in place.
+# [[mixins]]
+#     config = "cnb.mixins.json"

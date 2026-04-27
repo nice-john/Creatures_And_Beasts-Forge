@@ -177,8 +177,13 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
         return CNBSoundEvents.LITTLE_GREBE_HURT.get();
     }
 
-    /* TODO[1.21.1 port]: getPassengersRidingOffset removed, use getPassengerAttachmentPoint */ public double getPassengersRidingOffset() {
-        return this.getBbHeight() * 0.3D;
+    // 1.21 replaced getPassengersRidingOffset with the EntityAttachments system. Configure the
+    // PASSENGER attachment to sit at 30% of the grebe's body height (chick-on-adult ride point).
+    @Override
+    public net.minecraft.world.entity.EntityDimensions getDefaultDimensions(net.minecraft.world.entity.Pose pose) {
+        net.minecraft.world.entity.EntityDimensions base = super.getDefaultDimensions(pose);
+        return base.withAttachments(net.minecraft.world.entity.EntityAttachments.builder()
+                .attach(net.minecraft.world.entity.EntityAttachment.PASSENGER, 0.0F, base.height() * 0.3F, 0.0F));
     }
 
     @Override

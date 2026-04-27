@@ -102,8 +102,15 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         this.setTame(false, false);
         this.eatTimer = 0;
 
-        // Step over full blocks smoothly
-        /* TODO[1.21.1 port]: setMaxUpStep removed; use Attributes.STEP_HEIGHT modifier */
+        // 1.21 replaced setMaxUpStep with the STEP_HEIGHT attribute. Apply a transient bump from
+        // the default (~0.6) up to 1.3 so yetis step over full blocks without jumping.
+        var stepHeight = this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
+        if (stepHeight != null) {
+            stepHeight.addOrUpdateTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_step_height"),
+                    1.3D - stepHeight.getBaseValue(),
+                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+        }
 
         // (optional) teach pathfinder to avoid problem blocks
         this.setPathfindingMalus(PathType.WATER, -1.0F);

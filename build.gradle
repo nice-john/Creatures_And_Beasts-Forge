@@ -66,7 +66,7 @@ repositories {
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:21.1.95"
+    implementation "net.neoforged:neoforge:21.1.150"
 
     // GeckoLib (NeoForge 1.21.1)
     implementation 'software.bernie.geckolib:geckolib-neoforge-1.21.1:4.8.3'

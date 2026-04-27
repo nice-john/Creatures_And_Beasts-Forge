@@ -286,35 +286,23 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
 
     @Override
     public void saveToNetTag(ItemStack stack) {
-        CompoundTag tag = new net.minecraft.nbt.CompoundTag() /* TODO[1.21.1 port]: was stack.getOrCreateTag() */;
-
+        // 1.21 routes arbitrary item NBT through DataComponents.CUSTOM_DATA. Build the tag locally
+        // then stash it on the stack via CustomData. Custom name goes to the dedicated component.
         if (this.hasCustomName()) {
-            /* TODO[1.21.1 port]: was setHoverName */ if (false) stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, this.getCustomName());
+            stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, this.getCustomName());
         }
-        if (this.isNoAi()) {
-            tag.putBoolean("NoAI", this.isNoAi());
-        }
-
-        if (this.isSilent()) {
-            tag.putBoolean("Silent", this.isSilent());
-        }
-
-        if (this.isNoGravity()) {
-            tag.putBoolean("NoGravity", this.isNoGravity());
-        }
-
-        if (this.hasGlowingTag()) {
-            tag.putBoolean("Glowing", this.hasGlowingTag());
-        }
-
-        if (this.isInvulnerable()) {
-            tag.putBoolean("Invulnerable", this.isInvulnerable());
-        }
-
+        CompoundTag tag = new CompoundTag();
+        if (this.isNoAi())          tag.putBoolean("NoAI", true);
+        if (this.isSilent())        tag.putBoolean("Silent", true);
+        if (this.isNoGravity())     tag.putBoolean("NoGravity", true);
+        if (this.hasGlowingTag())   tag.putBoolean("Glowing", true);
+        if (this.isInvulnerable())  tag.putBoolean("Invulnerable", true);
         tag.putFloat("Health", this.getHealth());
         tag.putBoolean("Sad", this.getSad());
         tag.putBoolean("FromNet", true);
         tag.putString("LizardType", this.getLizardType().getId().toString());
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.of(tag));
     }
 
     @Override
