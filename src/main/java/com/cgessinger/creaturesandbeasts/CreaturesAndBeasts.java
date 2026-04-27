@@ -51,6 +51,7 @@ public class CreaturesAndBeasts {
         CNBParticleTypes.PARTICLE_TYPES.register(eventBus);
         CNBBlocks.BLOCKS.register(eventBus);
         CNBItems.ITEMS.register(eventBus);
+        com.cgessinger.creaturesandbeasts.init.CNBDataComponents.COMPONENTS.register(eventBus);
         CNBContainerTypes.CONTAINER_TYPES.register(eventBus);
         CNBPaintingTypes.PAINTINGS.register(eventBus);
         CNBSoundEvents.SOUND_EVENTS.register(eventBus);
