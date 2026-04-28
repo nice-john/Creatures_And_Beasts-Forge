@@ -1,13 +1,16 @@
 plugins {
     id 'net.neoforged.gradle.userdev' version '7.0.165'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    // GradleUp fork is the maintained successor of johnrengelman/shadow (which was abandoned
+    // and bundles ASM 9.5 — too old to read Java 21 bytecode, fails with "Unsupported class
+    // file major version 65"). 8.3.x ships ASM 9.7+. Drop-in replacement.
+    id 'com.gradleup.shadow' version '8.3.5'
     id 'eclipse'
 }
 
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 
-version = '1.7.0'
+version = '1.6.0'
 group = 'com.cgessinger.creaturesandbeasts'
 archivesBaseName = "CNB-1.21.1"
 
