@@ -4,13 +4,6 @@
   "spawns": [
     {
       "biomes": "#forge:is_snowy",
-      "category": "creature",
-      "weight": 7,
-      "min": 2,
-      "max": 3
-    },
-    {
-      "biomes": "#forge:is_snowy",
       "biomes_intersect": "#forge:is_mountain",
       "category": "creature",
       "weight": 7,
