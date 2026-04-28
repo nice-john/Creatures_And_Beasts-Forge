@@ -3,13 +3,11 @@
   "entityType": "cnb:minipad",
   "spawns": [
     {
-      "biomes": "minecraft:swamp",
+      "biomes": "#c:is_swamp",
       "category": "creature",
       "weight": 20,
       "min": 3,
-      "max": 6,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 6
     }
   ]
 }
