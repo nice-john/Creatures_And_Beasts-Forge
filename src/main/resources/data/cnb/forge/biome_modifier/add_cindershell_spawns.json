@@ -5,7 +5,7 @@
     {
       "biomes": "#forge:is_nether",
       "category": "creature",
-      "weight": 600,
+      "weight": 40,
       "min": 2,
       "max": 8
     }
