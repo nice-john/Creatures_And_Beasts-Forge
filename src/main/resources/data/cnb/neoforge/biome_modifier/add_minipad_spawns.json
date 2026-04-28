@@ -5,7 +5,7 @@
     {
       "biomes": "#c:is_swamp",
       "category": "creature",
-      "weight": 40,
+      "weight": 30,
       "min": 3,
       "max": 6
     }

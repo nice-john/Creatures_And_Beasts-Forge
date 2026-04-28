@@ -13,7 +13,7 @@
       "biomes": "#c:is_snowy",
       "biomes_intersect": "#c:is_mountain",
       "category": "creature",
-      "weight": 4,
+      "weight": 3,
       "min": 2,
       "max": 3
     }

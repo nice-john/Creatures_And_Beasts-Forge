@@ -5,7 +5,7 @@
     {
       "biomes": "#c:is_river",
       "category": "creature",
-      "weight": 70,
+      "weight": 53,
       "min": 2,
       "max": 3
     }
