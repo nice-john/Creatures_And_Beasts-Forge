@@ -2,6 +2,7 @@ package com.cgessinger.creaturesandbeasts.items;
 
 import com.cgessinger.creaturesandbeasts.entities.ThrownCactemSpearEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -24,6 +25,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -50,6 +52,34 @@ public class SpearItem extends Item {
                         new AttributeModifier(ATTACK_SPEED_ID, -2.9D, AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND)
                 .build();
+    }
+
+    /** Spears can't break blocks (except in creative). Mirrors vanilla Trident. */
+    @Override
+    public boolean canAttackBlock(BlockState state, Level level, BlockPos pos, Player player) {
+        return !player.isCreative();
+    }
+
+    /** Melee hits cost 1 durability. */
+    @Override
+    public boolean hurtEnemy(ItemStack stack, LivingEntity hurtEntity, LivingEntity owner) {
+        stack.hurtAndBreak(1, owner, EquipmentSlot.MAINHAND);
+        return true;
+    }
+
+    /** Mining a non-instabreak block costs 2 durability. */
+    @Override
+    public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity entity) {
+        if ((double) state.getDestroySpeed(level, pos) != 0.0D) {
+            stack.hurtAndBreak(2, entity, EquipmentSlot.MAINHAND);
+        }
+        return true;
+    }
+
+    /** Low enchantability — matches Trident-tier enchant table behavior. */
+    @Override
+    public int getEnchantmentValue() {
+        return 1;
     }
 
     @Override

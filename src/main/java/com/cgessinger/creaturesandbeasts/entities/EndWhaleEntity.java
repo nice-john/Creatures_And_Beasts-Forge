@@ -200,7 +200,15 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     public boolean rideableUnderWater() { return true; }
-    // TODO[1.21.1 port]: canBreatheUnderwater is now non-overrideable; use canDrownInFluidType / setAirSupply
+
+    // 1.21 made canBreatheUnderwater() final on LivingEntity. NeoForge's replacement is the
+    // FluidType extension: declare we don't drown in water. Mirrors 1.19 behavior so a saddled
+    // whale can carry its rider through water without suffocating.
+    @Override
+    public boolean canDrownInFluidType(net.neoforged.neoforge.fluids.FluidType type) {
+        if (type == net.neoforged.neoforge.common.NeoForgeMod.WATER_TYPE.value()) return false;
+        return super.canDrownInFluidType(type);
+    }
 
     // Movement
     public void travel(Vec3 travelVector) {

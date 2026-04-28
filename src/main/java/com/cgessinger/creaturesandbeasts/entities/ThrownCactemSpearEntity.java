@@ -111,6 +111,19 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         super.tick();
     }
 
+    /**
+     * Suppress the inherited Arrow despawn timer while a Loyalty-enchanted spear is returning to
+     * its owner. Without this, a high-latency or slow return path can despawn the spear mid-flight
+     * and the player never gets it back. Mirrors 1.19 behavior.
+     */
+    @Override
+    protected void tickDespawn() {
+        int loyaltyLevel = enchantLevel(Enchantments.LOYALTY);
+        if (this.pickup != AbstractArrow.Pickup.ALLOWED || loyaltyLevel <= 0) {
+            super.tickDespawn();
+        }
+    }
+
     @Override
     protected ItemStack getPickupItem() {
         return this.getSpear().copy();
