@@ -5,28 +5,28 @@
     {
       "biomes": "#c:is_badlands",
       "category": "creature",
-      "weight": 15,
+      "weight": 30,
       "min": 1,
       "max": 4
     },
     {
       "biomes": "#c:is_desert",
       "category": "creature",
-      "weight": 15,
+      "weight": 30,
       "min": 1,
       "max": 4
     },
     {
       "biomes": "#c:is_jungle",
       "category": "creature",
-      "weight": 100,
+      "weight": 200,
       "min": 1,
       "max": 4
     },
     {
       "biomes": "#c:is_mushroom",
       "category": "creature",
-      "weight": 10,
+      "weight": 20,
       "min": 1,
       "max": 4
     }

@@ -5,49 +5,49 @@
     {
       "biomes": "#c:is_mushroom",
       "category": "creature",
-      "weight": 20,
+      "weight": 40,
       "min": 3,
       "max": 5
     },
     {
       "biomes": "#c:is_swamp",
       "category": "creature",
-      "weight": 25,
+      "weight": 50,
       "min": 3,
       "max": 5
     },
     {
       "biomes": ["minecraft:lush_caves"],
       "category": "creature",
-      "weight": 60,
+      "weight": 120,
       "min": 3,
       "max": 5
     },
     {
       "biomes": ["minecraft:dark_forest"],
       "category": "creature",
-      "weight": 70,
+      "weight": 140,
       "min": 3,
       "max": 5
     },
     {
       "biomes": ["minecraft:nether_wastes"],
       "category": "monster",
-      "weight": 60,
+      "weight": 120,
       "min": 2,
       "max": 4
     },
     {
       "biomes": ["minecraft:warped_forest"],
       "category": "monster",
-      "weight": 2,
+      "weight": 4,
       "min": 2,
       "max": 4
     },
     {
       "biomes": ["minecraft:crimson_forest"],
       "category": "monster",
-      "weight": 120,
+      "weight": 240,
       "min": 2,
       "max": 4
     }
