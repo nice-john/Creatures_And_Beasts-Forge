@@ -80,7 +80,26 @@
       "PowerShell(git diff --no-index --text -- \"$env:TEMP\\\\old_LizardEggItem.java\" \"src\\\\main\\\\java\\\\com\\\\cgessinger\\\\creaturesandbeasts\\\\items\\\\LizardEggItem.java\" 2>&1 | Where-Object { $_ -match '^[+-]' -and $_ -notmatch '^[+-]{2}' })",
       "PowerShell(git status --short | Where-Object { $_ -notmatch \"\\\\.claude\" })",
       "PowerShell(git log --oneline -3; \"---\"; git status --short | Where-Object { $_ -notmatch \"\\\\.claude\" })",
-      "PowerShell(git push origin 1.21.1 2>&1)"
+      "PowerShell(git push origin 1.21.1 2>&1)",
+      "PowerShell(Select-String -Path \"$env:TEMP\\\\cnbcompile.log\" -Pattern \"error:\" -SimpleMatch -Context 0,3 | ForEach-Object { $_.Line; \\($_.Context.PostContext -join \" | \"\\) })",
+      "PowerShell(git show \"1.19:src/main/java/com/cgessinger/creaturesandbeasts/entities/EndWhaleEntity.java\" | Select-String -Pattern \"FlyingSpeed|public void ride\\\\\\(|canBreatheUnderwater\" -Context 0,4 | ForEach-Object { $_.Line; \\($_.Context.PostContext -join \"`n\"\\); \"---\" })",
+      "Bash(./gradlew compileJava --console=plain)",
+      "Read(//c/Program Files/Java/**)",
+      "Read(//c/Program Files/**)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(xargs ls *)",
+      "Bash(xargs grep *)",
+      "Bash(find ~/.gradle/caches/ng_execute/2387654b474c0a35a1c76a1e09591197c9a0aa9a939aada89b57a8d2475b365a/output/net/minecraft/world/item/component -name \"ItemAttributeModifiers.java\" -exec cat {} \\\\;)",
+      "Bash(find ~/.gradle/caches/ng_execute/2387654b474c0a35a1c76a1e09591197c9a0aa9a939aada89b57a8d2475b365a/output/net/minecraft/world/entity -name \"EquipmentSlotGroup.java\" -exec grep -n \"bySlot\\\\|public static\" {} \\\\;)",
+      "PowerShell(Get-ChildItem -Path \"$env:USERPROFILE\\\\.gradle\\\\caches\\\\ng_execute\" -Recurse -Filter \"EnchantmentTags.java\" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName)",
+      "PowerShell(git add src/main/java/com/cgessinger/creaturesandbeasts/entities/ai/ConvertItemGoal.java src/main/java/com/cgessinger/creaturesandbeasts/events/CNBEvents.java src/main/java/com/cgessinger/creaturesandbeasts/init/CNBDataComponents.java src/main/resources/assets/cnb/lang/en_us.json)",
+      "PowerShell(git commit -F .git-commit-msg.tmp)",
+      "PowerShell($env:JAVA_HOME=$null; & .\\\\gradlew.bat --version 2>&1 | Select-Object -Last 10)",
+      "PowerShell(\"User scope:    \" + [Environment]::GetEnvironmentVariable\\(\"JAVA_HOME\", \"User\"\\); \"Machine scope: \" + [Environment]::GetEnvironmentVariable\\(\"JAVA_HOME\", \"Machine\"\\); \"Current shell: \" + $env:JAVA_HOME)",
+      "PowerShell(New-Item -ItemType Directory -Path \"src/main/resources/data/cnb/neoforge/biome_modifier\" -Force | Out-Null; $files = @\\(\"add_cactem_spawns\",\"add_cindershell_spawns\",\"add_end_whale_spawns\",\"add_lilytad_spawns\",\"add_little_grebe_spawns\",\"add_lizard_spawns\",\"add_minipad_spawns\",\"add_sporeling_spawns\",\"add_yeti_spawns\"\\); foreach \\($f in $files\\) { git mv \"src/main/resources/data/cnb/forge/biome_modifier/$f.json\" \"src/main/resources/data/cnb/neoforge/biome_modifier/$f.json\" }; Remove-Item -Path \"src/main/resources/data/cnb/forge\" -Recurse -ErrorAction SilentlyContinue; git status --short)",
+      "Bash(grep -E \"^[^/]*/$\")"
     ]
   }
 }
