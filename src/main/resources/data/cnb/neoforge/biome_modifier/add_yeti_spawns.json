@@ -4,13 +4,6 @@
   "spawns": [
     {
       "biomes": "#c:is_snowy",
-      "category": "creature",
-      "weight": 7,
-      "min": 2,
-      "max": 3
-    },
-    {
-      "biomes": "#c:is_snowy",
       "biomes_intersect": "#c:is_mountain",
       "category": "creature",
       "weight": 7,
