@@ -27,4 +27,15 @@ public class CNBDataComponents {
             COMPONENTS.registerComponentType("imbued_ticks", builder -> builder
                     .persistent(Codec.INT)
                     .networkSynchronized(ByteBufCodecs.VAR_INT));
+
+    /**
+     * Number of yeti-hide layers reinforcing an armor piece. Set on an ItemStack when the player
+     * combines armor + Yeti Hide on an anvil. Each layer adds a small armor bonus via a patched
+     * {@code ItemAttributeModifiers} component on the stack. Capped at {@code CNBConfig.hideAmount}.
+     * Zero / unset means "no reinforcement" — we never write 0; we just leave the component absent.
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> HIDE_LAYERS =
+            COMPONENTS.registerComponentType("hide_layers", builder -> builder
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT));
 }

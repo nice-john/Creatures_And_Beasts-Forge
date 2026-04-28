@@ -2,9 +2,11 @@ package com.cgessinger.creaturesandbeasts.entities.ai;
 
 import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -16,7 +18,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.pathfinder.Path;
 
 import java.util.List;
-import java.util.Map;
 
 public class ConvertItemGoal extends Goal {
     protected Path path;
@@ -56,8 +57,17 @@ public class ConvertItemGoal extends Goal {
         return false;
     }
 
+    /**
+     * Curse detection in 1.21: {@code Enchantment.isCurse()} is gone, replaced by the
+     * {@code #minecraft:curse} enchantment tag ({@link EnchantmentTags#CURSE}). Each enchantment
+     * is now a {@link Holder} whose {@code is(TagKey)} resolves tag membership.
+     */
     private boolean hasCurse(ItemStack stack) {
-        // TODO[1.21.1 port]: Enchantment.isCurse() removed; replace with tag check (EnchantmentTags.CURSE).
+        for (Holder<Enchantment> holder : stack.getEnchantments().keySet()) {
+            if (holder.is(EnchantmentTags.CURSE)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -86,9 +96,23 @@ public class ConvertItemGoal extends Goal {
         if (entityIn.getHolding().is(Items.DIRT)) {
             entityIn.spawnAtLocation(new ItemStack(Items.MYCELIUM, 1));
         } else {
-            // TODO[1.21.1 port]: re-implement curse-stripping. Old code stripped curse enchantments and
-            // damaged the item; needs ItemEnchantments DataComponent rewrite.
             ItemStack returnItem = entityIn.getHolding().copy();
+
+            // Curse-strip: random damage cost (capped at 90% durability), then strip every curse
+            // in one pass. 1.19 stripped one curse per pickup as a side-effect of avoiding a CME;
+            // with the 1.21 ItemEnchantments mutator that's no longer required, so the player
+            // doesn't have to feed a doubly-cursed item back twice.
+            if (returnItem.isEnchanted() && hasCurse(returnItem)) {
+                if (returnItem.isDamageableItem()) {
+                    float percent = entityIn.getRandom().nextFloat() * 0.5F;
+                    int damage = (int) (percent * returnItem.getMaxDamage()) + returnItem.getDamageValue();
+                    int capped = Math.min(damage, (int) (returnItem.getMaxDamage() * 0.9F));
+                    returnItem.setDamageValue(Math.max(returnItem.getDamageValue(), capped));
+                }
+                EnchantmentHelper.updateEnchantments(returnItem, mut ->
+                        mut.removeIf(holder -> holder.is(EnchantmentTags.CURSE)));
+            }
+
             entityIn.spawnAtLocation(returnItem);
             if (entityIn.level() instanceof ServerLevel serverLevel) {
                 ExperienceOrb.award(serverLevel, entityIn.position(), entityIn.getRandom().nextInt(16) + 1);
