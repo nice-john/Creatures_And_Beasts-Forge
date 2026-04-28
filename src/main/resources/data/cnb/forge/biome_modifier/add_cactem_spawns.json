@@ -5,14 +5,14 @@
     {
       "biomes": "#forge:is_badlands",
       "category": "creature",
-      "weight": 3,
+      "weight": 5,
       "min": 6,
       "max": 13
     },
     {
       "biomes": "#forge:is_desert",
       "category": "creature",
-      "weight": 3,
+      "weight": 5,
       "min": 6,
       "max": 13
     }

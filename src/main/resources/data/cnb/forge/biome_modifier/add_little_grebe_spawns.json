@@ -5,7 +5,7 @@
     {
       "biomes": "#forge:is_river",
       "category": "creature",
-      "weight": 35,
+      "weight": 53,
       "min": 2,
       "max": 3
     }
