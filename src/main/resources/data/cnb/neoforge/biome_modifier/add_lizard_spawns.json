@@ -26,7 +26,7 @@
       "budget": 0.0
     },
     {
-      "biomes": "#forge:is_mushroom",
+      "biomes": "#c:is_mushroom",
       "category": "creature",
       "weight": 10,
       "min": 1,
