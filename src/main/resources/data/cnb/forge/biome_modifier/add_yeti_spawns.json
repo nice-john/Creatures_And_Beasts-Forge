@@ -3,27 +3,19 @@
   "entityType": "cnb:yeti",
   "spawns": [
     {
-      "biomes": [
-        "minecraft:snowy_plains",
-        "minecraft:ice_spikes",
-        "minecraft:snowy_taiga",
-        "minecraft:snowy_slopes"
-      ],
+      "biomes": "#forge:is_snowy",
       "category": "creature",
       "weight": 1,
       "min": 2,
-      "max": 3,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 3
     },
     {
-      "biomes": "minecraft:frozen_peaks",
+      "biomes": "#forge:is_snowy",
+      "biomes_intersect": "#forge:is_mountain",
       "category": "creature",
       "weight": 2,
       "min": 2,
-      "max": 3,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 3
     }
   ]
 }

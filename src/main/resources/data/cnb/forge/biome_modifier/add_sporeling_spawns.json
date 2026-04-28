@@ -3,67 +3,53 @@
   "entityType": "cnb:sporeling",
   "spawns": [
     {
-      "biomes": "minecraft:mushroom_fields",
+      "biomes": "#forge:is_mushroom",
       "category": "creature",
       "weight": 20,
       "min": 3,
-      "max": 5,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 5
     },
     {
-      "biomes": "minecraft:swamp",
+      "biomes": "#forge:is_swamp",
       "category": "creature",
       "weight": 25,
       "min": 3,
-      "max": 5,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 5
     },
     {
-      "biomes": "minecraft:lush_caves",
+      "biomes": ["minecraft:lush_caves"],
       "category": "creature",
       "weight": 60,
       "min": 3,
-      "max": 5,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 5
     },
     {
-      "biomes": "minecraft:dark_forest",
+      "biomes": ["minecraft:dark_forest"],
       "category": "creature",
       "weight": 70,
       "min": 3,
-      "max": 5,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 5
     },
     {
-      "biomes": "minecraft:nether_wastes",
+      "biomes": ["minecraft:nether_wastes"],
       "category": "monster",
       "weight": 60,
       "min": 2,
-      "max": 4,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 4
     },
     {
-      "biomes": "minecraft:warped_forest",
+      "biomes": ["minecraft:warped_forest"],
       "category": "monster",
       "weight": 2,
       "min": 2,
-      "max": 4,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 4
     },
     {
-      "biomes": "minecraft:crimson_forest",
+      "biomes": ["minecraft:crimson_forest"],
       "category": "monster",
       "weight": 120,
       "min": 2,
-      "max": 4,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 4
     }
   ]
 }

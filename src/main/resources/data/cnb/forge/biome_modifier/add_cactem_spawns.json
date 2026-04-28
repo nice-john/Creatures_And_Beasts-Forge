@@ -3,18 +3,18 @@
   "entityType": "cnb:cactem",
   "spawns": [
     {
-      "biomes": [
-        "minecraft:badlands",
-        "minecraft:wooded_badlands",
-        "minecraft:eroded_badlands",
-        "minecraft:desert"
-      ],
+      "biomes": "#forge:is_badlands",
       "category": "creature",
       "weight": 3,
       "min": 6,
-      "max": 13,
-      "cost": 0.0,
-      "budget": 0.0
+      "max": 13
+    },
+    {
+      "biomes": "#forge:is_desert",
+      "category": "creature",
+      "weight": 3,
+      "min": 6,
+      "max": 13
     }
   ]
 }

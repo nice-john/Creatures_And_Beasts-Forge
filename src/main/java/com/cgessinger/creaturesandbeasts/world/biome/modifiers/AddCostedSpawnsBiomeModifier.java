@@ -16,6 +16,7 @@ import net.minecraftforge.common.world.ModifiableBiomeInfo;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
+import java.util.Optional;
 
 public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityType, List<CostSpawnerData> spawnerData) implements BiomeModifier {
 
@@ -29,12 +30,17 @@ public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityTy
         if (phase == Phase.ADD) {
             MobSpawnSettingsBuilder spawns = builder.getMobSpawnSettings();
             for (CostSpawnerData costSpawnerData : this.spawnerData) {
-                if (costSpawnerData.biomes().contains(biome)) {
-                    spawns.addSpawn(costSpawnerData.category, new MobSpawnSettings.SpawnerData(this.entityType, costSpawnerData.weight, costSpawnerData.min, costSpawnerData.max));
+                if (!costSpawnerData.biomes().contains(biome)) continue;
+                // Optional intersection set — if present, the biome must ALSO be in this set.
+                // Used for "snowy AND mountain" yeti pools where neither tag alone is selective enough.
+                if (costSpawnerData.biomesIntersect().isPresent()
+                        && !costSpawnerData.biomesIntersect().get().contains(biome)) {
+                    continue;
+                }
+                spawns.addSpawn(costSpawnerData.category, new MobSpawnSettings.SpawnerData(this.entityType, costSpawnerData.weight, costSpawnerData.min, costSpawnerData.max));
 
-                    if (costSpawnerData.cost > 0.0D && costSpawnerData.budget > 0.0D) {
-                        spawns.addMobCharge(this.entityType, costSpawnerData.cost, costSpawnerData.budget);
-                    }
+                if (costSpawnerData.cost > 0.0D && costSpawnerData.budget > 0.0D) {
+                    spawns.addMobCharge(this.entityType, costSpawnerData.cost, costSpawnerData.budget);
                 }
             }
         }
@@ -46,9 +52,10 @@ public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityTy
     }
 
 
-    private record CostSpawnerData(HolderSet<Biome> biomes, MobCategory category, Weight weight, int min, int max, double cost, double budget) {
+    private record CostSpawnerData(HolderSet<Biome> biomes, Optional<HolderSet<Biome>> biomesIntersect, MobCategory category, Weight weight, int min, int max, double cost, double budget) {
         private static final Codec<CostSpawnerData> CODEC = RecordCodecBuilder.create(builder -> builder.group(
                 Biome.LIST_CODEC.fieldOf("biomes").forGetter(CostSpawnerData::biomes),
+                Biome.LIST_CODEC.optionalFieldOf("biomes_intersect").forGetter(CostSpawnerData::biomesIntersect),
                 MobCategory.CODEC.fieldOf("category").forGetter(CostSpawnerData::category),
                 Weight.CODEC.fieldOf("weight").forGetter(CostSpawnerData::weight),
                 Codec.INT.fieldOf("min").forGetter(CostSpawnerData::min),

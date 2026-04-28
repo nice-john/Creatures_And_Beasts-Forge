@@ -87,7 +87,11 @@ public class CreaturesAndBeasts {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        ModEntitySpawns.entitySpawnPlacementRegistry();
+        // SpawnPlacements.register modifies a non-thread-safe HashMap. FMLCommonSetupEvent runs in
+        // parallel mod loading, so concurrent registrations from multiple mods can lose entries
+        // silently — that's the most likely cause of the user-reported "yetis don't spawn" issue
+        // when other mods are present. enqueueWork defers to the main thread.
+        event.enqueueWork(ModEntitySpawns::entitySpawnPlacementRegistry);
 
         // Register New Flowers to be Able to Place in Pots
         FlowerPotBlock flowerPot = (FlowerPotBlock) Blocks.FLOWER_POT;
