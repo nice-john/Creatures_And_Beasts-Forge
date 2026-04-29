@@ -31,7 +31,10 @@ repositories {
 dependencies {
     minecraft "com.mojang:minecraft:1.20.1"
     mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:0.15.9"
+    // Fabric Loader 0.16.x ships mixin 0.13.x which has CompatibilityLevel.JAVA_22.
+    // 0.15.9 paired with an older mixin can crash with NoSuchFieldError: JAVA_22 when
+    // the dev-launch resolves a newer loader at runtime than the compile-time pin.
+    modImplementation "net.fabricmc:fabric-loader:0.16.10"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.92.2+1.20.1"
 
     // GeckoLib for Fabric 1.20.1
