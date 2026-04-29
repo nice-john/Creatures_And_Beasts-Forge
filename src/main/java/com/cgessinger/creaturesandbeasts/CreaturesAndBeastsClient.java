@@ -3,13 +3,8 @@ package com.cgessinger.creaturesandbeasts;
 import com.cgessinger.creaturesandbeasts.client.CNBClient;
 import com.cgessinger.creaturesandbeasts.client.entity.model.CactemSpearModel;
 import com.cgessinger.creaturesandbeasts.client.entity.render.*;
-import com.cgessinger.creaturesandbeasts.client.armor.render.FlowerCrownRenderer;
-import com.cgessinger.creaturesandbeasts.client.armor.render.SporelingBackpackRenderer;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBParticleTypes;
-import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
-import com.cgessinger.creaturesandbeasts.items.GlowingFlowerCrownItem;
-import com.cgessinger.creaturesandbeasts.items.SporelingBackpackItem;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -17,7 +12,6 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
-import software.bernie.geckolib.renderer.GeoArmorRenderer;
 import com.cgessinger.creaturesandbeasts.client.particle.CactemHealParticle;
 import com.cgessinger.creaturesandbeasts.client.particle.MinipadFlowerParticle;
 
@@ -46,15 +40,13 @@ public class CreaturesAndBeastsClient implements ClientModInitializer {
                 CactemSpearModel::createLayer);
 
         // ── GeckoLib armor renderers ─────────────────────────────────────────
-        // TODO[fabric port]: Fabric GeckoLib doesn't expose a static
-        // GeoArmorRenderer.registerFor — renderers are hooked via each GeoItem's
-        // getRenderProvider() returning a GeoRenderProvider instance. For now the
-        // FlowerCrownItem and SporelingBackpackItem getRenderProvider stubs return
-        // GeoItem.makeRenderer(this) (no-op default), so the GeckoLib armor model
-        // doesn't render — vanilla armor model fallback applies.
-        // GeoArmorRenderer.registerFor(FlowerCrownItem.class,         FlowerCrownRenderer::new);
-        // GeoArmorRenderer.registerFor(GlowingFlowerCrownItem.class,  FlowerCrownRenderer::new);
-        // GeoArmorRenderer.registerFor(SporelingBackpackItem.class,   SporelingBackpackRenderer::new);
+        // No-op here on Fabric — there is no equivalent of Forge's static
+        // GeoArmorRenderer.registerFor(...). Renderer wiring lives on each
+        // item via createRenderer / getRenderProvider returning a
+        // RenderProvider that builds the GeoArmorRenderer lazily on the
+        // client. See FlowerCrownItem and SporelingBackpackItem for the
+        // implementations; GlowingFlowerCrownItem inherits the FlowerCrown
+        // wiring through extension.
 
         // ── Particle factories ───────────────────────────────────────────────
         ParticleFactoryRegistry.getInstance().register(
