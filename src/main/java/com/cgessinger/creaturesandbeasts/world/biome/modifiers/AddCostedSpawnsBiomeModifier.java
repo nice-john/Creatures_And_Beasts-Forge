@@ -1,9 +1,10 @@
 package com.cgessinger.creaturesandbeasts.world.biome.modifiers;
 
+import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
-import net.fabricmc.fabric.api.biome.v1.BiomeModificationContext;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
+import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.entity.MobCategory;
@@ -38,12 +39,16 @@ public final class AddCostedSpawnsBiomeModifier {
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(BiomeTags.IS_END),
                 MobCategory.CREATURE, CNBEntityTypes.END_WHALE, 10, 1, 1);
-        // TODO[fabric port]: spawn cost (400 charge, 1.0 budget) was set on Forge to
-        // throttle end-whale density. The Fabric BiomeModifications API doesn't expose
-        // a stable addProperties(predicate, BiConsumer) signature in 0.92.x — the
-        // closest path is BiomeModifications.create(...).add(...).buildAndRegister()
-        // with a registered ResourceLocation. Skipping for now means whales can spawn
-        // slightly more densely than the Forge build until this is wired.
+        // Density cap (charge 400, budget 1.0) so whales don't pack into a chunk.
+        // The Fabric Biome API exposes setSpawnCost via the modifier-builder path:
+        // create(id) -> add(phase, selector, modifier) -> the modifier closure gets
+        // a SpawnSettingsContext via getSpawnSettings(). We use ADDITIONS phase so
+        // it composes cleanly with the addSpawn call above.
+        BiomeModifications.create(new ResourceLocation(CreaturesAndBeasts.MOD_ID, "end_whale_spawn_cost"))
+                .add(ModificationPhase.ADDITIONS,
+                        ctx -> ctx.hasTag(BiomeTags.IS_END),
+                        (selector, modContext) ->
+                                modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.END_WHALE, 400.0D, 1.0D));
 
         // ── LILYTAD ─────────────────────────────────────────────────────
         BiomeModifications.addSpawn(

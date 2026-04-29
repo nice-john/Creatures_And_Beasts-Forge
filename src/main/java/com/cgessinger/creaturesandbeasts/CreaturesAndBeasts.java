@@ -1,6 +1,7 @@
 package com.cgessinger.creaturesandbeasts;
 
 import com.cgessinger.creaturesandbeasts.config.CNBConfig;
+import com.cgessinger.creaturesandbeasts.events.CNBEvents;
 import com.cgessinger.creaturesandbeasts.init.*;
 import com.cgessinger.creaturesandbeasts.world.gen.ModEntitySpawns;
 import net.fabricmc.api.ModInitializer;
@@ -39,12 +40,11 @@ public class CreaturesAndBeasts implements ModInitializer {
         CNBLootModifiers.register();
 
         // ── Game events ───────────────────────────────────────────────────────
-        // TODO[fabric port]: there is no CNBEvents class on this branch yet. The Forge
-        // port had AnvilUpdateEvent (yeti hide combine + heal-spell-book combine),
-        // ItemAttributeModifierEvent (yeti hide armor bonus), LootingLevelEvent (spear
-        // looting), LivingTickEvent (sporeling backpack drop), PlayerInteractEvent
-        // (sporeling dismount). These each need a Fabric-specific replacement (mostly
-        // mixins) and aren't ported yet.
+        // Anvil combine, yeti-hide armor bonus, spear looting, sporeling backpack
+        // drop, and sporeling rider positioning all live in mixins (see the
+        // mixin/ package + creatures-and-beasts.mixins.json). Only the
+        // right-click-to-dismount sporeling logic uses an API-level callback.
+        CNBEvents.register();
 
         // ── Flower-pot plant associations ─────────────────────────────────────
         // No-op on Fabric: the vanilla FlowerPotBlock(Block plant, Properties) ctor

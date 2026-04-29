@@ -6,6 +6,8 @@
     "MixinAnvilMenu",
     "MixinEntity",
     "MixinItemStack",
+    "MixinItemStackHideArmor",
+    "MixinLivingEntityLooting",
     "MixinPlayerTick"
   ],
   "client": [
