@@ -22,7 +22,7 @@ public class CNBBlocks {
                     BlockBehaviour.Properties.of().noCollission().instabreak().sound(SoundType.GRASS)));
 
     public static final FlowerPotBlock POTTED_PINK_WATERLILY = register("potted_pink_waterlily",
-            new FlowerPotBlock(null, PINK_WATERLILY_BLOCK,
+            new FlowerPotBlock(PINK_WATERLILY_BLOCK,
                     BlockBehaviour.Properties.of().instabreak().noOcclusion()));
 
     // Light Pink Waterlily
@@ -31,7 +31,7 @@ public class CNBBlocks {
                     BlockBehaviour.Properties.of().noCollission().instabreak().sound(SoundType.GRASS)));
 
     public static final FlowerPotBlock POTTED_LIGHT_PINK_WATERLILY = register("potted_light_pink_waterlily",
-            new FlowerPotBlock(null, LIGHT_PINK_WATERLILY_BLOCK,
+            new FlowerPotBlock(LIGHT_PINK_WATERLILY_BLOCK,
                     BlockBehaviour.Properties.of().instabreak().noOcclusion()));
 
     // Yellow Waterlily
@@ -40,7 +40,7 @@ public class CNBBlocks {
                     BlockBehaviour.Properties.of().noCollission().instabreak().sound(SoundType.GRASS)));
 
     public static final FlowerPotBlock POTTED_YELLOW_WATERLILY = register("potted_yellow_waterlily",
-            new FlowerPotBlock(null, YELLOW_WATERLILY_BLOCK,
+            new FlowerPotBlock(YELLOW_WATERLILY_BLOCK,
                     BlockBehaviour.Properties.of().instabreak().noOcclusion()));
 
     // Cinder Furnace

@@ -28,19 +28,19 @@ public class CNBItems {
             new WaterlilyBlockItem(CNBBlocks.PINK_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
                             .nutrition(4).saturationMod(0.5F).alwaysEat()
-                            .effect(() -> new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
+                            .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     public static final WaterlilyBlockItem LIGHT_PINK_WATERLILY = register("light_pink_waterlily",
             new WaterlilyBlockItem(CNBBlocks.LIGHT_PINK_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
                             .nutrition(4).saturationMod(0.5F).alwaysEat()
-                            .effect(() -> new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
+                            .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     public static final WaterlilyBlockItem YELLOW_WATERLILY = register("yellow_waterlily",
             new WaterlilyBlockItem(CNBBlocks.YELLOW_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
                             .nutrition(4).saturationMod(0.5F).alwaysEat()
-                            .effect(() -> new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
+                            .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     // Bucketed Mobs
     public static final CNBEntityBucketItem CINDERSHELL_BUCKET = register("cindershell_bucket",
