@@ -12,7 +12,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 
 public record EntitySpawnData(ResourceLocation entityType, ResourceLocation biome, MobCategory spawnCategory, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {

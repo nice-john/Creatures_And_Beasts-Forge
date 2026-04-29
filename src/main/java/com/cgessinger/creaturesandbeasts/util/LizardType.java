@@ -5,8 +5,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -32,7 +31,7 @@ public class LizardType {
         this.spawnItem = spawnItem;
     }
 
-    @CheckForNull
+    @Nullable
     public Item getSpawnItem() {
         final Item item = this.spawnItem.get();
         if (item == null || item.equals(Items.AIR)) {

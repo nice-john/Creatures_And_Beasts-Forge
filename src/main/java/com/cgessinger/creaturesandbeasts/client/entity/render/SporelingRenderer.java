@@ -19,7 +19,7 @@ import net.fabricmc.api.Environment;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
 public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {

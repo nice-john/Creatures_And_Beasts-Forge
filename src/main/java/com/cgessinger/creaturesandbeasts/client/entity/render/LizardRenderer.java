@@ -14,7 +14,7 @@ import net.fabricmc.api.Environment;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
 public class LizardRenderer extends GeoEntityRenderer<LizardEntity> {

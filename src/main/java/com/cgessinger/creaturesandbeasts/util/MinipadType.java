@@ -6,8 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -41,7 +40,7 @@ public class MinipadType {
         this.particle = particle;
     }
 
-    @CheckForNull
+    @Nullable
     public Item getShearItem() {
         final Item item = this.shearItem.get();
         if (item == null || item.equals(Items.AIR)) {
@@ -55,7 +54,7 @@ public class MinipadType {
         this.shearItem = () -> shearItem;
     }
 
-    @CheckForNull
+    @Nullable
     public Item getGlowShearItem() {
         final Item item = this.glowShearItem.get();
         if (item == null || item.equals(Items.AIR)) {
@@ -93,7 +92,7 @@ public class MinipadType {
         this.particle = () -> particle;
     }
 
-    @CheckForNull
+    @Nullable
     public SimpleParticleType getParticle() {
         return this.particle.get();
     }

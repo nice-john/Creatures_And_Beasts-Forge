@@ -4,7 +4,7 @@ import com.cgessinger.creaturesandbeasts.config.EntitySpawnData;
 import com.electronwill.nightconfig.core.Config;
 import com.google.common.collect.ImmutableList;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**

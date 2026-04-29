@@ -28,7 +28,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class LizardEggBlock extends Block {
     public static final IntegerProperty EGGS = IntegerProperty.create("eggs", 1, 6);;
