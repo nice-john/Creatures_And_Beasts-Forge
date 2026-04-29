@@ -28,7 +28,9 @@ public class CNBEntityBucketItem extends BucketItem {
     private final Supplier<SoundEvent> emptyingSoundSupplier;
 
     public CNBEntityBucketItem(Supplier<EntityType<?>> entityType, Fluid fluid, Supplier<SoundEvent> emptyingSound, Properties builder) {
-        super(() -> fluid, builder);
+        // Vanilla 1.20.1 BucketItem ctor takes (Fluid, Properties); Forge added a
+        // Supplier<Fluid> overload. We pass the Fluid directly on Fabric.
+        super(fluid, builder);
         this.entityTypeSupplier = entityType;
         this.emptyingSoundSupplier = emptyingSound;
     }

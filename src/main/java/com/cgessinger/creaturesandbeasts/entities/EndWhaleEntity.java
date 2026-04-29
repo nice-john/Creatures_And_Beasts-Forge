@@ -238,7 +238,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
                         BlockPos ground = BlockPos.containing(this.getX(), this.getY() - 1.0D, this.getZ());
                         float f = 0.91F;
                         if (this.onGround()) {
-                            f = this.level().getBlockState(ground).getFriction(this.level(), ground, this) * 0.91F;
+                            f = this.level().getBlockState(ground).getBlock().getFriction() * 0.91F;
                         }
                         float f1 = 0.16277137F / (f * f * f);
                         this.moveRelative(this.onGround() ? 0.06F * f1 : 0.06F, proposedMovement);
@@ -264,7 +264,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
             BlockPos ground = BlockPos.containing(this.getX(), this.getY() - 1.0D, this.getZ());
             float f = 0.91F;
             if (this.onGround()) {
-                f = this.level().getBlockState(ground).getFriction(this.level(), ground, this) * 0.91F;
+                f = this.level().getBlockState(ground).getBlock().getFriction() * 0.91F;
             }
             float f1 = 0.16277137F / (f * f * f);
 

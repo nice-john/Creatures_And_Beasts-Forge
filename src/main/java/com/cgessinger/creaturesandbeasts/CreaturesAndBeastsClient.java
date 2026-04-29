@@ -46,9 +46,15 @@ public class CreaturesAndBeastsClient implements ClientModInitializer {
                 CactemSpearModel::createLayer);
 
         // ── GeckoLib armor renderers ─────────────────────────────────────────
-        GeoArmorRenderer.registerFor(FlowerCrownItem.class,         FlowerCrownRenderer::new);
-        GeoArmorRenderer.registerFor(GlowingFlowerCrownItem.class,  FlowerCrownRenderer::new);
-        GeoArmorRenderer.registerFor(SporelingBackpackItem.class,   SporelingBackpackRenderer::new);
+        // TODO[fabric port]: Fabric GeckoLib doesn't expose a static
+        // GeoArmorRenderer.registerFor — renderers are hooked via each GeoItem's
+        // getRenderProvider() returning a GeoRenderProvider instance. For now the
+        // FlowerCrownItem and SporelingBackpackItem getRenderProvider stubs return
+        // GeoItem.makeRenderer(this) (no-op default), so the GeckoLib armor model
+        // doesn't render — vanilla armor model fallback applies.
+        // GeoArmorRenderer.registerFor(FlowerCrownItem.class,         FlowerCrownRenderer::new);
+        // GeoArmorRenderer.registerFor(GlowingFlowerCrownItem.class,  FlowerCrownRenderer::new);
+        // GeoArmorRenderer.registerFor(SporelingBackpackItem.class,   SporelingBackpackRenderer::new);
 
         // ── Particle factories ───────────────────────────────────────────────
         ParticleFactoryRegistry.getInstance().register(

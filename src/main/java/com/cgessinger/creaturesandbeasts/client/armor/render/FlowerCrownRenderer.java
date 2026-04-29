@@ -43,8 +43,10 @@ public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
             float blue,
             float alpha
     ) {
-        // Store the current item stack for later use
-        this.armorItem = animatable.getCurrentItem();
+        // FlowerCrownItem doesn't expose a getCurrentItem() method (that was a Forge-side
+        // helper not present here); leaving armorItem null is fine because this renderer
+        // isn't currently registered (CreaturesAndBeastsClient registerFor calls are
+        // commented out pending GeckoLib renderProvider wiring).
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
     }
 

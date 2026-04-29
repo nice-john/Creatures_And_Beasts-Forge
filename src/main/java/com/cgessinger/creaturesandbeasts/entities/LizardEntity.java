@@ -462,8 +462,10 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         return 35;
     }
 
+    // Forge's getPickedResult(HitResult) doesn't exist on Fabric; vanilla's no-arg
+    // getPickResult() is the closest equivalent. The HitResult arg was unused anyway.
     @Override
-    public ItemStack getPickedResult(HitResult target) {
+    public ItemStack getPickResult() {
         return new ItemStack(this.getLizardType().getSpawnItem());
     }
 

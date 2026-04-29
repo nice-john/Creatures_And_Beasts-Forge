@@ -1,8 +1,8 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
@@ -16,7 +16,9 @@ public class CNBTags {
         public static final TagKey<Item> SPORELING_FOOD = tag("sporeling_food");
 
         private static TagKey<Item> tag(String name) {
-            return ItemTags.create(new ResourceLocation(CreaturesAndBeasts.MOD_ID, name));
+            // ItemTags.create takes a String in vanilla and assumes minecraft: namespace.
+            // For our cnb: namespace, use TagKey.create directly with the ITEM registry key.
+            return TagKey.create(Registries.ITEM, new ResourceLocation(CreaturesAndBeasts.MOD_ID, name));
         }
     }
 

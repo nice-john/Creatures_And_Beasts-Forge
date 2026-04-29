@@ -5,10 +5,6 @@ import com.cgessinger.creaturesandbeasts.init.*;
 import com.cgessinger.creaturesandbeasts.world.gen.ModEntitySpawns;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FlowerPotBlock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,19 +39,18 @@ public class CreaturesAndBeasts implements ModInitializer {
         CNBLootModifiers.register();
 
         // ── Game events ───────────────────────────────────────────────────────
-        CNBEvents.register();
+        // TODO[fabric port]: there is no CNBEvents class on this branch yet. The Forge
+        // port had AnvilUpdateEvent (yeti hide combine + heal-spell-book combine),
+        // ItemAttributeModifierEvent (yeti hide armor bonus), LootingLevelEvent (spear
+        // looting), LivingTickEvent (sporeling backpack drop), PlayerInteractEvent
+        // (sporeling dismount). These each need a Fabric-specific replacement (mostly
+        // mixins) and aren't ported yet.
 
-        // ── Flower-pot plant associations (vanilla method via access widener) ─
-        FlowerPotBlock vanillaFlowerPot = (FlowerPotBlock) Blocks.FLOWER_POT;
-        vanillaFlowerPot.addPlant(
-                BuiltInRegistries.BLOCK.getKey(CNBBlocks.PINK_WATERLILY_BLOCK),
-                () -> CNBBlocks.POTTED_PINK_WATERLILY);
-        vanillaFlowerPot.addPlant(
-                BuiltInRegistries.BLOCK.getKey(CNBBlocks.LIGHT_PINK_WATERLILY_BLOCK),
-                () -> CNBBlocks.POTTED_LIGHT_PINK_WATERLILY);
-        vanillaFlowerPot.addPlant(
-                BuiltInRegistries.BLOCK.getKey(CNBBlocks.YELLOW_WATERLILY_BLOCK),
-                () -> CNBBlocks.POTTED_YELLOW_WATERLILY);
+        // ── Flower-pot plant associations ─────────────────────────────────────
+        // No-op on Fabric: the vanilla FlowerPotBlock(Block plant, Properties) ctor
+        // self-registers each potted block into the static FlowerPotBlock.POTTED_BY_BLOCK
+        // map. Our POTTED_PINK_WATERLILY etc. are registered in CNBBlocks via that ctor,
+        // so the (Forge-only) FlowerPotBlock.addPlant() helper isn't needed here.
 
         // ── Config ────────────────────────────────────────────────────────────
         CNBConfig.load(FabricLoader.getInstance().getConfigDir()

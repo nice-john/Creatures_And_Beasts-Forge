@@ -38,11 +38,12 @@ public final class AddCostedSpawnsBiomeModifier {
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(BiomeTags.IS_END),
                 MobCategory.CREATURE, CNBEntityTypes.END_WHALE, 10, 1, 1);
-        // Spawn cost: 400 charge, 1.0 energy budget
-        BiomeModifications.addProperties(
-                ctx -> ctx.hasTag(BiomeTags.IS_END),
-                (selectionContext, ctx) ->
-                        ctx.getSpawnProperties().addMobCharge(CNBEntityTypes.END_WHALE, 400.0D, 1.0D));
+        // TODO[fabric port]: spawn cost (400 charge, 1.0 budget) was set on Forge to
+        // throttle end-whale density. The Fabric BiomeModifications API doesn't expose
+        // a stable addProperties(predicate, BiConsumer) signature in 0.92.x — the
+        // closest path is BiomeModifications.create(...).add(...).buildAndRegister()
+        // with a registered ResourceLocation. Skipping for now means whales can spawn
+        // slightly more densely than the Forge build until this is wired.
 
         // ── LILYTAD ─────────────────────────────────────────────────────
         BiomeModifications.addSpawn(

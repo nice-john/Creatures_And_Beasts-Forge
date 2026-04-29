@@ -16,7 +16,9 @@ public class CNBLootModifiers {
             new ResourceLocation("minecraft", "chests/nether_bridge");
 
     public static void register() {
-        LootTableEvents.MODIFY.register((id, tableBuilder, source) -> {
+        // Fabric LootTableEvents.Modify takes 5 params: (resourceManager, lootDataManager,
+        // id, tableBuilder, source). We only care about the loot-table id and the builder.
+        LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
             if (NETHER_BRIDGE_LOOT.equals(id)) {
                 tableBuilder.withPool(
                         LootPool.lootPool()
@@ -24,8 +26,7 @@ public class CNBLootModifiers {
                                 .when(LootItemRandomChanceCondition.randomChance(5f / 73f))
                                 .add(LootItem.lootTableItem(CNBItems.CINDERSHELL_SHELL_SHARD)
                                         .apply(net.minecraft.world.level.storage.loot.functions.SetItemCountFunction
-                                                .setCount(UniformGenerator.between(1, 3))))
-                                .build());
+                                                .setCount(UniformGenerator.between(1, 3)))));
             }
         });
 

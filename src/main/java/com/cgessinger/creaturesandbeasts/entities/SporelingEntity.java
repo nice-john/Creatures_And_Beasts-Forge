@@ -270,8 +270,10 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return false;
     }
 
+    // Forge's getPickedResult(HitResult) doesn't exist on Fabric; vanilla's no-arg
+    // getPickResult() is the closest equivalent.
     @Override
-    public ItemStack getPickedResult(HitResult target) {
+    public ItemStack getPickResult() {
         if (this.getSporelingType().getHostility().equals(FRIENDLY)) {
             return new ItemStack(CNBItems.SPORELING_OVERWORLD_EGG);
         } else {
@@ -293,7 +295,11 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return hostility.equals(HOSTILE) || hostility.equals(NEUTRAL) || super.fireImmune();
     }
 
-    @Override
+    // TODO[fabric port]: Forge's getClassification(boolean) hook has no Fabric
+    // equivalent — would need a mixin into Mob#getCategory or registering separate
+    // EntityTypes per hostility. For now, the EntityType's static MobCategory wins
+    // and the spawn-pool category from biome modifications determines counting.
+    // Removed @Override since the vanilla supertype doesn't declare this method.
     public MobCategory getClassification(boolean forSpawnCount) {
         return this.getSporelingType().getHostility() == FRIENDLY ? MobCategory.CREATURE : MobCategory.MONSTER;
     }
