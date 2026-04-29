@@ -31,7 +31,7 @@ public interface Netable {
     static <T extends LivingEntity & Netable> Optional<InteractionResult> netMobPickup(Player player, InteractionHand hand, T entity) {
         ItemStack itemstack = player.getItemInHand(hand);
 
-        if (itemstack.getItem() == CNBItems.ENTITY_NET.get() && entity.isAlive()) {
+        if (itemstack.getItem() == CNBItems.ENTITY_NET && entity.isAlive()) {
             ItemStack lizardItem = entity.getItemStack();
 
             if (lizardItem == null) {

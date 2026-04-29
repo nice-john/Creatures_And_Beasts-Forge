@@ -19,7 +19,7 @@ public class MixinHumanoidArmorLayer {
 
     //@ModifyVariable(method = "renderModel(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IZLnet/minecraft/client/model/Model;FFFLnet/minecraft/resources/ResourceLocation;)V", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;getArmorFoilBuffer(Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/RenderType;ZZ)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
     private VertexConsumer CNB_renderGlowingFlowerCrown(VertexConsumer value, PoseStack stack, MultiBufferSource bufferIn, int packedLightIn, boolean isFoil, Model model, float red, float green, float blue, ResourceLocation armorResource) {
-       /* if (model instanceof FlowerCrownRenderer flowerCrownRenderer && flowerCrownRenderer.getCurrentItem().is(CNBItems.GLOWING_FLOWER_CROWN.get())) {
+       /* if (model instanceof FlowerCrownRenderer flowerCrownRenderer && flowerCrownRenderer.getCurrentItem().is(CNBItems.GLOWING_FLOWER_CROWN)) {
             VertexConsumer vertexConsumer = bufferIn.getBuffer(RenderType.entityTranslucent(armorResource));
             model.renderToBuffer(stack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, red, green, blue, 1.0F);
             return bufferIn.getBuffer(RenderType.eyes(armorResource));

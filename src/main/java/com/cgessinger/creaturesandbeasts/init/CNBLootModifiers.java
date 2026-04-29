@@ -1,55 +1,34 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.common.loot.LootModifier;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-
-import javax.annotation.Nonnull;
-import java.util.Random;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 public class CNBLootModifiers {
 
-    public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_MODIFIERS = DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, CreaturesAndBeasts.MOD_ID);
+    private static final ResourceLocation NETHER_BRIDGE_LOOT =
+            new ResourceLocation("minecraft", "chests/nether_bridge");
 
-    public static final RegistryObject<Codec<NetherBridgeLootModifier>> NETHER_BRIDGE_LOOT_MODIFIER = LOOT_MODIFIERS.register("nether_bridge_loot_modifier", () -> NetherBridgeLootModifier.CODEC);
-
-    protected static class NetherBridgeLootModifier extends LootModifier {
-        public static final Codec<NetherBridgeLootModifier> CODEC = RecordCodecBuilder.create(inst -> codecStart(inst).apply(inst, NetherBridgeLootModifier::new));
-
-        private final Random rand = new Random();
-
-        /**
-         * Constructs a LootModifier.
-         *
-         * @param conditionsIn the ILootConditions that need to be matched before the loot is modified.
-         */
-        protected NetherBridgeLootModifier(LootItemCondition[] conditionsIn) {
-            super(conditionsIn);
-        }
-
-        @Nonnull
-        @Override
-        protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
-
-            if (rand.nextInt(73) < 5) {
-                generatedLoot.add(new ItemStack(CNBItems.CINDERSHELL_SHELL_SHARD.get(), rand.nextInt(3) + 1));
+    public static void register() {
+        LootTableEvents.MODIFY.register((id, tableBuilder, source) -> {
+            if (NETHER_BRIDGE_LOOT.equals(id)) {
+                tableBuilder.withPool(
+                        LootPool.lootPool()
+                                .setRolls(ConstantValue.exactly(1))
+                                .when(LootItemRandomChanceCondition.randomChance(5f / 73f))
+                                .add(LootItem.lootTableItem(CNBItems.CINDERSHELL_SHELL_SHARD)
+                                        .apply(net.minecraft.world.level.storage.loot.functions.SetItemCountFunction
+                                                .setCount(UniformGenerator.between(1, 3))))
+                                .build());
             }
+        });
 
-            return generatedLoot;
-        }
-
-        @Override
-        public Codec<? extends IGlobalLootModifier> codec() {
-            return CODEC;
-        }
+        CreaturesAndBeasts.LOGGER.debug("Registered CNB loot modifiers");
     }
 }

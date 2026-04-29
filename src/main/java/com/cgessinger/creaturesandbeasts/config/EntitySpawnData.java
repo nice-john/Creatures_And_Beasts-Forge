@@ -3,7 +3,7 @@ package com.cgessinger.creaturesandbeasts.config;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.toml.TomlFormat;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -11,7 +11,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -24,7 +23,7 @@ public record EntitySpawnData(ResourceLocation entityType, ResourceLocation biom
 
     @Nullable
     public EntityType<? extends Entity> getEntityType() {
-        return ForgeRegistries.ENTITY_TYPES.getValue(this.getEntityTypeLocation());
+        return BuiltInRegistries.ENTITY_TYPE.get(this.getEntityTypeLocation());
     }
 
     public ResourceLocation getBiomeLocation() {
@@ -120,7 +119,7 @@ public record EntitySpawnData(ResourceLocation entityType, ResourceLocation biom
     }
 
     public static EntitySpawnData of(EntityType<? extends Entity> entityType, ResourceKey<Biome> biome, MobCategory category, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {
-        return new EntitySpawnData(ForgeRegistries.ENTITY_TYPES.getKey(entityType), biome.location(), category, spawnWeight, minCount, maxCount, mobCost, energyBudget);
+        return new EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.getKey(entityType), biome.location(), category, spawnWeight, minCount, maxCount, mobCost, energyBudget);
     }
 
     public static EntitySpawnData of(ResourceLocation entityType, ResourceKey<Biome> biome, MobCategory category, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {

@@ -50,7 +50,9 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraftforge.common.IForgeShearable;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Items;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -64,7 +66,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimatable {
+public class MinipadEntity extends Animal implements GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> GLOWING = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
@@ -282,28 +284,23 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
-    public boolean isShearable(@Nonnull ItemStack item, Level world, BlockPos pos) {
-        return !this.getSheared();
-    }
-
-    @Nonnull
-    @Override
-    public List<ItemStack> onSheared(@Nullable Player player, @Nonnull ItemStack item, Level world, BlockPos pos, int fortune) {
-        world.playSound(null, this, SoundEvents.SHEEP_SHEAR, player == null ? SoundSource.BLOCKS : SoundSource.PLAYERS, 1.0F, 1.0F);
-        this.gameEvent(GameEvent.SHEAR, player);
-        if (!world.isClientSide) {
-            this.setSheared(true);
-            java.util.List<ItemStack> items = new java.util.ArrayList<>();
-
-            if (this.level().getDayTime() > 13000) {
-                items.add(new ItemStack(this.getMinipadType().getGlowShearItem()));
-            } else {
-                items.add(new ItemStack(this.getMinipadType().getShearItem()));
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack item = player.getItemInHand(hand);
+        if (item.is(Items.SHEARS) && !this.getSheared()) {
+            this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR,
+                    SoundSource.PLAYERS, 1.0F, 1.0F);
+            this.gameEvent(GameEvent.SHEAR, player);
+            if (!this.level().isClientSide) {
+                this.setSheared(true);
+                ItemStack drop = this.level().getDayTime() > 13000
+                        ? new ItemStack(this.getMinipadType().getGlowShearItem())
+                        : new ItemStack(this.getMinipadType().getShearItem());
+                this.spawnAtLocation(drop, 1.0F);
             }
-
-            return items;
+            item.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
-        return java.util.Collections.emptyList();
+        return super.mobInteract(player, hand);
     }
 
     public boolean shouldLookAround() {
@@ -318,25 +315,25 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
         if (!this.level().getFluidState(pos).is(FluidTags.WATER)) { // Check if the block is not a liquid
-            this.playSound(CNBSoundEvents.MINIPAD_STEP.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
+            this.playSound(CNBSoundEvents.MINIPAD_STEP, this.getSoundVolume() * 0.3F, this.getVoicePitch());
         }
     }
 
     @Override
     protected SoundEvent getSwimSound() {
-        return CNBSoundEvents.MINIPAD_SWIM.get();
+        return CNBSoundEvents.MINIPAD_SWIM;
     }
 
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.MINIPAD_HURT.get();
+        return CNBSoundEvents.MINIPAD_HURT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.MINIPAD_HURT.get();
+        return CNBSoundEvents.MINIPAD_HURT;
     }
 
 

@@ -293,7 +293,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         } else if (!this.isTame()) {
             if (itemstack.is(END_WHALE_FOOD)) {
                 if (!player.getAbilities().instabuild) itemstack.shrink(1);
-                if (this.random.nextInt(10) == 0 && !net.minecraftforge.event.ForgeEventFactory.onAnimalTame(this, player)) {
+                if (this.random.nextInt(10) == 0) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);
@@ -344,7 +344,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     @Nullable
     @Override
-    public SoundEvent getAmbientSound() { return CNBSoundEvents.END_WHALE_AMBIENT.get(); }
+    public SoundEvent getAmbientSound() { return CNBSoundEvents.END_WHALE_AMBIENT; }
 
     @Override public int getAmbientSoundInterval() { return 800; }
     @Override protected float getSoundVolume() { return 5.0F; }

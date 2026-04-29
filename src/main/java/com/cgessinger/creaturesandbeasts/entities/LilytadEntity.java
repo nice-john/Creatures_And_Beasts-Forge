@@ -42,7 +42,9 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.IForgeShearable;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Items;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -56,7 +58,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimatable {
+public class LilytadEntity extends Animal implements GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.BOOLEAN);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -225,23 +227,21 @@ public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
-    public boolean isShearable(@Nonnull ItemStack item, Level world, BlockPos pos) {
-        return !this.getSheared();
-    }
-
-    @Nonnull
-    @Override
-    public List<ItemStack> onSheared(@Nullable Player player, @Nonnull ItemStack item, Level world, BlockPos pos, int fortune) {
-        world.playSound(null, this, SoundEvents.SHEEP_SHEAR, player == null ? SoundSource.BLOCKS : SoundSource.PLAYERS, 1.0F, 1.0F);
-        this.gameEvent(GameEvent.SHEAR, player);
-        if (!world.isClientSide) {
-            this.setSheared(true);
-            java.util.List<ItemStack> items = new java.util.ArrayList<>();
-            items.add(new ItemStack(this.getLilytadType().getShearItem()));
-
-            return items;
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack item = player.getItemInHand(hand);
+        if (item.is(Items.SHEARS) && !this.getSheared()) {
+            this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR,
+                    SoundSource.PLAYERS, 1.0F, 1.0F);
+            this.gameEvent(GameEvent.SHEAR, player);
+            if (!this.level().isClientSide) {
+                this.setSheared(true);
+                ItemStack drop = new ItemStack(this.getLilytadType().getShearItem());
+                this.spawnAtLocation(drop, 1.0F);
+            }
+            item.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
-        return java.util.Collections.emptyList();
+        return super.mobInteract(player, hand);
     }
 
     public boolean shouldLookAround() {
@@ -251,19 +251,19 @@ public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimata
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.LILYTAD_HURT.get();
+        return CNBSoundEvents.LILYTAD_HURT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getAmbientSound() {
-        return CNBSoundEvents.LILYTAD_AMBIENT.get();
+        return CNBSoundEvents.LILYTAD_AMBIENT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.LILYTAD_DEATH.get();
+        return CNBSoundEvents.LILYTAD_DEATH;
     }
 
     private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {

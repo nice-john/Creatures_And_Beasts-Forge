@@ -1,15 +1,22 @@
 package com.cgessinger.creaturesandbeasts.capabilities;
 
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraft.world.item.ItemStack;
 
-public class CinderSwordCapability {
-    public static final Capability<ICinderSwordUpdate> CINDER_SWORD_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});;
+/**
+ * Fabric replacement for the Forge Capability system.
+ * Imbue-tick data is stored directly in the item-stack NBT tag under "imbuedTicks".
+ */
+public final class CinderSwordCapability {
 
-    public static void register(RegisterCapabilitiesEvent event)
-    {
-        event.register(ICinderSwordUpdate.class);
+    private static final String KEY = "imbuedTicks";
+
+    private CinderSwordCapability() {}
+
+    public static int getImbuedTicks(ItemStack stack) {
+        return stack.hasTag() ? stack.getOrCreateTag().getInt(KEY) : 0;
+    }
+
+    public static void setImbuedTicks(ItemStack stack, int ticks) {
+        stack.getOrCreateTag().putInt(KEY, ticks);
     }
 }

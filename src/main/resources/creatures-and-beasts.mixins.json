@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "package": "com.cgessinger.creaturesandbeasts.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MixinAnvilMenu",
+    "MixinEntity",
+    "MixinItemStack",
+    "MixinPlayerTick"
+  ],
+  "client": [
+    "MixinGeoEntityRenderer",
+    "MixinHumanoidArmorLayer",
+    "MixinLivingEntityRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -4,8 +4,8 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
 import com.cgessinger.creaturesandbeasts.entities.YetiEntity;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
@@ -13,7 +13,7 @@ import software.bernie.geckolib.model.data.EntityModelData;
 
 import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class YetiModel extends GeoModel<YetiEntity> {
     private static final ResourceLocation YETI_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/yeti.geo.json");
     private static final ResourceLocation BABY_YETI_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/baby_yeti.geo.json");

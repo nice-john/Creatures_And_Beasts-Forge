@@ -5,7 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -18,12 +18,15 @@ public class CNBMinipadTypes {
     // Make sure to change the initial size of this ArrayList when adding new Lizard variants
     private static final List<MinipadType> MINIPAD_TYPES = new ArrayList<>(3);
 
-    public static final MinipadType LIGHT_PINK = registerWithCNBDirectory(MOD_ID, "light_pink", CNBParticleTypes.LIGHT_PINK_MINIPAD_FLOWER);
-    public static final MinipadType PINK = registerWithCNBDirectory(MOD_ID, "pink", CNBParticleTypes.PINK_MINIPAD_FLOWER);
-    public static final MinipadType YELLOW = registerWithCNBDirectory(MOD_ID, "yellow", CNBParticleTypes.YELLOW_MINIPAD_FLOWER);
+    public static final MinipadType LIGHT_PINK = registerWithCNBDirectory(MOD_ID, "light_pink", () -> CNBParticleTypes.LIGHT_PINK_MINIPAD_FLOWER);
+    public static final MinipadType PINK = registerWithCNBDirectory(MOD_ID, "pink", () -> CNBParticleTypes.PINK_MINIPAD_FLOWER);
+    public static final MinipadType YELLOW = registerWithCNBDirectory(MOD_ID, "yellow", () -> CNBParticleTypes.YELLOW_MINIPAD_FLOWER);
 
     private static MinipadType registerWithCNBDirectory(String namespace, String name, Supplier<SimpleParticleType> particle) {
-        return registerWithCNBDirectory(() -> ForgeRegistries.ITEMS.getValue(new ResourceLocation(namespace, name + "_minipad_flower")), () -> ForgeRegistries.ITEMS.getValue(new ResourceLocation(namespace, name + "_minipad_flower_glow")), namespace, name, particle);
+        return registerWithCNBDirectory(
+                () -> BuiltInRegistries.ITEM.get(new ResourceLocation(namespace, name + "_minipad_flower")),
+                () -> BuiltInRegistries.ITEM.get(new ResourceLocation(namespace, name + "_minipad_flower_glow")),
+                namespace, name, particle);
     }
 
     private static MinipadType registerWithCNBDirectory(@Nullable Item shearItem, @Nullable Item glowShearItem, String namespace, String name, Supplier<SimpleParticleType> particle) {

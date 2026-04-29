@@ -19,9 +19,6 @@ import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
 public class CinderFurnaceContainer extends RecipeBookMenu<Container> {
     public static final int INGREDIENT_SLOT = 0;
     public static final int RESULT_SLOT = 1;
@@ -41,7 +38,7 @@ public class CinderFurnaceContainer extends RecipeBookMenu<Container> {
     }
 
     public CinderFurnaceContainer(int id, Inventory inventory, Container container, ContainerData data) {
-        super(CNBContainerTypes.CINDER_FURNACE_CONTAINER.get(), id);
+        super(CNBContainerTypes.CINDER_FURNACE_CONTAINER, id);
         this.recipeBookType = RecipeBookType.FURNACE;
         this.recipeType = RecipeType.SMELTING;
         checkContainerSize(container, SLOT_COUNT);
@@ -157,7 +154,6 @@ public class CinderFurnaceContainer extends RecipeBookMenu<Container> {
         return this.recipeType;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public int getCookingProgress() {
         int i = this.data.get(0);
         int j = this.data.get(1);
@@ -206,7 +202,6 @@ public class CinderFurnaceContainer extends RecipeBookMenu<Container> {
             }
 
             this.removeCount = 0;
-            net.minecraftforge.event.ForgeEventFactory.firePlayerSmeltedEvent(this.player, stack);
         }
     }
 }

@@ -5,11 +5,11 @@ import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBSporelingTypes;
 import com.cgessinger.creaturesandbeasts.util.SporelingType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import software.bernie.geckolib.model.GeoModel;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class SporelingModel extends GeoModel<SporelingEntity> {
     private static final ResourceLocation SPORELING_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/sporeling.json");
 

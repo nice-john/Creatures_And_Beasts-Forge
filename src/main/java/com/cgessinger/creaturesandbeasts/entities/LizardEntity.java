@@ -272,7 +272,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack item = player.getItemInHand(hand);
 
-        if (item.is(CNBItems.APPLE_SLICE.get()) && this.getSad()) {
+        if (item.is(CNBItems.APPLE_SLICE) && this.getSad()) {
             this.setSad(false);
             this.usePlayerItem(player, hand, item);
             spawnParticles(ParticleTypes.HEART);
@@ -383,7 +383,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel world, AgeableMob entity) {
-        LizardEntity baby = CNBEntityTypes.LIZARD.get().create(world);
+        LizardEntity baby = CNBEntityTypes.LIZARD.create(world);
         if (baby != null) {
             baby.setLizardType(((LizardEntity) entity).getLizardType());
         }
@@ -432,7 +432,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(CNBItems.APPLE_SLICE.get());
+        return stack.is(CNBItems.APPLE_SLICE);
     }
 
     public void spawnParticles(ParticleOptions data) {
@@ -567,7 +567,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
                 } else if (this.lizard.layEggCounter > this.adjustedTickDelay(200)) {
                     Level level = this.lizard.level();
                     level.playSound(null, blockpos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.random.nextFloat() * 0.2F);
-                    level.setBlock(this.blockPos.above(), CNBBlocks.LIZARD_EGGS.get().defaultBlockState().setValue(LizardEggBlock.EGGS, this.lizard.random.nextInt(6) + 1), 3);
+                    level.setBlock(this.blockPos.above(), CNBBlocks.LIZARD_EGGS.defaultBlockState().setValue(LizardEggBlock.EGGS, this.lizard.random.nextInt(6) + 1), 3);
 
                     LizardEggBlock lizardEggBlock = (LizardEggBlock) level.getBlockState(this.blockPos.above()).getBlock();
                     lizardEggBlock.setParents(this.lizard.getLizardType(), this.lizard.partner.getLizardType());

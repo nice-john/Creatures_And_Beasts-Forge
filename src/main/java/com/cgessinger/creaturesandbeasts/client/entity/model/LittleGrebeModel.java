@@ -4,8 +4,8 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
 import com.cgessinger.creaturesandbeasts.entities.LittleGrebeEntity;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
@@ -14,7 +14,7 @@ import software.bernie.geckolib.model.data.EntityModelData;
 
 import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class LittleGrebeModel extends GeoModel<LittleGrebeEntity> {
     private static final ResourceLocation LITTLE_GREBE_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe.geo.json");
     private static final ResourceLocation LITTLE_GREBE_CHICK_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe_chick.geo.json");

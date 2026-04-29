@@ -24,17 +24,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.Vanishable;
-import net.minecraft.world.item.enchantment.DamageEnchantment;
-import net.minecraft.world.item.enchantment.DigDurabilityEnchantment;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.item.enchantment.FireAspectEnchantment;
-import net.minecraft.world.item.enchantment.KnockbackEnchantment;
-import net.minecraft.world.item.enchantment.MendingEnchantment;
-import net.minecraft.world.item.enchantment.MultiShotEnchantment;
-import net.minecraft.world.item.enchantment.TridentLoyaltyEnchantment;
-import net.minecraft.world.item.enchantment.VanishingCurseEnchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -53,19 +44,6 @@ public class SpearItem extends Item implements Vanishable {
     @Override
     public boolean canAttackBlock(BlockState state, Level level, BlockPos pos, Player player) {
         return !player.isCreative();
-    }
-
-    @Override
-    public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-        if (enchantment instanceof TridentLoyaltyEnchantment || enchantment instanceof MendingEnchantment ||
-                enchantment instanceof DigDurabilityEnchantment || enchantment instanceof VanishingCurseEnchantment ||
-                enchantment instanceof FireAspectEnchantment || enchantment instanceof DamageEnchantment ||
-                enchantment instanceof KnockbackEnchantment || enchantment instanceof MultiShotEnchantment ||
-                enchantment.equals(Enchantments.MOB_LOOTING)) {
-            return true;
-        }
-
-        return super.canApplyAtEnchantingTable(stack, enchantment);
     }
 
     @Override
@@ -152,7 +130,7 @@ public class SpearItem extends Item implements Vanishable {
 
         // Add the spear to the level and play the throw sound
         level.addFreshEntity(thrownSpear);
-        level.playSound(null, thrownSpear, CNBSoundEvents.SPEAR_THROW.get(), SoundSource.PLAYERS, 1.0F, soundVariation);
+        level.playSound(null, thrownSpear, CNBSoundEvents.SPEAR_THROW, SoundSource.PLAYERS, 1.0F, soundVariation);
     }
 
     private static float[] getShotPitches(RandomSource rand) {

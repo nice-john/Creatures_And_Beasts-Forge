@@ -6,7 +6,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import java.util.function.Supplier;
 
 public enum CNBItemTiers implements Tier {
-    CINDER(3, 800, 8.0F, 1.0F, 10, () -> Ingredient.of(CNBItems.CINDERSHELL_SHELL_SHARD.get()));
+    CINDER(3, 800, 8.0F, 1.0F, 10, () -> Ingredient.of(CNBItems.CINDERSHELL_SHELL_SHARD));
 
     private final int harvestLevel;
     private final int maxUses;

@@ -36,7 +36,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
     }
 
     public ThrownCactemSpearEntity(Level level, LivingEntity entity, ItemStack itemStack) {
-        super(CNBEntityTypes.THROWN_CACTEM_SPEAR.get(), entity, level);
+        super(CNBEntityTypes.THROWN_CACTEM_SPEAR, entity, level);
         this.entityData.set(IS_FOIL, itemStack.hasFoil());
         this.entityData.set(ID_LOYALTY, (byte)EnchantmentHelper.getLoyalty(itemStack));
         this.entityData.set(SPEAR, itemStack);
@@ -47,7 +47,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         super.defineSynchedData();
         this.entityData.define(ID_LOYALTY, (byte) 0);
         this.entityData.define(IS_FOIL, false);
-        this.entityData.define(SPEAR, new ItemStack(CNBItems.CACTEM_SPEAR.get()));
+        this.entityData.define(SPEAR, new ItemStack(CNBItems.CACTEM_SPEAR));
     }
 
 

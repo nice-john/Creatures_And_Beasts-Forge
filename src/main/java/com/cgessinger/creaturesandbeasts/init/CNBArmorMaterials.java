@@ -12,10 +12,11 @@ import net.minecraft.world.item.crafting.Ingredient;
 import java.util.function.Supplier;
 
 public enum CNBArmorMaterials implements ArmorMaterial {
-    FLOWER_CROWN("flower_crown", 2, new int[]{1, 2, 3, 1}, 5, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.EMPTY),
+    FLOWER_CROWN("flower_crown",     2, new int[]{1, 2, 3, 1}, 5,  SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.EMPTY),
     SPORELING_BACKPACK("sporeling_backpack", 3, new int[]{0, 0, 1, 0}, 2, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.LEATHER));
 
     private static final int[] MAX_DAMAGE_ARRAY = new int[]{13, 15, 16, 11};
+
     private final String name;
     private final int maxDamageFactor;
     private final int[] damageReductionAmountArray;
@@ -25,64 +26,44 @@ public enum CNBArmorMaterials implements ArmorMaterial {
     private final float knockbackResistance;
     private final Supplier<Ingredient> repairIngredient;
 
-    CNBArmorMaterials(String name, int maxDamageFactor, int[] damageReductionAmountArray, int enchantability, SoundEvent soundEvent, float toughness, float knockbackResistance, Supplier<Ingredient> repairIngredient) {
+    CNBArmorMaterials(String name, int maxDamageFactor, int[] damageReduction,
+                      int enchantability, SoundEvent sound, float toughness,
+                      float knockbackResistance, Supplier<Ingredient> repairIngredient) {
         this.name = name;
         this.maxDamageFactor = maxDamageFactor;
-        this.damageReductionAmountArray = damageReductionAmountArray;
+        this.damageReductionAmountArray = damageReduction;
         this.enchantability = enchantability;
-        this.soundEvent = soundEvent;
+        this.soundEvent = sound;
         this.toughness = toughness;
         this.knockbackResistance = knockbackResistance;
         this.repairIngredient = repairIngredient;
     }
 
-
-    public int getDurabilityForSlot(EquipmentSlot slotIn) {
-        return MAX_DAMAGE_ARRAY[slotIn.getIndex()] * this.maxDamageFactor;
-    }
-
-
-    public int getDefenseForSlot(EquipmentSlot slotIn) {
-        return this.damageReductionAmountArray[slotIn.getIndex()];
+    @Override
+    public int getDurabilityForType(ArmorItem.Type type) {
+        return MAX_DAMAGE_ARRAY[type.getSlot().getIndex()] * this.maxDamageFactor;
     }
 
     @Override
-    public int getDurabilityForType(ArmorItem.Type p_266807_) {
-        return 0;
+    public int getDefenseForType(ArmorItem.Type type) {
+        return this.damageReductionAmountArray[type.getSlot().getIndex()];
     }
 
     @Override
-    public int getDefenseForType(ArmorItem.Type p_267168_) {
-        return 0;
-    }
+    public int getEnchantmentValue() { return this.enchantability; }
 
     @Override
-    public int getEnchantmentValue() {
-        return this.enchantability;
-    }
+    public SoundEvent getEquipSound() { return this.soundEvent; }
 
     @Override
-    public SoundEvent getEquipSound() {
-        return this.soundEvent;
-    }
+    public Ingredient getRepairIngredient() { return this.repairIngredient.get(); }
 
     @Override
-    public Ingredient getRepairIngredient() {
-        return this.repairIngredient.get();
-    }
+    public String getName() { return CreaturesAndBeasts.MOD_ID + ':' + this.name; }
 
     @Override
-    public String getName() {
-        return CreaturesAndBeasts.MOD_ID + ':' + this.name;
-    }
+    public float getToughness() { return this.toughness; }
 
     @Override
-    public float getToughness() {
-        return this.toughness;
-    }
-
-    @Override
-    public float getKnockbackResistance() {
-        return this.knockbackResistance;
-    }
+    public float getKnockbackResistance() { return this.knockbackResistance; }
 }

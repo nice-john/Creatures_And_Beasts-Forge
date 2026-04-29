@@ -1,115 +1,64 @@
 package com.cgessinger.creaturesandbeasts;
 
-import com.cgessinger.creaturesandbeasts.capabilities.CinderSwordCapability;
-import com.cgessinger.creaturesandbeasts.client.CNBClient;
 import com.cgessinger.creaturesandbeasts.config.CNBConfig;
-import com.cgessinger.creaturesandbeasts.events.CNBEvents;
 import com.cgessinger.creaturesandbeasts.init.*;
 import com.cgessinger.creaturesandbeasts.world.gen.ModEntitySpawns;
-import com.electronwill.nightconfig.core.io.ParsingException;
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.network.chat.Component;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FlowerPotBlock;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.infernalstudios.config.Config;
 
-import java.io.IOException;
-
-@Mod(CreaturesAndBeasts.MOD_ID)
-public class CreaturesAndBeasts {
+public class CreaturesAndBeasts implements ModInitializer {
     public static final String MOD_ID = "cnb";
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final CreativeModeTab TAB = CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.cnb_tab")) // Display name
-            .icon(() -> new ItemStack(CNBItems.GREBE_SPAWN_EGG.get())) // Icon for the tab
-            .displayItems((params, output) -> {
-                // Add items to the Creative Tab
-                output.accept(CNBItems.GREBE_SPAWN_EGG.get());
-            })
-            .build();
 
-    public CreaturesAndBeasts() {
-        final IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    @Override
+    public void onInitialize() {
+        // ── Registries ───────────────────────────────────────────────────────
+        CNBSoundEvents.register();
+        CNBParticleTypes.register();
+        CNBBlocks.register();
+        CNBItems.register();
+        CNBEntityTypes.register();
+        CNBContainerTypes.register();
+        CNBPaintingTypes.register();
+        CNBCreativeTabs.register();
 
-        eventBus.addListener(this::commonSetup);
-        eventBus.addListener(this::clientSetup);
-        eventBus.addListener(this::registerCapabilities);
-
-        CNBParticleTypes.PARTICLE_TYPES.register(eventBus);
-        CNBBlocks.BLOCKS.register(eventBus);
-        CNBItems.ITEMS.register(eventBus);
-        CNBContainerTypes.CONTAINER_TYPES.register(eventBus);
-        CNBPaintingTypes.PAINTINGS.register(eventBus);
-        CNBSoundEvents.SOUND_EVENTS.register(eventBus);
-        CNBEntityTypes.ENTITY_TYPES.register(eventBus);
-        CNBLootModifiers.LOOT_MODIFIERS.register(eventBus);
-        CNBBiomeModifiers.BIOME_MODIFIERS.register(eventBus);
-
+        // ── Type systems ─────────────────────────────────────────────────────
         CNBSporelingTypes.registerAll();
         CNBLizardTypes.registerAll();
         CNBLilytadTypes.registerAll();
         CNBMinipadTypes.registerAll();
-        CNBCreativeTabs.CREATIVE_TABS.register(FMLJavaModLoadingContext.get().getModEventBus());
 
-        MinecraftForge.EVENT_BUS.register(new CNBEvents());
+        // ── Entity attributes & spawn placements ─────────────────────────────
+        CNBEntityTypes.registerAttributes();
+        ModEntitySpawns.entitySpawnPlacementRegistry();
 
-        try {
-            CNBConfig.CONFIG = Config
-                    .builder(FMLPaths.CONFIGDIR.get().resolve("creaturesandbeasts-common.toml"))
-                    .loadClass(CNBConfig.class)
-                    .build();
-        } catch (IllegalStateException | IllegalArgumentException | IOException | ParsingException e) {
-            throw new RuntimeException(
-                    "Failed to load Creatures and Beasts config" +
-                            (e instanceof ParsingException ? ", try fixing/deleting your config file" : ""), e);
-        }
+        // ── World / biome / loot modifications ───────────────────────────────
+        CNBBiomeModifiers.register();
+        CNBLootModifiers.register();
 
-        CNBConfig.CONFIG.onReload(stage -> {
-            if (stage == Config.ReloadStage.PRE) {
-                CreaturesAndBeasts.LOGGER.debug("Reloading Creatures and Beasts config");
-            }
-        });
-    }
+        // ── Game events ───────────────────────────────────────────────────────
+        CNBEvents.register();
 
-    private void commonSetup(final FMLCommonSetupEvent event) {
-        // SpawnPlacements.register modifies a non-thread-safe HashMap. FMLCommonSetupEvent runs in
-        // parallel mod loading, so concurrent registrations from multiple mods can lose entries
-        // silently — that's the most likely cause of the user-reported "yetis don't spawn" issue
-        // when other mods are present. enqueueWork defers to the main thread.
-        event.enqueueWork(ModEntitySpawns::entitySpawnPlacementRegistry);
+        // ── Flower-pot plant associations (vanilla method via access widener) ─
+        FlowerPotBlock vanillaFlowerPot = (FlowerPotBlock) Blocks.FLOWER_POT;
+        vanillaFlowerPot.addPlant(
+                BuiltInRegistries.BLOCK.getKey(CNBBlocks.PINK_WATERLILY_BLOCK),
+                () -> CNBBlocks.POTTED_PINK_WATERLILY);
+        vanillaFlowerPot.addPlant(
+                BuiltInRegistries.BLOCK.getKey(CNBBlocks.LIGHT_PINK_WATERLILY_BLOCK),
+                () -> CNBBlocks.POTTED_LIGHT_PINK_WATERLILY);
+        vanillaFlowerPot.addPlant(
+                BuiltInRegistries.BLOCK.getKey(CNBBlocks.YELLOW_WATERLILY_BLOCK),
+                () -> CNBBlocks.POTTED_YELLOW_WATERLILY);
 
-        // Register New Flowers to be Able to Place in Pots
-        FlowerPotBlock flowerPot = (FlowerPotBlock) Blocks.FLOWER_POT;
-        flowerPot.addPlant(CNBBlocks.PINK_WATERLILY_BLOCK.getId(), CNBBlocks.POTTED_PINK_WATERLILY);
-        flowerPot.addPlant(CNBBlocks.LIGHT_PINK_WATERLILY_BLOCK.getId(), CNBBlocks.POTTED_LIGHT_PINK_WATERLILY);
-        flowerPot.addPlant(CNBBlocks.YELLOW_WATERLILY_BLOCK.getId(), CNBBlocks.POTTED_YELLOW_WATERLILY);
-    }
-
-    private void clientSetup(final FMLClientSetupEvent event) {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> CNBClient::init);
-        event.enqueueWork(() -> {
-            ItemProperties.register(CNBItems.CACTEM_SPEAR.get(), new ResourceLocation("throwing"), (item, resourceLocation, entity, itemPropertyFunction) -> entity != null && entity.isUsingItem() && entity.getUseItem() == item ? 1.0F : 0.0F);
-        });
-    }
-
-
-
-    private void registerCapabilities(RegisterCapabilitiesEvent event) {
-        CinderSwordCapability.register(event);
+        // ── Config ────────────────────────────────────────────────────────────
+        CNBConfig.load(FabricLoader.getInstance().getConfigDir()
+                .resolve("creaturesandbeasts-common.toml"));
     }
 }

@@ -31,10 +31,10 @@ public class HealSpellBookItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (stack.is(CNBItems.HEAL_SPELL_BOOK_1.get())) {
+        if (stack.is(CNBItems.HEAL_SPELL_BOOK_1)) {
             this.applyEffects(level, player, stack, MobEffects.REGENERATION, 200, 0);
             return this.applyCooldowns(player, stack, 800);
-        } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2.get())) {
+        } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2)) {
             this.applyEffects(level, player, stack, MobEffects.REGENERATION, 140, 1);
             this.applyEffects(level, player, stack, MobEffects.HEAL, 1, 0);
             return this.applyCooldowns(player, stack, 700);
@@ -62,12 +62,12 @@ public class HealSpellBookItem extends Item {
         if (!player.getCooldowns().isOnCooldown(stack.getItem())) {
             player.awardStat(Stats.ITEM_USED.get(this));
 
-            player.playSound(CNBSoundEvents.PLAYER_HEAL.get(), 1.0F, 1.0F);
+            player.playSound(CNBSoundEvents.PLAYER_HEAL, 1.0F, 1.0F);
             player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F);
 
-            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_1.get(), cooldownTime);
-            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_2.get(), cooldownTime);
-            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_3.get(), cooldownTime);
+            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_1, cooldownTime);
+            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_2, cooldownTime);
+            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_3, cooldownTime);
 
             return InteractionResultHolder.success(stack);
         } else {
@@ -77,9 +77,9 @@ public class HealSpellBookItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag tooltipFlag) {
-        if (stack.is(CNBItems.HEAL_SPELL_BOOK_1.get())) {
+        if (stack.is(CNBItems.HEAL_SPELL_BOOK_1)) {
             tooltip.add(Component.literal("\u00A72Level 1"));
-        } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2.get())) {
+        } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2)) {
             tooltip.add(Component.literal("\u00A74Level 2"));
         } else {
             tooltip.add(Component.literal("\u00A76Level 3"));
