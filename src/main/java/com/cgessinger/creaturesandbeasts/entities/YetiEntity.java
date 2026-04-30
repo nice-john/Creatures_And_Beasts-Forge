@@ -384,7 +384,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
     // 2) performAttack: level -> level()
     private void performAttack() {
-        List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(1.5D, 1.0D, 1.5D));
+        // 2x linear horizontal AOE (was 1.5) - pairs with YetiAttackGoal.getAttackReachSqr.
+        List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(3.0D, 1.0D, 3.0D));
 
         for (LivingEntity entity : list) {
             if ((entity instanceof Player && entity.getUUID().equals(this.getOwnerUUID())) || (entity instanceof YetiEntity && Objects.equals(this.getOwnerUUID(), ((YetiEntity) entity).getOwnerUUID()))) {
@@ -603,6 +604,14 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             if (distance <= reach && this.yeti.attackTimer <= 0 && this.ticksUntilNextAttack <= 0) {
                 this.resetAttackCooldown();
             }
+        }
+
+        // 2x linear reach => 4x squared. Lets the goal trigger an attack at 2x the
+        // normal melee distance. Pairs with the inflate(3.0, 1.0, 3.0) AOE in
+        // YetiEntity.performAttack so the actual swing also reaches that far.
+        @Override
+        protected double getAttackReachSqr(LivingEntity target) {
+            return super.getAttackReachSqr(target) * 4.0D;
         }
 
         @Override
