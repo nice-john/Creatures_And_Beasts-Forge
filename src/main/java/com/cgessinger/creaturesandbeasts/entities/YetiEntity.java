@@ -385,6 +385,17 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     public void setOrderedToSit(boolean p_21840_) {
     }
 
+    /**
+     * 1.3-block jump height. Vanilla {@link LivingEntity#getJumpPower()} returns 0.42F,
+     * which produces a ~1.25-block peak via vanilla gravity (0.08) + Y drag (0.98). Bumping
+     * to 0.43F yields ~1.31 blocks (verified by iterating the integration:
+     * v=0.43 → 0.343 → 0.258 → 0.174 → 0.092 → 0.012 → stop, summing y to ≈ 1.31).
+     */
+    @Override
+    protected float getJumpPower() {
+        return 0.43F;
+    }
+
     @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
         return !this.isTame() && !this.hasCustomName();
