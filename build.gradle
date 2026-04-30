@@ -1,14 +1,14 @@
 plugins {
-    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'fabric-loom' version '1.7-SNAPSHOT'
     id 'maven-publish'
 }
 
 version = '1.0.0'
 group = 'com.cgessinger.creaturesandbeasts'
-archivesBaseName = "CNB-1.20.1-fabric"
+archivesBaseName = "CNB-1.21.1-fabric"
 
 // Loom needs an explicit pointer to the access widener; the fabric.mod.json
-// "accessWidener" field alone is not enough for Loom 1.6 to wire it into the
+// "accessWidener" field alone is not enough for Loom 1.6+ to wire it into the
 // runtime classpath transformations. Path is relative to the project root.
 loom {
     accessWidenerPath = file("src/main/resources/creatures-and-beasts.aw")
@@ -29,16 +29,14 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.20.1"
+    minecraft "com.mojang:minecraft:1.21.1"
     mappings loom.officialMojangMappings()
-    // Fabric Loader 0.16.x ships mixin 0.13.x which has CompatibilityLevel.JAVA_22.
-    // 0.15.9 paired with an older mixin can crash with NoSuchFieldError: JAVA_22 when
-    // the dev-launch resolves a newer loader at runtime than the compile-time pin.
     modImplementation "net.fabricmc:fabric-loader:0.16.10"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.92.2+1.20.1"
+    // Latest fabric-api for 1.21.1 (last released for that version line).
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.115.0+1.21.1"
 
-    // GeckoLib for Fabric 1.20.1
-    modImplementation "software.bernie.geckolib:geckolib-fabric-1.20.1:${geckolib_version}"
+    // GeckoLib for Fabric 1.21.1 — pulled in via gradle.properties pin.
+    modImplementation "software.bernie.geckolib:geckolib-fabric-1.21.1:${geckolib_version}"
 
     // Night Config – TOML for our simple config
     include implementation("com.electronwill.night-config:toml:3.6.7")
@@ -54,13 +52,13 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
+    it.options.release = 21
 }
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
