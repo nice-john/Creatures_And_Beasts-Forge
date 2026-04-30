@@ -635,8 +635,37 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             return super.canUse() && !this.yeti.isBaby() && this.yeti.getTarget() != this.yeti.getOwner();
         }
 
-        // TODO[1.21.1 port]: re-implement custom attack timing. MeleeAttackGoal.getAttackReachSqr/ticksUntilNextAttack
-        // are no longer accessible; consider overriding canPerformAttack(LivingEntity) instead.
+        /**
+         * 25-tick attack cadence (vanilla default is 20). 1.21.1's
+         * {@code MeleeAttackGoal#resetAttackCooldown} now reads this value via
+         * {@code adjustedTickDelay(getAttackInterval())} — overriding the interval
+         * is the supported way to slow the cooldown without poking at the now-private
+         * {@code ticksUntilNextAttack} field. Matches the 1.20.1-fabric tuning.
+         */
+        @Override
+        protected int getAttackInterval() {
+            return 25;
+        }
+
+        /**
+         * Replaces vanilla's swing + {@code doHurtTarget} with the yeti's own
+         * AOE attack cycle: arm the cooldown and set the {@code attacking} flag,
+         * then let {@link YetiEntity#aiStep()} run the {@code attackTimer}
+         * countdown that drives the animation and triggers {@code performAttack}
+         * at the apex. The {@code attackTimer <= 0} interlock prevents a second
+         * cooldown reset mid-animation.
+         *
+         * <p>Goal-trigger reach uses vanilla {@code MeleeAttackGoal} default —
+         * a 2x override caused yetis to swing at distant targets without closing.
+         * The wide arc from {@code performAttack}'s {@code inflate(3.0)} still
+         * gives the swing reach once committed.
+         */
+        @Override
+        protected void checkAndPerformAttack(LivingEntity target) {
+            if (this.yeti.attackTimer <= 0 && this.canPerformAttack(target)) {
+                this.resetAttackCooldown();
+            }
+        }
 
         @Override
         public void stop() {
@@ -647,7 +676,6 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         @Override
         protected void resetAttackCooldown() {
             super.resetAttackCooldown();
-            // TODO[1.21.1 port]: ticksUntilNextAttack is now private; was set to adjustedTickDelay(25)
             this.yeti.setAttacking(true);
         }
     }

@@ -16,10 +16,16 @@ public class CreaturesAndBeasts implements ModInitializer {
     @Override
     public void onInitialize() {
         // ── Registries ───────────────────────────────────────────────────────
+        // Data components must register before items so item ctors can reference
+        // their HIDE_LAYERS / IMBUED_TICKS types without a load-order race.
+        CNBDataComponents.register();
         CNBSoundEvents.register();
         CNBParticleTypes.register();
         CNBBlocks.register();
         CNBItems.register();
+        // Fuel registration is a separate FabricFuelRegistry call (was a per-item
+        // ctor side-effect on 1.20.1-fabric; explicit call now).
+        CNBItems.registerFuels();
         CNBEntityTypes.register();
         CNBContainerTypes.register();
         CNBPaintingTypes.register();
