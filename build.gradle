@@ -12,7 +12,7 @@ import groovy.json.JsonOutput
 
 version = '1.6.2'
 group = 'com.cgessinger.creaturesandbeasts'
-archivesBaseName = "CNB-1.21.1"
+archivesBaseName = "CNB-1.21.1-neoforge"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
