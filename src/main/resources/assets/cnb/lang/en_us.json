@@ -2,6 +2,8 @@
   "painting.cnb.lilytad.title": "Lilytad",
   "painting.cnb.lilytad.author": "Creatures and Beasts",
 
+  "tooltip.cnb.hide_layers": "Yeti Hide: %s / %s",
+
   "item.cnb.cindershell_shell_shard": "Cindershell Shell Shard",
   "item.cnb.apple_slice": "Apple Slices",
   "item.cnb.lizard_egg": "Lizard Egg",

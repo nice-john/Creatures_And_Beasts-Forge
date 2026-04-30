@@ -41,9 +41,11 @@ public class CNBArmorMaterials {
         map.put(ArmorItem.Type.LEGGINGS, legs);
         map.put(ArmorItem.Type.CHESTPLATE, chest);
         map.put(ArmorItem.Type.HELMET, head);
-        // 1.21 also has BODY (e.g. wolf armor) – use head value as a sane fallback for items
-        // that don't actually equip in that slot.
-        map.put(ArmorItem.Type.BODY, head);
+        // 1.21 added BODY (wolf armor slot). Mirror the NeoForge branch's fallback
+        // (chest defense) so the cross-loader behavior is identical for any future
+        // item that opts into the BODY slot. Neither flower_crown nor sporeling_backpack
+        // currently equips there.
+        map.put(ArmorItem.Type.BODY, chest);
         return map;
     }
 

@@ -11,7 +11,13 @@
       "Bash(git ls-tree *)",
       "Bash(unzip -o -q \"/c/Users/dad/.gradle/caches/modules-2/files-2.1/software.bernie.geckolib/geckolib-forge-1.20.1/4.8.2/395a9f21a36dc8466d67c2af67a904e7013460d1/geckolib-forge-1.20.1-4.8.2.jar\" \"software/bernie/geckolib/renderer/GeoEntityRenderer.class\" -d gl120)",
       "Bash(javap -p /tmp/gl120/software/bernie/geckolib/renderer/GeoEntityRenderer.class)",
-      "Bash(javap -p -c /tmp/gl120/software/bernie/geckolib/renderer/GeoEntityRenderer.class)"
+      "Bash(javap -p -c /tmp/gl120/software/bernie/geckolib/renderer/GeoEntityRenderer.class)",
+      "Bash(./gradlew compileJava)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(xxd)",
+      "Bash(git mv *)",
+      "Bash(grep -vE \"^---|^\\\\+\\\\+\\\\+|^[+-] *\\(import|//|\\\\*|/\\\\*|$\\)\")"
     ]
   }
 }

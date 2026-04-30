@@ -16,15 +16,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntityRenderer.class)
 public class MixinLivingEntityRenderer<T extends LivingEntity> {
 
-    @Inject(method = "setupRotations(Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;FFF)V", at = @At("RETURN"))
-    private void CNB_setupWhaleRidingRotations(LivingEntity entity, PoseStack stack, float ageInTicks, float rotationYaw, float partialTicks, CallbackInfo ci) {
+    /**
+     * 1.21.1: {@code LivingEntityRenderer#setupRotations} gained a trailing
+     * {@code float scale} parameter — the descriptor is now {@code (...FFFF)V}
+     * (was {@code (...FFF)V} on 1.20). Mirrors the NeoForge 1.21.1 branch.
+     */
+    @Inject(method = "setupRotations(Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;FFFF)V", at = @At("RETURN"))
+    private void CNB_setupWhaleRidingRotations(LivingEntity entity, PoseStack stack, float bob, float yBodyRot, float partialTick, float scale, CallbackInfo ci) {
         if (entity.getVehicle() instanceof EndWhaleEntity endWhale) {
-            float whaleRotY = endWhale.getViewYRot(partialTicks);
-            float playerRotY = entity.getViewYRot(partialTicks);
-            float whaleRotX = endWhale.getViewXRot(partialTicks);
-            float playerRotX = entity.getViewXRot(partialTicks);
+            float whaleRotY = endWhale.getViewYRot(partialTick);
+            float playerRotY = entity.getViewYRot(partialTick);
+            float whaleRotX = endWhale.getViewXRot(partialTick);
+            float playerRotX = entity.getViewXRot(partialTick);
 
-            // Apply rotations to the PoseStack
+            // Tilt the rider with the whale: roll = half the yaw delta (subtle bank),
+            // pitch = full whale pitch delta so the rider noses with the whale.
             stack.mulPose(Axis.ZP.rotationDegrees(Mth.wrapDegrees(whaleRotY - playerRotY) / 2));
             stack.mulPose(Axis.XP.rotationDegrees(Mth.wrapDegrees(whaleRotX - playerRotX)));
         }
