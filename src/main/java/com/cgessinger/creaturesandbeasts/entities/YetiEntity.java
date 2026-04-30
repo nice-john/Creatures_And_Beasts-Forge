@@ -141,7 +141,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 120.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.MOVEMENT_SPEED, 0.375D)
                 .add(Attributes.ATTACK_DAMAGE, 16.0D)
                 .add(Attributes.ATTACK_SPEED, 0.1D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.7D);
@@ -619,9 +619,15 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             }
         }
 
-        // Goal-trigger reach uses the vanilla MeleeAttackGoal default (mob.bbWidth*2)^2 +
-        // target.bbWidth. An earlier 4x-squared override let yetis swing from too far —
-        // the AOE inflate above covers wide swings; the trigger should stay tight.
+        // 2x linear reach => 4x squared. Vanilla MeleeAttackGoal returns
+        //   getBbWidth() * 2 * getBbWidth() * 2 + target.getBbWidth();
+        // multiplying by 4 here lets the goal trigger when targets are up to 2x the
+        // normal melee distance away. Tested as the sweet spot — earlier vanilla
+        // reach had yetis stop too short to swing.
+        @Override
+        protected double getAttackReachSqr(LivingEntity target) {
+            return super.getAttackReachSqr(target) * 4.0D;
+        }
 
         @Override
         public void stop() {
