@@ -141,7 +141,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 120.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.375D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
                 .add(Attributes.ATTACK_DAMAGE, 16.0D)
                 .add(Attributes.ATTACK_SPEED, 0.1D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.7D);
@@ -152,7 +152,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         super.registerGoals();
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(1, new BreedGoal(this, 1.0D));
-        this.goalSelector.addGoal(2, new YetiAttackGoal(this, 1.2D, true));
+        this.goalSelector.addGoal(2, new YetiAttackGoal(this, 1.5D, true));
         this.goalSelector.addGoal(3, new FollowParentGoal(this, 1.0D));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 12.0F));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
@@ -618,15 +618,11 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             }
         }
 
-        // 2x linear reach => 4x squared. Vanilla MeleeAttackGoal returns
-        //   getBbWidth() * 2 * getBbWidth() * 2 + target.getBbWidth();
-        // multiplying by 4 here lets the goal trigger when targets are up to 2x the
-        // normal melee distance away. Tested as the sweet spot — earlier vanilla
-        // reach had yetis stop too short to swing.
-        @Override
-        protected double getAttackReachSqr(LivingEntity target) {
-            return super.getAttackReachSqr(target) * 4.0D;
-        }
+        // Goal-trigger reach uses vanilla MeleeAttackGoal default. We want yetis to
+        // chase all the way up to the target (i.e. into actual melee distance) and
+        // only then swing — the 2x override stopped pursuit too early, leaving
+        // attacks falling short. AOE inflate(3.0) in performAttack still gives the
+        // swing a wide arc once the yeti commits.
 
         @Override
         public void stop() {
