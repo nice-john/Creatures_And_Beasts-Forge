@@ -131,7 +131,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         if (tag.contains("IsElder")) {
             this.setElder(tag.getBoolean("IsElder"));
         } else if (tag.contains("Age") && tag.getInt("Age") >= 0) {
-            this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.CACTEM_SPEAR.get()));
+            this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.CACTEM_SPEAR));
         }
 
         this.reassessGoals();
@@ -191,8 +191,8 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     public void aiStep() {
         super.aiStep();
 
-        if (this.isElder() && !this.getItemInHand(this.getUsedItemHand()).is(CNBItems.HEAL_SPELL_BOOK_1.get())) {
-            this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.HEAL_SPELL_BOOK_1.get()));
+        if (this.isElder() && !this.getItemInHand(this.getUsedItemHand()).is(CNBItems.HEAL_SPELL_BOOK_1)) {
+            this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.HEAL_SPELL_BOOK_1));
         }
 
         if (this.isHealing()) {
@@ -230,9 +230,9 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         if (!this.isBaby()) {
             if (elderChance < 0.25) {
                 this.setElder(true);
-                this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.HEAL_SPELL_BOOK_1.get()));
+                this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.HEAL_SPELL_BOOK_1));
             } else {
-                this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.CACTEM_SPEAR.get()));
+                this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.CACTEM_SPEAR));
                 this.setIdleAnim(this.random.nextInt(2));
             }
         }
@@ -263,7 +263,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
     private void spawnHealParticles() {
         for (float i = 0; i < Mth.TWO_PI; i += this.random.nextFloat() * 0.8F + 0.5F) {
-            this.level().addParticle(CNBParticleTypes.CACTEM_HEAL_PARTICLE.get(), this.getX() + Mth.cos(i) * 1.25D, this.getY(), this.getZ() + Mth.sin(i) * 1.25D, 0.0D, 0.0D, 0.0D);
+            this.level().addParticle(CNBParticleTypes.CACTEM_HEAL_PARTICLE, this.getX() + Mth.cos(i) * 1.25D, this.getY(), this.getZ() + Mth.sin(i) * 1.25D, 0.0D, 0.0D, 0.0D);
         }
     }
 
@@ -289,9 +289,9 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         if (!this.isBaby()) {
             if (elderChance < 0.25) {
                 this.setElder(true);
-                this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.HEAL_SPELL_BOOK_1.get()));
+                this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.HEAL_SPELL_BOOK_1));
             } else {
-                this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.CACTEM_SPEAR.get()));
+                this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.CACTEM_SPEAR));
             }
         }
 
@@ -320,18 +320,18 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob entity) {
-        return CNBEntityTypes.CACTEM.get().create(level);
+        return CNBEntityTypes.CACTEM.create(level);
     }
 
     @Override
     public SoundEvent getAmbientSound() {
-        return CNBSoundEvents.CACTEM_AMBIENT.get();
+        return CNBSoundEvents.CACTEM_AMBIENT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSource) {
-        return CNBSoundEvents.CACTEM_HURT.get();
+        return CNBSoundEvents.CACTEM_HURT;
     }
 
     @Override
@@ -465,9 +465,9 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
                 String sound = event.getController().getCurrentAnimation().animation().name();
 
                 if (sound.equals("cactem_heal")) {
-                    player.playSound(CNBSoundEvents.CACTEM_HEAL.get(), 1.0F, 1.0F);
+                    player.playSound(CNBSoundEvents.CACTEM_HEAL, 1.0F, 1.0F);
                 } else if (sound.equals("spear_throw")) {
-                    player.playSound(CNBSoundEvents.SPEAR_THROW.get(), 1.0F, 1.0F);
+                    player.playSound(CNBSoundEvents.SPEAR_THROW, 1.0F, 1.0F);
                 }
             }
         }
@@ -477,9 +477,9 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         String soundKey = event.getKeyframeData().getSound(); // Correctly retrieves the sound key.
 
         if (soundKey.equals("cactem_heal")) {
-            player.playSound(CNBSoundEvents.CACTEM_HEAL.get(), 1.0F, 1.0F);
+            player.playSound(CNBSoundEvents.CACTEM_HEAL, 1.0F, 1.0F);
         } else if (soundKey.equals("spear_throw")) {
-            player.playSound(CNBSoundEvents.SPEAR_THROW.get(), 1.0F, 1.0F);
+            player.playSound(CNBSoundEvents.SPEAR_THROW, 1.0F, 1.0F);
         }
     }
 
@@ -641,7 +641,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
             if (lootChance < 0.2) {
                 returnItem = new ItemStack(Items.EMERALD, 15 + this.entityIn.random.nextInt(10));
             } else if (lootChance < 0.7) {
-                returnItem = new ItemStack(CNBItems.HEAL_SPELL_BOOK_1.get());
+                returnItem = new ItemStack(CNBItems.HEAL_SPELL_BOOK_1);
             } else {
                 returnItem = new ItemStack(Items.DEAD_BUSH);
             }
@@ -921,7 +921,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         @Override
         public void start() {
             this.cactem.setElder(true);
-            this.cactem.setItemInHand(this.cactem.getUsedItemHand(), new ItemStack(CNBItems.HEAL_SPELL_BOOK_1.get()));
+            this.cactem.setItemInHand(this.cactem.getUsedItemHand(), new ItemStack(CNBItems.HEAL_SPELL_BOOK_1));
             this.cactem.setShouldUpdateGoals(true);
         }
 

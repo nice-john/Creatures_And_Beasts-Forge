@@ -18,7 +18,7 @@ public class CNBTags {
         private static TagKey<Item> tag(String name) {
             // ItemTags.create takes a String in vanilla and assumes minecraft: namespace.
             // For our cnb: namespace, use TagKey.create directly with the ITEM registry key.
-            return TagKey.create(Registries.ITEM, new ResourceLocation(CreaturesAndBeasts.MOD_ID, name));
+            return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name));
         }
     }
 

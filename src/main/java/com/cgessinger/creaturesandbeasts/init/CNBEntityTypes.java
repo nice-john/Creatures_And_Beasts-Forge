@@ -16,55 +16,55 @@ public class CNBEntityTypes {
     /* CREATURES */
     public static final EntityType<LittleGrebeEntity> LITTLE_GREBE = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "little_grebe"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "little_grebe"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, LittleGrebeEntity::new)
                     .dimensions(EntityDimensions.scalable(0.5f, 0.6f)).build());
 
     public static final EntityType<LizardEntity> LIZARD = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "lizard"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lizard"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, LizardEntity::new)
                     .dimensions(EntityDimensions.scalable(0.52f, 0.3f)).build());
 
     public static final EntityType<LilytadEntity> LILYTAD = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "lilytad"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lilytad"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, LilytadEntity::new)
                     .dimensions(EntityDimensions.scalable(0.7f, 1.02f)).build());
 
     public static final EntityType<SporelingEntity> SPORELING = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "sporeling"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "sporeling"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, SporelingEntity::new)
                     .dimensions(EntityDimensions.scalable(0.6f, 0.85f)).build());
 
     public static final EntityType<MinipadEntity> MINIPAD = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "minipad"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "minipad"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, MinipadEntity::new)
                     .dimensions(EntityDimensions.scalable(0.6f, 0.7f)).build());
 
     public static final EntityType<EndWhaleEntity> END_WHALE = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "end_whale"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "end_whale"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, EndWhaleEntity::new)
                     .dimensions(EntityDimensions.scalable(3.0f, 1.5f)).build());
 
     public static final EntityType<CactemEntity> CACTEM = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "cactem"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cactem"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, CactemEntity::new)
                     .dimensions(EntityDimensions.scalable(0.75f, 1.0f)).build());
 
     public static final EntityType<YetiEntity> YETI = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "yeti"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "yeti"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, YetiEntity::new)
                     .dimensions(EntityDimensions.scalable(1.55f, 2.05f)).build());
 
     public static final EntityType<CindershellEntity> CINDERSHELL = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "cindershell"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cindershell"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, CindershellEntity::new)
                     .fireImmune()
                     .dimensions(EntityDimensions.scalable(1.25f, 1.45f)).build());
@@ -72,14 +72,14 @@ public class CNBEntityTypes {
     /* PROJECTILES */
     public static final EntityType<LizardEggEntity> LIZARD_EGG = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "lizard_egg"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lizard_egg"),
             FabricEntityTypeBuilder.<LizardEggEntity>create(MobCategory.MISC, LizardEggEntity::new)
                     .dimensions(EntityDimensions.fixed(0.25f, 0.25f))
                     .trackRangeChunks(4).trackedUpdateRate(10).build());
 
     public static final EntityType<ThrownCactemSpearEntity> THROWN_CACTEM_SPEAR = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
-            new ResourceLocation(CreaturesAndBeasts.MOD_ID, "thrown_cactem_spear"),
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "thrown_cactem_spear"),
             FabricEntityTypeBuilder.<ThrownCactemSpearEntity>create(MobCategory.MISC, ThrownCactemSpearEntity::new)
                     .dimensions(EntityDimensions.fixed(0.4f, 0.4f))
                     .trackRangeChunks(4).trackedUpdateRate(10).build());

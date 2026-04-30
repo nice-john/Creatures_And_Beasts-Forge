@@ -160,7 +160,7 @@ public class SpearItem extends Item {
         }
 
         level.addFreshEntity(spear);
-        level.playSound(null, spear, CNBSoundEvents.SPEAR_THROW.get(), SoundSource.PLAYERS, 1.0F, soundVariation);
+        level.playSound(null, spear, CNBSoundEvents.SPEAR_THROW, SoundSource.PLAYERS, 1.0F, soundVariation);
     }
 
     private static float[] getShotPitches(RandomSource rand) {

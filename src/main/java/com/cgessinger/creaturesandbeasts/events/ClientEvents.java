@@ -17,7 +17,7 @@ public class ClientEvents {
     public static void register() {
         // Cactem spear "throwing" item property – shows raised/drawn animation when in use.
         ItemProperties.register(CNBItems.CACTEM_SPEAR,
-                new ResourceLocation("throwing"),
+                ResourceLocation.fromNamespaceAndPath("throwing"),
                 (item, level, entity, seed) ->
                         entity != null && entity.isUsingItem() && entity.getUseItem() == item
                                 ? 1.0F : 0.0F);

@@ -8,7 +8,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 
 /**
  * Custom DataComponentType registry. Replaces the 1.20.x ItemStack-NBT capability path that
- * NeoForge dropped â€” anything we want to stash on an ItemStack and have survive copies / network
+ * NeoForge dropped — anything we want to stash on an ItemStack and have survive copies / network
  * sync / save-load goes here as a typed component.
  */
 public class CNBDataComponents {
@@ -30,7 +30,7 @@ public class CNBDataComponents {
      * Number of yeti-hide layers reinforcing an armor piece. Set on an ItemStack when the player
      * combines armor + Yeti Hide on an anvil. Each layer adds a small armor bonus via a patched
      * {@code ItemAttributeModifiers} component on the stack. Capped at {@code CNBConfig.hideAmount}.
-     * Zero / unset means "no reinforcement" â€” we never write 0; we just leave the component absent.
+     * Zero / unset means "no reinforcement" — we never write 0; we just leave the component absent.
      */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> HIDE_LAYERS =
             COMPONENTS.registerComponentType("hide_layers", builder -> builder

@@ -63,7 +63,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
-public class MinipadEntity extends Animal implements IShearable, GeoAnimatable {
+public class MinipadEntity extends Animal implements net.minecraft.world.entity.Shearable, GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> GLOWING = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
@@ -323,25 +323,25 @@ public class MinipadEntity extends Animal implements IShearable, GeoAnimatable {
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
         if (!this.level().getFluidState(pos).is(FluidTags.WATER)) { // Check if the block is not a liquid
-            this.playSound(CNBSoundEvents.MINIPAD_STEP.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
+            this.playSound(CNBSoundEvents.MINIPAD_STEP, this.getSoundVolume() * 0.3F, this.getVoicePitch());
         }
     }
 
     @Override
     protected SoundEvent getSwimSound() {
-        return CNBSoundEvents.MINIPAD_SWIM.get();
+        return CNBSoundEvents.MINIPAD_SWIM;
     }
 
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.MINIPAD_HURT.get();
+        return CNBSoundEvents.MINIPAD_HURT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.MINIPAD_HURT.get();
+        return CNBSoundEvents.MINIPAD_HURT;
     }
 
 

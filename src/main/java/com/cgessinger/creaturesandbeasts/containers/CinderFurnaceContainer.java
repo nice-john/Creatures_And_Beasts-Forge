@@ -38,7 +38,7 @@ public class CinderFurnaceContainer extends AbstractContainerMenu {
     }
 
     public CinderFurnaceContainer(int id, Inventory inventory, Container container, ContainerData data) {
-        super(CNBContainerTypes.CINDER_FURNACE_CONTAINER.get(), id);
+        super(CNBContainerTypes.CINDER_FURNACE_CONTAINER, id);
         this.recipeType = RecipeType.SMELTING;
         checkContainerSize(container, SLOT_COUNT);
         this.container = container;

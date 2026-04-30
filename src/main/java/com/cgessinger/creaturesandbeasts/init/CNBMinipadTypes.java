@@ -24,8 +24,8 @@ public class CNBMinipadTypes {
 
     private static MinipadType registerWithCNBDirectory(String namespace, String name, Supplier<SimpleParticleType> particle) {
         return registerWithCNBDirectory(
-                () -> BuiltInRegistries.ITEM.get(new ResourceLocation(namespace, name + "_minipad_flower")),
-                () -> BuiltInRegistries.ITEM.get(new ResourceLocation(namespace, name + "_minipad_flower_glow")),
+                () -> BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(namespace, name + "_minipad_flower")),
+                () -> BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(namespace, name + "_minipad_flower_glow")),
                 namespace, name, particle);
     }
 
@@ -34,7 +34,7 @@ public class CNBMinipadTypes {
     }
 
     private static MinipadType registerWithCNBDirectory(@Nullable Supplier<Item> shearItem, @Nullable Supplier<Item> glowShearItem, String namespace, String name, Supplier<SimpleParticleType> particle) {
-        return register(new MinipadType(shearItem, glowShearItem, new ResourceLocation(namespace, name), Pair.of(new ResourceLocation(MOD_ID, "textures/entity/minipad/minipad_" + name + ".png"), new ResourceLocation(MOD_ID, "textures/entity/minipad/minipad_" + name + "_glow.png")), particle));
+        return register(new MinipadType(shearItem, glowShearItem, ResourceLocation.fromNamespaceAndPath(namespace, name), Pair.of(ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/minipad/minipad_" + name + ".png"), ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/minipad/minipad_" + name + "_glow.png")), particle));
     }
 
     private static MinipadType register(MinipadType minipadType) {

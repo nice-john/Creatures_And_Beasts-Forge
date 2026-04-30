@@ -18,7 +18,7 @@ public class CNBParticleTypes {
 
     private static SimpleParticleType register(String name) {
         return Registry.register(BuiltInRegistries.PARTICLE_TYPE,
-                new ResourceLocation(CreaturesAndBeasts.MOD_ID, name),
+                ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name),
                 new SimpleParticleType(false));
     }
 

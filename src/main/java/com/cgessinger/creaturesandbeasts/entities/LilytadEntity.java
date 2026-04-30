@@ -55,7 +55,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
-public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
+public class LilytadEntity extends Animal implements net.minecraft.world.entity.Shearable, GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.BOOLEAN);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -256,19 +256,19 @@ public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.LILYTAD_HURT.get();
+        return CNBSoundEvents.LILYTAD_HURT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getAmbientSound() {
-        return CNBSoundEvents.LILYTAD_AMBIENT.get();
+        return CNBSoundEvents.LILYTAD_AMBIENT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.LILYTAD_DEATH.get();
+        return CNBSoundEvents.LILYTAD_DEATH;
     }
 
     private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {

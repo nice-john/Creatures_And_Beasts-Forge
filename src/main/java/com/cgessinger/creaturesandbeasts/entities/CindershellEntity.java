@@ -196,12 +196,12 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
                 this.usePlayerItem(player, player.getUsedItemHand(), stack);
                 this.setEating(true);
                 this.setInLove(player);
-                this.playSound(CNBSoundEvents.CINDERSHELL_ADULT_EAT.get(), 1.2F, 1F);
+                this.playSound(CNBSoundEvents.CINDERSHELL_ADULT_EAT, 1.2F, 1F);
                 this.setHolding(stack);
                 return InteractionResult.SUCCESS;
             }
             if (this.isBaby()) {
-                this.playSound(CNBSoundEvents.CINDERSHELL_BABY_EAT.get(), 1.3F, 1F);
+                this.playSound(CNBSoundEvents.CINDERSHELL_BABY_EAT, 1.3F, 1F);
                 this.usePlayerItem(player, player.getUsedItemHand(), stack);
                 this.ageUp((int) (-i / 20F * 0.1F), true);
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -229,7 +229,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
             }
             this.discard();
             return InteractionResult.sidedSuccess(level.isClientSide);
-        } else if (!this.isBaby() && !this.hasFurnace() && item.is(com.cgessinger.creaturesandbeasts.init.CNBItems.CINDERSHELL_FURNACE.get())) {
+        } else if (!this.isBaby() && !this.hasFurnace() && item.is(com.cgessinger.creaturesandbeasts.init.CNBItems.CINDERSHELL_FURNACE)) {
             this.setFurnace(true);
             if (!player.getAbilities().instabuild) {
                 item.shrink(1);
@@ -239,7 +239,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         } else if (this.hasFurnace() && player.isSecondaryUseActive()) {
             // Shift-right-click while furnace is mounted: drop it back (along with any contents).
             if (!this.level().isClientSide) {
-                this.spawnAtLocation(com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE.get());
+                this.spawnAtLocation(com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE);
                 for (int i = 0; i < this.items.size(); i++) {
                     ItemStack stack = this.items.get(i);
                     if (!stack.isEmpty()) this.spawnAtLocation(stack);
@@ -282,7 +282,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
 
     @Override
     public ItemStack getBucketItemStack() {
-        return new ItemStack(CNBItems.CINDERSHELL_BUCKET.get());
+        return new ItemStack(CNBItems.CINDERSHELL_BUCKET);
     }
 
     @Override
@@ -293,7 +293,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob mob) {
-        return CNBEntityTypes.CINDERSHELL.get().create(level);
+        return CNBEntityTypes.CINDERSHELL.create(level);
     }
 
     @Override
@@ -309,7 +309,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     @Nullable
     @Override
     protected SoundEvent getAmbientSound() {
-        return CNBSoundEvents.CINDERSHELL_AMBIENT.get();
+        return CNBSoundEvents.CINDERSHELL_AMBIENT;
     }
 
     @Override
@@ -320,13 +320,13 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.CINDERSHELL_HURT.get();
+        return CNBSoundEvents.CINDERSHELL_HURT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.CINDERSHELL_HURT.get();
+        return CNBSoundEvents.CINDERSHELL_HURT;
     }
 
     @Override
@@ -522,7 +522,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         if (sound.equals("cindershell_eat")) {
             LocalPlayer player = Minecraft.getInstance().player;
             if (player != null) {
-                player.playSound(this.isBaby() ? CNBSoundEvents.CINDERSHELL_BABY_EAT.get() : CNBSoundEvents.CINDERSHELL_ADULT_EAT.get(), 0.4F, 1F);
+                player.playSound(this.isBaby() ? CNBSoundEvents.CINDERSHELL_BABY_EAT : CNBSoundEvents.CINDERSHELL_ADULT_EAT, 0.4F, 1F);
             }
         }
     }
@@ -605,7 +605,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
             this.playSound(SoundEvents.HORSE_SADDLE, 1.0F,
                     (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.8F);
             if (!this.level().isClientSide) {
-                this.spawnAtLocation(com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE.get());
+                this.spawnAtLocation(com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE);
                 for (int i = 0; i < this.items.size(); i++) {
                     ItemStack stack = this.items.get(i);
                     if (!stack.isEmpty()) this.spawnAtLocation(stack);

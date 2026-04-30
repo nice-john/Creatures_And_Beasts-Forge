@@ -14,7 +14,7 @@ public class CNBCreativeTabs {
 
     public static final CreativeModeTab CREATURES_AND_BEASTS_TAB =
             Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB,
-                    new ResourceLocation(CreaturesAndBeasts.MOD_ID, "creatures_and_beasts_tab"),
+                    ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "creatures_and_beasts_tab"),
                     FabricItemGroup.builder()
                             .icon(() -> new ItemStack(CNBItems.LIZARD_SPAWN_EGG))
                             .title(Component.translatable("itemGroup.creatures_and_beasts_tab"))

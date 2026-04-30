@@ -206,7 +206,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
             if (this.isTame()) {
                 InteractionResult interactionresult = super.mobInteract(player, hand);
                 if (!interactionresult.consumesAction() && this.isOwnedBy(player)) {
-                    if (player.isSecondaryUseActive() && player.getPassengers().isEmpty() && player.getItemBySlot(EquipmentSlot.CHEST).is(CNBItems.SPORELING_BACKPACK.get())) {
+                    if (player.isSecondaryUseActive() && player.getPassengers().isEmpty() && player.getItemBySlot(EquipmentSlot.CHEST).is(CNBItems.SPORELING_BACKPACK)) {
                         this.startRiding(player);
                         return InteractionResult.SUCCESS;
                     }
@@ -229,7 +229,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
 
                 InteractionResult interactionresult = super.mobInteract(player, hand);
                 if (!interactionresult.consumesAction() && this.isOwnedBy(player)) {
-                    if (player.isSecondaryUseActive() && player.getPassengers().isEmpty() && player.getItemBySlot(EquipmentSlot.CHEST).is(CNBItems.SPORELING_BACKPACK.get())) {
+                    if (player.isSecondaryUseActive() && player.getPassengers().isEmpty() && player.getItemBySlot(EquipmentSlot.CHEST).is(CNBItems.SPORELING_BACKPACK)) {
                         this.startRiding(player);
                     } else {
                         this.setOrderedToSit(!this.isOrderedToSit());
@@ -273,9 +273,9 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     @Override
     public ItemStack getPickedResult(HitResult target) {
         if (this.getSporelingType().getHostility().equals(FRIENDLY)) {
-            return new ItemStack(CNBItems.SPORELING_OVERWORLD_EGG.get());
+            return new ItemStack(CNBItems.SPORELING_OVERWORLD_EGG);
         } else {
-            return new ItemStack(CNBItems.SPORELING_NETHER_EGG.get());
+            return new ItemStack(CNBItems.SPORELING_NETHER_EGG);
         }
     }
 
@@ -409,12 +409,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
         switch (this.getSporelingType().getHostility()) {
             case HOSTILE:
-                return CNBSoundEvents.SPORELING_NETHER_HURT.get();
+                return CNBSoundEvents.SPORELING_NETHER_HURT;
             case NEUTRAL:
-                return CNBSoundEvents.SPORELING_WARPED_HURT.get();
+                return CNBSoundEvents.SPORELING_WARPED_HURT;
             case FRIENDLY:
             default:
-                return CNBSoundEvents.SPORELING_OVERWORLD_HURT.get();
+                return CNBSoundEvents.SPORELING_OVERWORLD_HURT;
         }
     }
 
@@ -423,12 +423,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     protected SoundEvent getDeathSound() {
         switch (this.getSporelingType().getHostility()) {
             case HOSTILE:
-                return CNBSoundEvents.SPORELING_NETHER_HURT.get();
+                return CNBSoundEvents.SPORELING_NETHER_HURT;
             case NEUTRAL:
-                return CNBSoundEvents.SPORELING_WARPED_HURT.get();
+                return CNBSoundEvents.SPORELING_WARPED_HURT;
             case FRIENDLY:
             default:
-                return CNBSoundEvents.SPORELING_OVERWORLD_HURT.get();
+                return CNBSoundEvents.SPORELING_OVERWORLD_HURT;
         }
     }
 
@@ -437,12 +437,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     protected SoundEvent getAmbientSound() {
         switch (this.getSporelingType().getHostility()) {
             case HOSTILE:
-                return CNBSoundEvents.SPORELING_NETHER_AMBIENT.get();
+                return CNBSoundEvents.SPORELING_NETHER_AMBIENT;
             case NEUTRAL:
-                return CNBSoundEvents.SPORELING_WARPED_AMBIENT.get();
+                return CNBSoundEvents.SPORELING_WARPED_AMBIENT;
             case FRIENDLY:
             default:
-                return CNBSoundEvents.SPORELING_OVERWORLD_AMBIENT.get();
+                return CNBSoundEvents.SPORELING_OVERWORLD_AMBIENT;
         }
     }
 
@@ -626,7 +626,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         @Override
         protected void resetAttackCooldown() {
             super.resetAttackCooldown();
-            this.goalOwner.playSound(CNBSoundEvents.SPORELING_BITE.get(), 1.0F, 1.0F);
+            this.goalOwner.playSound(CNBSoundEvents.SPORELING_BITE, 1.0F, 1.0F);
             this.goalOwner.setAttacking(true);
         }
     }

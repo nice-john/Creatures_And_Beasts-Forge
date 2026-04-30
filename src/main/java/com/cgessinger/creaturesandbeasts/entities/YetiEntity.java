@@ -330,7 +330,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob mob) {
-        return CNBEntityTypes.YETI.get().create(level);
+        return CNBEntityTypes.YETI.create(level);
     }
 
     public void setEating(boolean isEating) {
@@ -372,7 +372,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         this.usePlayerItem(player, player.getUsedItemHand(), stack);
         this.setEating(true);
         this.gameEvent(GameEvent.ENTITY_INTERACT, player);
-        SoundEvent sound = this.isBaby() ? CNBSoundEvents.YETI_BABY_EAT.get() : CNBSoundEvents.YETI_ADULT_EAT.get();
+        SoundEvent sound = this.isBaby() ? CNBSoundEvents.YETI_BABY_EAT : CNBSoundEvents.YETI_ADULT_EAT;
         this.playSound(sound, 1.1F, 1F);
         return InteractionResult.SUCCESS;
     }
@@ -429,7 +429,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
                 continue;
             }
 
-            this.playSound(CNBSoundEvents.YETI_HIT.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
+            this.playSound(CNBSoundEvents.YETI_HIT, this.getSoundVolume() * 0.3F, this.getVoicePitch());
 
             this.doHurtTarget(entity);
         }
@@ -461,7 +461,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
         if (!this.level().getFluidState(pos).is(FluidTags.WATER)) { // Check if the block is not a liquid
-            this.playSound(CNBSoundEvents.YETI_STEP.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
+            this.playSound(CNBSoundEvents.YETI_STEP, this.getSoundVolume() * 0.3F, this.getVoicePitch());
         }
     }
 
@@ -483,17 +483,17 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return this.isBaby() ? null : CNBSoundEvents.YETI_AMBIENT.get();
+        return this.isBaby() ? null : CNBSoundEvents.YETI_AMBIENT;
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return this.isBaby() ? null : CNBSoundEvents.YETI_HURT.get();
+        return this.isBaby() ? null : CNBSoundEvents.YETI_HURT;
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return this.isBaby() ? null : CNBSoundEvents.YETI_HURT.get();
+        return this.isBaby() ? null : CNBSoundEvents.YETI_HURT;
     }
 
     private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
@@ -532,7 +532,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
         if ("hit.ground.sound".equals(sound)) {
             // play the sound (as before)
-            this.playSound(CNBSoundEvents.YETI_HIT.get(), 0.4F, 1.0F);
+            this.playSound(CNBSoundEvents.YETI_HIT, 0.4F, 1.0F);
 
             // spawn the particles at the same moment (client-only)
             if (this.level().isClientSide) {
@@ -546,7 +546,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
                 }
             }
         } else if ("yeti_ambient".equals(sound)) {
-            this.playSound(CNBSoundEvents.YETI_AMBIENT.get(), 1.0F, 1.0F);
+            this.playSound(CNBSoundEvents.YETI_AMBIENT, 1.0F, 1.0F);
         }
     }
 

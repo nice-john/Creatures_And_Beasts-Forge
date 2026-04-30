@@ -18,7 +18,7 @@ public class CNBLootModifiers {
     // a 5/73 chance for 1-3 *additional* shell shards on top of the base 0-4 shards from
     // the entity's vanilla loot table.
     private static final ResourceLocation CINDERSHELL_LOOT =
-            new ResourceLocation("cnb", "entities/cindershell");
+            ResourceLocation.fromNamespaceAndPath("cnb", "entities/cindershell");
 
     public static void register() {
         // Fabric LootTableEvents.Modify takes 5 params: (resourceManager, lootDataManager,

@@ -10,7 +10,7 @@ public class CNBPaintingTypes {
 
     public static final PaintingVariant LILYTAD_PAINTING =
             Registry.register(BuiltInRegistries.PAINTING_VARIANT,
-                    new ResourceLocation(CreaturesAndBeasts.MOD_ID, "lilytad"),
+                    ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lilytad"),
                     new PaintingVariant(16, 16));
 
     public static void register() {

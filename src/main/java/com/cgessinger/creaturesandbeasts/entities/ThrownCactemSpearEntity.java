@@ -43,7 +43,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
     }
 
     public ThrownCactemSpearEntity(Level level, LivingEntity entity, ItemStack itemStack) {
-        super(CNBEntityTypes.THROWN_CACTEM_SPEAR.get(), entity, level, itemStack, null);
+        super(CNBEntityTypes.THROWN_CACTEM_SPEAR, entity, level, itemStack, null);
         this.entityData.set(IS_FOIL, itemStack.hasFoil());
         this.entityData.set(SPEAR, itemStack.copy());
     }
@@ -52,7 +52,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(IS_FOIL, false);
-        builder.define(SPEAR, new ItemStack(CNBItems.CACTEM_SPEAR.get()));
+        builder.define(SPEAR, new ItemStack(CNBItems.CACTEM_SPEAR));
     }
 
     // ---- Save/load (1.21 ItemStack save/load API takes a HolderLookup.Provider) ----
@@ -131,7 +131,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
 
     @Override
     protected ItemStack getDefaultPickupItem() {
-        return new ItemStack(CNBItems.CACTEM_SPEAR.get());
+        return new ItemStack(CNBItems.CACTEM_SPEAR);
     }
 
     public boolean isFoil() {

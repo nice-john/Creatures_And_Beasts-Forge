@@ -143,7 +143,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel p_241840_1_, AgeableMob p_241840_2_) {
-        return CNBEntityTypes.LITTLE_GREBE.get().create(p_241840_1_);
+        return CNBEntityTypes.LITTLE_GREBE.create(p_241840_1_);
     }
 
     @Override
@@ -160,21 +160,21 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     @Override
     protected SoundEvent getAmbientSound() {
         if (this.isBaby()) {
-            return CNBSoundEvents.LITTLE_GREBE_CHICK_AMBIENT.get();
+            return CNBSoundEvents.LITTLE_GREBE_CHICK_AMBIENT;
         }
-        return CNBSoundEvents.LITTLE_GREBE_AMBIENT.get();
+        return CNBSoundEvents.LITTLE_GREBE_AMBIENT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.LITTLE_GREBE_HURT.get();
+        return CNBSoundEvents.LITTLE_GREBE_HURT;
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.LITTLE_GREBE_HURT.get();
+        return CNBSoundEvents.LITTLE_GREBE_HURT;
     }
 
     // 1.21 replaced getPassengersRidingOffset with the EntityAttachments system. Configure the

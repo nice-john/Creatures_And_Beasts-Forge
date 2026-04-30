@@ -12,7 +12,7 @@ public class CNBContainerTypes {
 
     public static final MenuType<CinderFurnaceContainer> CINDER_FURNACE_CONTAINER =
             Registry.register(BuiltInRegistries.MENU,
-                    new ResourceLocation(CreaturesAndBeasts.MOD_ID, "cinder_furnace_container"),
+                    ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cinder_furnace_container"),
                     // Vanilla MenuType ctor: (MenuConstructor<T>, FeatureFlagSet). Forge's
                     // IMenuTypeExtension.create wraps this; on Fabric we use the vanilla form
                     // directly with the default vanilla feature set.

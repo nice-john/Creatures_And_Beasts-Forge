@@ -43,7 +43,7 @@ public final class AddCostedSpawnsBiomeModifier {
                 ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
                 MobCategory.CREATURE, CNBEntityTypes.END_WHALE, 10, 1, 1);
         // Density cap (charge 400, budget 1.0) so whales don't pack into a chunk.
-        BiomeModifications.create(new ResourceLocation(CreaturesAndBeasts.MOD_ID, "end_whale_spawn_cost"))
+        BiomeModifications.create(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "end_whale_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
                         ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
                         (selector, modContext) ->

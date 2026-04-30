@@ -56,7 +56,7 @@ public class CNBBlocks {
     @SuppressWarnings("unchecked")
     private static <T extends Block> T register(String name, T block) {
         return (T) Registry.register(BuiltInRegistries.BLOCK,
-                new ResourceLocation(CreaturesAndBeasts.MOD_ID, name), block);
+                ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name), block);
     }
 
     public static void register() {

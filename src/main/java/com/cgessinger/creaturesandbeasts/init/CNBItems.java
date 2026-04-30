@@ -127,7 +127,7 @@ public class CNBItems {
     @SuppressWarnings("unchecked")
     private static <T extends Item> T register(String name, T item) {
         return (T) Registry.register(BuiltInRegistries.ITEM,
-                new ResourceLocation(CreaturesAndBeasts.MOD_ID, name), item);
+                ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name), item);
     }
 
     public static void register() {

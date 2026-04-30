@@ -351,7 +351,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     @Nullable
     @Override
-    public SoundEvent getAmbientSound() { return CNBSoundEvents.END_WHALE_AMBIENT.get(); }
+    public SoundEvent getAmbientSound() { return CNBSoundEvents.END_WHALE_AMBIENT; }
 
     @Override public int getAmbientSoundInterval() { return 800; }
     @Override protected float getSoundVolume() { return 5.0F; }

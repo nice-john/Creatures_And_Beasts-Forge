@@ -25,7 +25,7 @@ public class CNBLizardTypes {
     private static LizardType registerWithCNBDirectory(String itemName, String namespace, String name) {
         // Fabric: look up item from BuiltInRegistries at access time (items are already registered)
         return registerWithCNBDirectory(
-                () -> BuiltInRegistries.ITEM.get(new ResourceLocation(namespace, itemName)),
+                () -> BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(namespace, itemName)),
                 namespace, name);
     }
 
@@ -33,9 +33,9 @@ public class CNBLizardTypes {
                                                         String namespace, String name) {
         return register(new LizardType(
                 spawnItem,
-                new ResourceLocation(namespace, name),
-                new ResourceLocation(MOD_ID, "textures/entity/lizard/lizard_"     + name + ".png"),
-                new ResourceLocation(MOD_ID, "textures/entity/lizard/sad_lizard_" + name + ".png")));
+                ResourceLocation.fromNamespaceAndPath(namespace, name),
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/lizard/lizard_"     + name + ".png"),
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/lizard/sad_lizard_" + name + ".png")));
     }
 
     private static LizardType register(LizardType lizardType) {

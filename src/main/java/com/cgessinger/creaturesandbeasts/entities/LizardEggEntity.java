@@ -23,7 +23,7 @@ public class LizardEggEntity extends ThrowableItemProjectile {
     }
 
     public LizardEggEntity(Level worldIn, LivingEntity throwerIn) {
-        super(CNBEntityTypes.LIZARD_EGG.get(), throwerIn, worldIn);
+        super(CNBEntityTypes.LIZARD_EGG, throwerIn, worldIn);
     }
 
     @Environment(EnvType.CLIENT)
@@ -46,7 +46,7 @@ public class LizardEggEntity extends ThrowableItemProjectile {
         super.onHit(result);
         if (!this.level().isClientSide) {
             if (this.random.nextFloat() > 0.3F) {
-                LizardEntity lizard = CNBEntityTypes.LIZARD.get().create(this.level());
+                LizardEntity lizard = CNBEntityTypes.LIZARD.create(this.level());
                 lizard.setAge(-24000);
                 lizard.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                 this.level().addFreshEntity(lizard);
@@ -59,7 +59,7 @@ public class LizardEggEntity extends ThrowableItemProjectile {
     }
 
     protected Item getDefaultItem() {
-        return CNBItems.LIZARD_EGG.get();
+        return CNBItems.LIZARD_EGG;
     }
 
     @Override
