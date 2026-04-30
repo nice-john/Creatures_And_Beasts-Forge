@@ -401,21 +401,11 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         return !this.isTame() && !this.hasCustomName();
     }
 
-    /**
-     * Doubles the yeti's melee range. In 1.21 vanilla {@code Mob#getAttackBoundingBox}
-     * returns the entity BB inflated by {@code DEFAULT_ATTACK_REACH} (~0.83 blocks)
-     * horizontally; this is what the goal's {@code isWithinMeleeAttackRange} check uses.
-     * Adding another ~0.83 inflate on top approximately doubles the linear reach so the
-     * yeti decides to swing at 2x the normal distance.
-     */
-    @Override
-    protected net.minecraft.world.phys.AABB getAttackBoundingBox() {
-        return super.getAttackBoundingBox().inflate(0.828D, 0.0D, 0.828D);
-    }
-
-    // 2x linear reach: inflate the AOE from 1.5 to 3.0 horizontally so the swing
-    // hits everything within the doubled attack box. Pairs with the
-    // getAttackBoundingBox override above which controls when the goal triggers.
+    // Goal-trigger reach uses vanilla Mob#getAttackBoundingBox (BB inflated by
+    // DEFAULT_ATTACK_REACH ~0.83 blocks). The earlier 2x trigger override had yetis
+    // start their attack animation while the target was still well outside melee
+    // distance — windmilling. The wide AOE inflate(3.0) below stays so a swing
+    // hits multiple targets once the yeti commits, but the trigger stays tight.
     private void performAttack() {
         List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(3.0D, 1.0D, 3.0D));
 
