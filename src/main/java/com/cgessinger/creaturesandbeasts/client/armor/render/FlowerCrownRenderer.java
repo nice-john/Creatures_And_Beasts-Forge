@@ -41,7 +41,8 @@ public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
             int packedOverlay,
             int colour
     ) {
-        this.armorItem = animatable.getCurrentItem();
+        // FlowerCrownItem doesn't expose getCurrentItem() - the field is left null and only
+        // used by the (currently-unwired) MixinHumanoidArmorLayer for the glowing variant.
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 

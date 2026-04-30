@@ -246,6 +246,10 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
                     itemstack.shrink(1);
                 }
 
+                // 1-in-3 taming chance (was guarded by NeoForge's EventHooks.onAnimalTame
+                // on the 1.21.1 NeoForge branch; Fabric has no direct equivalent for that
+                // hook, so we just keep the chance).
+                if (this.random.nextInt(3) == 0) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);
@@ -270,7 +274,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     @Override
-    public ItemStack getPickedResult(HitResult target) {
+    public ItemStack getPickResult() {
         if (this.getSporelingType().getHostility().equals(FRIENDLY)) {
             return new ItemStack(CNBItems.SPORELING_OVERWORLD_EGG);
         } else {
@@ -292,7 +296,9 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return hostility.equals(HOSTILE) || hostility.equals(NEUTRAL) || super.fireImmune();
     }
 
-    @Override
+    // TODO[fabric port]: Forge's getClassification(boolean) hook has no Fabric equivalent —
+    // would need a Mob#getCategory mixin. For now this is a regular helper, no longer
+    // overriding any supertype, so the EntityType's static MobCategory wins for spawn caps.
     public MobCategory getClassification(boolean forSpawnCount) {
         return this.getSporelingType().getHostility() == FRIENDLY ? MobCategory.CREATURE : MobCategory.MONSTER;
     }

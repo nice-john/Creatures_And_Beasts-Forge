@@ -1,10 +1,13 @@
 package com.cgessinger.creaturesandbeasts.items;
 
-import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
 
+/**
+ * Item that carries a burn time for furnace fuel registration. On Fabric, fuel is registered
+ * via {@code FuelRegistry.INSTANCE.add(item, burnTime)} (called from {@link
+ * com.cgessinger.creaturesandbeasts.init.CNBItems#registerFuels()}) rather than via an
+ * Item override. The burnTime is stored here so the registration call can read it back.
+ */
 public class CNBFuelItem extends Item {
     private final int burnTime;
 
@@ -13,8 +16,7 @@ public class CNBFuelItem extends Item {
         this.burnTime = burnTime;
     }
 
-    @Override
-    public int getBurnTime(ItemStack itemStack, RecipeType<?> recipeType) {
+    public int getBurnTime() {
         return this.burnTime;
     }
 }

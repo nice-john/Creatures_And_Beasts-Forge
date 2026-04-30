@@ -10,6 +10,7 @@ import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import com.cgessinger.creaturesandbeasts.entities.YetiEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.levelgen.Heightmap;
 

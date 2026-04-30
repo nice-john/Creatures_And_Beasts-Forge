@@ -27,19 +27,19 @@ public class CNBItems {
     public static final WaterlilyBlockItem PINK_WATERLILY = register("pink_waterlily",
             new WaterlilyBlockItem(CNBBlocks.PINK_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
-                            .nutrition(4).saturationModifier(0.5F).alwaysEat()
+                            .nutrition(4).saturationModifier(0.5F).alwaysEdible()
                             .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     public static final WaterlilyBlockItem LIGHT_PINK_WATERLILY = register("light_pink_waterlily",
             new WaterlilyBlockItem(CNBBlocks.LIGHT_PINK_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
-                            .nutrition(4).saturationModifier(0.5F).alwaysEat()
+                            .nutrition(4).saturationModifier(0.5F).alwaysEdible()
                             .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     public static final WaterlilyBlockItem YELLOW_WATERLILY = register("yellow_waterlily",
             new WaterlilyBlockItem(CNBBlocks.YELLOW_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
-                            .nutrition(4).saturationModifier(0.5F).alwaysEat()
+                            .nutrition(4).saturationModifier(0.5F).alwaysEdible()
                             .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     // Bucketed Mobs
@@ -132,6 +132,12 @@ public class CNBItems {
 
     public static void register() {
         CreaturesAndBeasts.LOGGER.debug("Registered CNB items");
+    }
+
+    /** Furnace fuel registration. Called from the main initializer. */
+    public static void registerFuels() {
+        net.fabricmc.fabric.api.registry.FuelRegistry.INSTANCE.add(
+                CINDERSHELL_SHELL_SHARD, CINDERSHELL_SHELL_SHARD.getBurnTime());
     }
 
     public static void addItemsToCreativeTab(CreativeModeTab.Output output) {

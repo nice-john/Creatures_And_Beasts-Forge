@@ -443,7 +443,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public ItemStack getPickedResult(HitResult target) {
+    public ItemStack getPickResult() {
         return new ItemStack(this.getLizardType().getSpawnItem());
     }
 

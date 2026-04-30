@@ -300,6 +300,10 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         } else if (!this.isTame()) {
             if (itemstack.is(END_WHALE_FOOD)) {
                 if (!player.getAbilities().instabuild) itemstack.shrink(1);
+                // 1-in-10 taming chance per attempt (was guarded by NeoForge's
+                // EventHooks.onAnimalTame on the 1.21.1 NeoForge branch; Fabric has no
+                // direct equivalent for that hook, so we just keep the chance).
+                if (this.random.nextInt(10) == 0) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);

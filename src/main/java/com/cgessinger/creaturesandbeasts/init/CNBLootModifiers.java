@@ -1,10 +1,11 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
@@ -17,14 +18,18 @@ public class CNBLootModifiers {
     // JSON's loot_table_id condition explicitly says cnb:entities/cindershell — this adds
     // a 5/73 chance for 1-3 *additional* shell shards on top of the base 0-4 shards from
     // the entity's vanilla loot table.
-    private static final ResourceLocation CINDERSHELL_LOOT =
-            ResourceLocation.fromNamespaceAndPath("cnb", "entities/cindershell");
+    //
+    // 1.21 changed the loot table identifier from ResourceLocation to ResourceKey<LootTable>,
+    // and the loot path moved from "entities/" to "entities/" (still). We compare via key.
+    private static final ResourceKey<LootTable> CINDERSHELL_LOOT = ResourceKey.create(
+            net.minecraft.core.registries.Registries.LOOT_TABLE,
+            ResourceLocation.fromNamespaceAndPath("cnb", "entities/cindershell"));
 
     public static void register() {
-        // Fabric LootTableEvents.Modify takes 5 params: (resourceManager, lootDataManager,
-        // id, tableBuilder, source). We only care about the loot-table id and the builder.
-        LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
-            if (CINDERSHELL_LOOT.equals(id)) {
+        // Fabric loot-api v3 in 1.21.1: lambda is (key, tableBuilder, source, registries).
+        // We only need key + tableBuilder.
+        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
+            if (CINDERSHELL_LOOT.equals(key)) {
                 tableBuilder.withPool(
                         LootPool.lootPool()
                                 .setRolls(ConstantValue.exactly(1))
