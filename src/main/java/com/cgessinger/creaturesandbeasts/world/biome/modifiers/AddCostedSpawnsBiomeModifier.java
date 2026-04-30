@@ -5,16 +5,19 @@ import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
+import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.entity.MobCategory;
 
 /**
  * Registers all mob spawn entries via the Fabric Biome Modifications API.
  * Called once from {@link com.cgessinger.creaturesandbeasts.init.CNBBiomeModifiers#register()}.
  *
- * <p>Forge tags (e.g. {@code #forge:is_desert}) have no direct equivalent on Fabric.
- * We use vanilla {@link BiomeTags} where possible and explicit biome-key checks elsewhere.
+ * <p>Forge tags ({@code #forge:is_desert}, {@code #forge:is_swamp}, etc.) have no direct
+ * vanilla equivalent on Fabric, but Fabric's
+ * {@link ConventionalBiomeTags} ships {@code c:} namespace convention tags that vanilla
+ * biomes are auto-tagged into and modded biomes opt into. Using those keeps modded
+ * biome compatibility on par with the Forge build.
  */
 public final class AddCostedSpawnsBiomeModifier {
 
@@ -24,68 +27,65 @@ public final class AddCostedSpawnsBiomeModifier {
 
         // ── CACTEM ──────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(BiomeTags.IS_BADLANDS),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.BADLANDS),
                 MobCategory.CREATURE, CNBEntityTypes.CACTEM, 10, 6, 13);
         BiomeModifications.addSpawn(
-                AddCostedSpawnsBiomeModifier::isDesert,
+                ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
                 MobCategory.CREATURE, CNBEntityTypes.CACTEM, 10, 6, 13);
 
         // ── CINDERSHELL ─────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(BiomeTags.IS_NETHER),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IN_NETHER),
                 MobCategory.CREATURE, CNBEntityTypes.CINDERSHELL, 40, 2, 8);
 
         // ── END WHALE ───────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(BiomeTags.IS_END),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
                 MobCategory.CREATURE, CNBEntityTypes.END_WHALE, 10, 1, 1);
         // Density cap (charge 400, budget 1.0) so whales don't pack into a chunk.
-        // The Fabric Biome API exposes setSpawnCost via the modifier-builder path:
-        // create(id) -> add(phase, selector, modifier) -> the modifier closure gets
-        // a SpawnSettingsContext via getSpawnSettings(). We use ADDITIONS phase so
-        // it composes cleanly with the addSpawn call above.
         BiomeModifications.create(new ResourceLocation(CreaturesAndBeasts.MOD_ID, "end_whale_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
-                        ctx -> ctx.hasTag(BiomeTags.IS_END),
+                        ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
                         (selector, modContext) ->
                                 modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.END_WHALE, 400.0D, 1.0D));
 
         // ── LILYTAD ─────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                AddCostedSpawnsBiomeModifier::isSwamp,
+                ctx -> ctx.hasTag(ConventionalBiomeTags.SWAMP),
                 MobCategory.CREATURE, CNBEntityTypes.LILYTAD, 68, 1, 1);
 
         // ── LITTLE GREBE ────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(BiomeTags.IS_RIVER),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.RIVER),
                 MobCategory.CREATURE, CNBEntityTypes.LITTLE_GREBE, 53, 2, 3);
 
         // ── LIZARD ──────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(BiomeTags.IS_BADLANDS),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.BADLANDS),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 23, 1, 4);
         BiomeModifications.addSpawn(
-                AddCostedSpawnsBiomeModifier::isDesert,
+                ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 23, 1, 4);
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(BiomeTags.IS_JUNGLE),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.JUNGLE),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 150, 1, 4);
         BiomeModifications.addSpawn(
-                AddCostedSpawnsBiomeModifier::isMushroom,
+                ctx -> ctx.hasTag(ConventionalBiomeTags.MUSHROOM),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 15, 1, 4);
 
         // ── MINIPAD ─────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                AddCostedSpawnsBiomeModifier::isSwamp,
+                ctx -> ctx.hasTag(ConventionalBiomeTags.SWAMP),
                 MobCategory.CREATURE, CNBEntityTypes.MINIPAD, 30, 3, 6);
 
         // ── SPORELING (overworld) ────────────────────────────────────────
         BiomeModifications.addSpawn(
-                AddCostedSpawnsBiomeModifier::isMushroom,
+                ctx -> ctx.hasTag(ConventionalBiomeTags.MUSHROOM),
                 MobCategory.CREATURE, CNBEntityTypes.SPORELING, 30, 3, 5);
         BiomeModifications.addSpawn(
-                AddCostedSpawnsBiomeModifier::isSwamp,
+                ctx -> ctx.hasTag(ConventionalBiomeTags.SWAMP),
                 MobCategory.CREATURE, CNBEntityTypes.SPORELING, 38, 3, 5);
+        // No general convention tag for "lush caves" or "dark forest" — keep specific.
         BiomeModifications.addSpawn(
                 AddCostedSpawnsBiomeModifier::isLushCaves,
                 MobCategory.CREATURE, CNBEntityTypes.SPORELING, 90, 3, 5);
@@ -93,6 +93,8 @@ public final class AddCostedSpawnsBiomeModifier {
                 AddCostedSpawnsBiomeModifier::isDarkForest,
                 MobCategory.CREATURE, CNBEntityTypes.SPORELING, 105, 3, 5);
         // ── SPORELING (nether) ───────────────────────────────────────────
+        // Per-biome weights differ (60/2/120) so we keep the matchers specific
+        // rather than collapsing to ConventionalBiomeTags.IN_NETHER.
         BiomeModifications.addSpawn(
                 AddCostedSpawnsBiomeModifier::isNetherWastes,
                 MobCategory.MONSTER, CNBEntityTypes.SPORELING, 90, 2, 4);
@@ -104,29 +106,16 @@ public final class AddCostedSpawnsBiomeModifier {
                 MobCategory.MONSTER, CNBEntityTypes.SPORELING, 180, 2, 4);
 
         // ── YETI ────────────────────────────────────────────────────────
-        // Forge: #forge:is_snowy AND #forge:is_mountain
-        // Vanilla: IS_MOUNTAIN tag + frozen/snowy path check
+        // Forge: #forge:is_snowy AND #forge:is_mountain (intersection).
+        // Fabric: c:snowy AND c:mountain — modded snowy mountain biomes
+        // qualify automatically as long as the modder tagged them in.
         BiomeModifications.addSpawn(
-                AddCostedSpawnsBiomeModifier::isSnowyMountain,
+                ctx -> ctx.hasTag(ConventionalBiomeTags.SNOWY)
+                        && ctx.hasTag(ConventionalBiomeTags.MOUNTAIN),
                 MobCategory.CREATURE, CNBEntityTypes.YETI, 7, 2, 3);
     }
 
-    // ── Biome predicate helpers ─────────────────────────────────────────
-
-    /** {@code minecraft:desert} — vanilla has no desert biome tag. */
-    private static boolean isDesert(BiomeSelectionContext ctx) {
-        return matchesMinecraft(ctx, "desert");
-    }
-
-    /** {@code minecraft:swamp} and {@code minecraft:mangrove_swamp}. */
-    private static boolean isSwamp(BiomeSelectionContext ctx) {
-        return matchesMinecraft(ctx, "swamp") || matchesMinecraft(ctx, "mangrove_swamp");
-    }
-
-    /** {@code minecraft:mushroom_fields}. */
-    private static boolean isMushroom(BiomeSelectionContext ctx) {
-        return matchesMinecraft(ctx, "mushroom_fields");
-    }
+    // ── Biome predicate helpers (vanilla-only, for biomes without good c: tags) ──
 
     private static boolean isLushCaves(BiomeSelectionContext ctx) {
         return matchesMinecraft(ctx, "lush_caves");
@@ -146,23 +135,6 @@ public final class AddCostedSpawnsBiomeModifier {
 
     private static boolean isCrimsonForest(BiomeSelectionContext ctx) {
         return matchesMinecraft(ctx, "crimson_forest");
-    }
-
-    /**
-     * Biomes that are both mountainous ({@link BiomeTags#IS_MOUNTAIN}) and
-     * snowy/frozen — a reasonable approximation of Forge's
-     * {@code #forge:is_snowy AND #forge:is_mountain}.
-     */
-    private static boolean isSnowyMountain(BiomeSelectionContext ctx) {
-        if (!ctx.hasTag(BiomeTags.IS_MOUNTAIN)) return false;
-        ResourceLocation loc = ctx.getBiomeKey().location();
-        if (!loc.getNamespace().equals("minecraft")) return false;
-        String path = loc.getPath();
-        // Mountain biomes that are snowy or frozen in 1.20.1
-        return path.equals("frozen_peaks")
-                || path.equals("jagged_peaks")
-                || path.equals("snowy_slopes")
-                || path.equals("grove");
     }
 
     /** Returns true when the biome key is {@code minecraft:<path>}. */

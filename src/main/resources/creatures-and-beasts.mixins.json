@@ -2,19 +2,20 @@
   "required": true,
   "package": "com.cgessinger.creaturesandbeasts.mixin",
   "compatibilityLevel": "JAVA_17",
+  "_disabled_for_parity_with_forge": [
+    "MixinEntity (sporeling rider positioning)",
+    "MixinItemStack (legacy capability copy placeholder)",
+    "MixinGeoEntityRenderer (sporeling-on-player rotation suppression)",
+    "MixinHumanoidArmorLayer (glowing flower crown render)",
+    "MixinLivingEntityRenderer (end whale rider tilt + jitter suppression)"
+  ],
   "mixins": [
     "MixinAnvilMenu",
-    "MixinEntity",
-    "MixinItemStack",
     "MixinItemStackHideArmor",
     "MixinLivingEntityLooting",
     "MixinPlayerTick"
   ],
-  "client": [
-    "MixinGeoEntityRenderer",
-    "MixinHumanoidArmorLayer",
-    "MixinLivingEntityRenderer"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }
