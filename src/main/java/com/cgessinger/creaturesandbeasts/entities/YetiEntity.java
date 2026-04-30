@@ -390,9 +390,23 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         return !this.isTame() && !this.hasCustomName();
     }
 
-    // 2) performAttack: level -> level()
+    /**
+     * Doubles the yeti's melee range. In 1.21 vanilla {@code Mob#getAttackBoundingBox}
+     * returns the entity BB inflated by {@code DEFAULT_ATTACK_REACH} (~0.83 blocks)
+     * horizontally; this is what the goal's {@code isWithinMeleeAttackRange} check uses.
+     * Adding another ~0.83 inflate on top approximately doubles the linear reach so the
+     * yeti decides to swing at 2x the normal distance.
+     */
+    @Override
+    protected net.minecraft.world.phys.AABB getAttackBoundingBox() {
+        return super.getAttackBoundingBox().inflate(0.828D, 0.0D, 0.828D);
+    }
+
+    // 2x linear reach: inflate the AOE from 1.5 to 3.0 horizontally so the swing
+    // hits everything within the doubled attack box. Pairs with the
+    // getAttackBoundingBox override above which controls when the goal triggers.
     private void performAttack() {
-        List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(1.5D, 1.0D, 1.5D));
+        List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(3.0D, 1.0D, 3.0D));
 
         for (LivingEntity entity : list) {
             if ((entity instanceof Player && entity.getUUID().equals(this.getOwnerUUID())) || (entity instanceof YetiEntity && Objects.equals(this.getOwnerUUID(), ((YetiEntity) entity).getOwnerUUID()))) {
