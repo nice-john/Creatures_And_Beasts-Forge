@@ -31,7 +31,18 @@ public class MixinLivingEntityRenderer<T extends LivingEntity> {
     }
 
 
-    @Redirect(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getVehicle()Lnet/minecraft/world/entity/Entity;", ordinal = 2))
+    /**
+     * Suppress vanilla rider-rotation when the player is on an End Whale.
+     * Targets the 3rd getVehicle() call in LivingEntityRenderer.render — but the
+     * call count varies across MC builds and obfuscation passes, so {@code require=0}
+     * lets the injection silently no-op if the ordinal can't be resolved (worst
+     * case: the whale rider's rotation looks slightly off; game still loads). Without
+     * require=0 a missing target is fatal at class-transform time and the world
+     * fails to render.
+     */
+    @Redirect(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getVehicle()Lnet/minecraft/world/entity/Entity;", ordinal = 2),
+            require = 0)
     private Entity CNB_redirectPlayerRotOnWhale(LivingEntity entity) {
         if (entity.getVehicle() instanceof EndWhaleEntity) {
             return null;

@@ -34,3 +34,11 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
     versionRange="[4.0,4.9]"
     ordering="BEFORE"
     side="BOTH"
+
+# Mixin config registration. Without this, Forge's mixin processor never
+# picks up creatures-and-beasts.mixins.json and none of our mixins apply.
+# The file was historically misnamed (`creatures-and-beasts.mixins`, no .json)
+# and unwired here, so MixinLivingEntityRenderer (end whale rider tilt + jitter
+# suppression) was effectively dead code on this branch.
+[[mixins]]
+    config = "creatures-and-beasts.mixins.json"
