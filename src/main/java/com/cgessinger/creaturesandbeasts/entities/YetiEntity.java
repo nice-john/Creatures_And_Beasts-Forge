@@ -148,7 +148,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 120.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.MOVEMENT_SPEED, 0.375D)
                 .add(Attributes.ATTACK_DAMAGE, 16.0D)
                 .add(Attributes.ATTACK_SPEED, 0.1D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.7D);
@@ -401,11 +401,19 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         return !this.isTame() && !this.hasCustomName();
     }
 
-    // Goal-trigger reach uses vanilla Mob#getAttackBoundingBox (BB inflated by
-    // DEFAULT_ATTACK_REACH ~0.83 blocks). The earlier 2x trigger override had yetis
-    // start their attack animation while the target was still well outside melee
-    // distance — windmilling. The wide AOE inflate(3.0) below stays so a swing
-    // hits multiple targets once the yeti commits, but the trigger stays tight.
+    /**
+     * Goal-trigger reach: 2x vanilla linear. Vanilla {@code Mob#getAttackBoundingBox}
+     * returns the entity BB inflated by {@code DEFAULT_ATTACK_REACH} (~0.828 blocks)
+     * horizontally; we add another ~0.828 on top so the goal triggers an attack at
+     * 2x the normal melee distance. Pairs with the inflate(3.0, 1.0, 3.0) AOE in
+     * performAttack so the actual swing also reaches that far. Tested as the
+     * sweet spot — earlier full revert had yetis stop too short, 2x feels right.
+     */
+    @Override
+    protected net.minecraft.world.phys.AABB getAttackBoundingBox() {
+        return super.getAttackBoundingBox().inflate(0.828D, 0.0D, 0.828D);
+    }
+
     private void performAttack() {
         List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(3.0D, 1.0D, 3.0D));
 
