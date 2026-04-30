@@ -1,5 +1,11 @@
 {
   "width": 1,
   "height": 1,
-  "asset_id": "cnb:lilytad"
+  "asset_id": "cnb:lilytad",
+  "title": {
+    "translate": "painting.cnb.lilytad.title"
+  },
+  "author": {
+    "translate": "painting.cnb.lilytad.author"
+  }
 }

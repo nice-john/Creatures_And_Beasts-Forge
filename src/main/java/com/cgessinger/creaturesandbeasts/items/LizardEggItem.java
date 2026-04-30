@@ -2,6 +2,7 @@ package com.cgessinger.creaturesandbeasts.items;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.LizardEggEntity;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -44,7 +45,11 @@ public class LizardEggItem extends BlockItem {
     public InteractionResult useOn(UseOnContext context) {
         if (context.isSecondaryUseActive()) {
             InteractionResult interactionresult = this.place(new BlockPlaceContext(context));
-            if (!interactionresult.consumesAction() && true /* TODO[1.21.1 port]: was isEdible() */) {
+            // 1.21 replaced ItemStack#isEdible() with a FOOD data-component check.
+            // Lizard eggs have no FOOD component, so this branch is intentionally
+            // inert — it preserves the 1.20.1 behavior where sneak-place fell through
+            // to placement only, never the throw/use path.
+            if (!interactionresult.consumesAction() && context.getItemInHand().has(DataComponents.FOOD)) {
                 InteractionResult interactionresult1 = this.use(context.getLevel(), context.getPlayer(), context.getHand()).getResult();
                 return interactionresult1 == InteractionResult.CONSUME ? InteractionResult.CONSUME_PARTIAL : interactionresult1;
             } else {
