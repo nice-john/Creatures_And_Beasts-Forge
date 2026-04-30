@@ -28,7 +28,7 @@ import groovy.json.JsonOutput
 
 version = '1.6.7'
 group = 'com.cgessinger.creaturesandbeasts' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "CNB-1.20.1"
+archivesBaseName = "CNB-1.20.1-forge"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
