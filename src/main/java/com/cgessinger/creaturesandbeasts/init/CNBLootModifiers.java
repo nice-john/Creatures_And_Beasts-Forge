@@ -12,14 +12,19 @@ import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 public class CNBLootModifiers {
 
-    private static final ResourceLocation NETHER_BRIDGE_LOOT =
-            new ResourceLocation("minecraft", "chests/nether_bridge");
+    // Despite the legacy file name "nether_bridge_loot_modifier" carried over from the
+    // Forge port, the actual target is the cindershell mob's death loot table. The Forge
+    // JSON's loot_table_id condition explicitly says cnb:entities/cindershell — this adds
+    // a 5/73 chance for 1-3 *additional* shell shards on top of the base 0-4 shards from
+    // the entity's vanilla loot table.
+    private static final ResourceLocation CINDERSHELL_LOOT =
+            new ResourceLocation("cnb", "entities/cindershell");
 
     public static void register() {
         // Fabric LootTableEvents.Modify takes 5 params: (resourceManager, lootDataManager,
         // id, tableBuilder, source). We only care about the loot-table id and the builder.
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
-            if (NETHER_BRIDGE_LOOT.equals(id)) {
+            if (CINDERSHELL_LOOT.equals(id)) {
                 tableBuilder.withPool(
                         LootPool.lootPool()
                                 .setRolls(ConstantValue.exactly(1))
