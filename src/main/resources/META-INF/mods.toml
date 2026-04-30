@@ -35,10 +35,14 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
     ordering="BEFORE"
     side="BOTH"
 
-# Mixin config registration. Without this, Forge's mixin processor never
-# picks up creatures-and-beasts.mixins.json and none of our mixins apply.
-# The file was historically misnamed (`creatures-and-beasts.mixins`, no .json)
-# and unwired here, so MixinLivingEntityRenderer (end whale rider tilt + jitter
-# suppression) was effectively dead code on this branch.
-[[mixins]]
-    config = "creatures-and-beasts.mixins.json"
+# End Whale rider tilt + jitter-suppression mixin — disabled for now,
+# visually indistinguishable in playtesting. Re-enable by uncommenting the
+# block below AND adding MixinLivingEntityRenderer back to client[] in
+# creatures-and-beasts.mixins.json. Source files (MixinLivingEntityRenderer.java
+# + creatures-and-beasts.mixins.json) remain in place.
+# (Historical note: this block was completely missing on this branch and the
+# mixin config file was misnamed `creatures-and-beasts.mixins` without .json,
+# so the mixin had never actually been live before. Mirrors the NeoForge
+# 1.21.1 branch's "off but ready" pattern.)
+# [[mixins]]
+#     config = "creatures-and-beasts.mixins.json"
