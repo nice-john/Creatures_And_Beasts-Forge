@@ -394,7 +394,9 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
     // 2) performAttack: level -> level()
     private void performAttack() {
-        // 2x linear horizontal AOE (was 1.5) - pairs with YetiAttackGoal.getAttackReachSqr.
+        // Wide horizontal AOE (3.0 vs vanilla 1.5) so a single swing hits multiple targets
+        // around the yeti. Goal-trigger reach stays at vanilla MeleeAttackGoal default —
+        // the earlier 2x trigger had yetis windmilling at distant targets.
         List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(3.0D, 1.0D, 3.0D));
 
         for (LivingEntity entity : list) {
@@ -616,13 +618,10 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             }
         }
 
-        // 2x linear reach => 4x squared. Lets the goal trigger an attack at 2x the
-        // normal melee distance. Pairs with the inflate(3.0, 1.0, 3.0) AOE in
-        // YetiEntity.performAttack so the actual swing also reaches that far.
-        @Override
-        protected double getAttackReachSqr(LivingEntity target) {
-            return super.getAttackReachSqr(target) * 4.0D;
-        }
+        // Goal-trigger reach uses the vanilla MeleeAttackGoal default; the wide AOE in
+        // YetiEntity.performAttack handles "multiple targets in range" once the yeti
+        // commits, but the trigger itself stays tight so yetis don't windmill at
+        // far-away targets.
 
         @Override
         public void stop() {
