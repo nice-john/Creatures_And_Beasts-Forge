@@ -6,8 +6,7 @@
     "MixinEntity (sporeling rider positioning)",
     "MixinItemStack (legacy capability copy placeholder)",
     "MixinGeoEntityRenderer (sporeling-on-player rotation suppression)",
-    "MixinHumanoidArmorLayer (glowing flower crown render)",
-    "MixinLivingEntityRenderer (end whale rider tilt + jitter suppression)"
+    "MixinHumanoidArmorLayer (glowing flower crown render)"
   ],
   "mixins": [
     "MixinAnvilMenu",
@@ -15,7 +14,9 @@
     "MixinLivingEntityLooting",
     "MixinPlayerTick"
   ],
-  "client": [],
+  "client": [
+    "MixinLivingEntityRenderer"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
