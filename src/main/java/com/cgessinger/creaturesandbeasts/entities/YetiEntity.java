@@ -382,6 +382,16 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         return !this.isTame() && !this.hasCustomName();
     }
 
+    /**
+     * 1.3-block jump height. Vanilla {@link LivingEntity#getJumpPower()} returns 0.42F,
+     * which produces a ~1.25-block peak via vanilla gravity (0.08) + Y drag (0.98). Bumping
+     * to 0.43F yields ~1.31 blocks.
+     */
+    @Override
+    protected float getJumpPower() {
+        return 0.43F;
+    }
+
     // 2) performAttack: level -> level()
     // AOE inflate of 3.0 horizontal (was 1.5) gives the yeti's swing 2x linear reach.
     // Pairs with YetiAttackGoal.getAttackReachSqr below — both must double for the
