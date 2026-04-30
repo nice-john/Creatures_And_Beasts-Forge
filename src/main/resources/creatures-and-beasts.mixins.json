@@ -7,15 +7,14 @@
     "MixinItemStack (legacy capability copy placeholder)",
     "MixinGeoEntityRenderer (sporeling-on-player rotation suppression)",
     "MixinHumanoidArmorLayer (glowing flower crown render)",
+    "MixinLivingEntityRenderer (end whale rider tilt + jitter suppression — visually indistinguishable in playtesting; source kept in place, re-add to client[] to enable)",
     "MixinLivingEntityLooting (spear-looting carry-over: LootingLevelEvent + dropAllDeathLoot's local int looting were both removed in 1.21; needs an enchantment-effect-based reimplementation, same TODO state as the NeoForge branch)"
   ],
   "mixins": [
     "MixinAnvilMenu",
     "MixinPlayerTick"
   ],
-  "client": [
-    "MixinLivingEntityRenderer"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }
