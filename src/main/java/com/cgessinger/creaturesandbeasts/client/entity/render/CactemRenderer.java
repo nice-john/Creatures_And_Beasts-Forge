@@ -1,5 +1,8 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.client.entity.model.CactemModel;
 import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
 import com.cgessinger.creaturesandbeasts.entities.LittleGrebeEntity;
@@ -16,8 +19,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
@@ -42,17 +43,13 @@ public class CactemRenderer extends GeoEntityRenderer<CactemEntity> {
             float partialTick,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha
-    ) {
+            int colour) {
         // Custom pre-render logic
         if (animatable.isBaby()) {
             poseStack.scale(0.5F, 0.5F, 0.5F); // Example of scaling the entity for baby models
         }
 
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 
     @Override
@@ -72,11 +69,7 @@ public class CactemRenderer extends GeoEntityRenderer<CactemEntity> {
             float partialTick,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha
-    ) {
+            int colour) {
         // Check if the bone name is "ItemHolder" and if the animatable is trading
         if (bone.getName().equals("ItemHolder") && animatable.isTrading()) {
             poseStack.pushPose();
@@ -110,10 +103,7 @@ public class CactemRenderer extends GeoEntityRenderer<CactemEntity> {
                     partialTick,
                     packedLight,
                     packedOverlay,
-                    red,
-                    green,
-                    blue,
-                    alpha
+                    colour
             );
         }
     }

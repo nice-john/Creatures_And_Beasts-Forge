@@ -57,7 +57,7 @@ public class LizardEggBlock extends Block {
         if (this.canGrow(worldIn)) {
             this.removeOneEgg(worldIn, pos, state);
             worldIn.levelEvent(2001, pos, Block.getId(state));
-            LizardEntity lizard = CNBEntityTypes.LIZARD.create(worldIn);
+            LizardEntity lizard = CNBEntityTypes.LIZARD.get().create(worldIn);
             lizard.setAge(-24000);
             lizard.setLizardType(lizard.getRandom().nextBoolean() ? this.parent1 : this.parent2);
             lizard.moveTo(pos.getX() + 0.3D, pos.getY(), pos.getZ() + 0.3D, 0.0F, 0.0F);
@@ -86,7 +86,7 @@ public class LizardEggBlock extends Block {
     }
 
     private void removeOneEgg(Level worldIn, BlockPos pos, BlockState state) {
-        worldIn.playSound(null, pos, CNBSoundEvents.LIZARD_EGG_HATCH, SoundSource.BLOCKS, 1.0F, 0F);
+        worldIn.playSound(null, pos, CNBSoundEvents.LIZARD_EGG_HATCH.get(), SoundSource.BLOCKS, 1.0F, 0F);
         int i = state.getValue(EGGS);
         if (i <= 1) {
             worldIn.destroyBlock(pos, false);

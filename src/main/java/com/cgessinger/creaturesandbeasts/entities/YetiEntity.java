@@ -56,17 +56,17 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.keyframe.event.ParticleKeyframeEvent;
-import software.bernie.geckolib.core.keyframe.event.SoundKeyframeEvent;
-import software.bernie.geckolib.core.object.DataTicket;
-import software.bernie.geckolib.core.object.PlayState;
+import net.minecraft.world.level.pathfinder.PathType;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.keyframe.event.ParticleKeyframeEvent;
+import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
+import software.bernie.geckolib.constant.dataticket.DataTicket;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import software.bernie.geckolib.constant.DataTickets;
 
@@ -97,30 +97,37 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
     public YetiEntity(EntityType<YetiEntity> type, Level worldIn) {
         super(type, worldIn);
-        this.setTame(false);
+        this.setTame(false, false);
         this.eatTimer = 0;
-        this.setTame(false);
+        this.setTame(false, false);
         this.eatTimer = 0;
 
-        // Step over full blocks smoothly
-        this.setMaxUpStep(1.3F);
+        // 1.21 replaced setMaxUpStep with the STEP_HEIGHT attribute. Apply a transient bump from
+        // the default (~0.6) up to 1.3 so yetis step over full blocks without jumping.
+        var stepHeight = this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
+        if (stepHeight != null) {
+            stepHeight.addOrUpdateTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_step_height"),
+                    1.3D - stepHeight.getBaseValue(),
+                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+        }
 
         // (optional) teach pathfinder to avoid problem blocks
-        this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
-        this.setPathfindingMalus(BlockPathTypes.WATER_BORDER, -1.0F);
-        this.setPathfindingMalus(BlockPathTypes.LAVA, -1.0F);
-        this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 0.0F);
-        this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, 0.0F);
-        this.setPathfindingMalus(BlockPathTypes.LEAVES, -1.0F);
+        this.setPathfindingMalus(PathType.WATER, -1.0F);
+        this.setPathfindingMalus(PathType.WATER_BORDER, -1.0F);
+        this.setPathfindingMalus(PathType.LAVA, -1.0F);
+        this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
+        this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
+        this.setPathfindingMalus(PathType.LEAVES, -1.0F);
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ATTACKING, false);
-        this.entityData.define(EATING, false);
-        this.entityData.define(PASSIVE, false);
-        this.entityData.define(HELD_ITEM, ItemStack.EMPTY);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ATTACKING, false);
+        builder.define(EATING, false);
+        builder.define(PASSIVE, false);
+        builder.define(HELD_ITEM, ItemStack.EMPTY);
     }
 
     @Override
@@ -214,7 +221,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     @Override
-    public boolean canBeLeashed(Player player) {
+    public boolean canBeLeashed() {
         return false;
     }
 
@@ -250,12 +257,12 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, SpawnGroupData spawnDataIn, CompoundTag dataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, SpawnGroupData spawnDataIn) {
         if (spawnDataIn == null) {
             spawnDataIn = new AgeableMobGroupData(1.0F);
         }
 
-        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
     }
 
     @Override
@@ -291,9 +298,10 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         super.setAge(age);
         double MAX_HEALTH = this.getAttribute(Attributes.MAX_HEALTH).getValue();
         if (isBaby() && MAX_HEALTH > this.babyHealth) {
-            Multimap<Attribute, AttributeModifier> multimap = HashMultimap.create();
-            multimap.put(Attributes.MAX_HEALTH, new AttributeModifier(this.healthReductionUUID, "yeti_health_reduction", this.babyHealth - MAX_HEALTH, AttributeModifier.Operation.ADDITION));
-            this.getAttributes().addTransientAttributeModifiers(multimap);
+            this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(new AttributeModifier(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_health_reduction"),
+                    this.babyHealth - MAX_HEALTH,
+                    AttributeModifier.Operation.ADD_VALUE));
             this.setHealth(this.babyHealth);
         }
     }
@@ -305,7 +313,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     protected void ageBoundaryReached() {
         super.ageBoundaryReached();
         float percentHealth = this.getHealth() / this.babyHealth;
-        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(this.healthReductionUUID);
+        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_health_reduction"));
         this.setHealth(percentHealth * (float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
         this.setEating(false);
         this.setHolding(ItemStack.EMPTY);
@@ -322,7 +330,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob mob) {
-        return CNBEntityTypes.YETI.create(level);
+        return CNBEntityTypes.YETI.get().create(level);
     }
 
     public void setEating(boolean isEating) {
@@ -364,7 +372,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         this.usePlayerItem(player, player.getUsedItemHand(), stack);
         this.setEating(true);
         this.gameEvent(GameEvent.ENTITY_INTERACT, player);
-        SoundEvent sound = this.isBaby() ? CNBSoundEvents.YETI_BABY_EAT : CNBSoundEvents.YETI_ADULT_EAT;
+        SoundEvent sound = this.isBaby() ? CNBSoundEvents.YETI_BABY_EAT.get() : CNBSoundEvents.YETI_ADULT_EAT.get();
         this.playSound(sound, 1.1F, 1F);
         return InteractionResult.SUCCESS;
     }
@@ -392,26 +400,27 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     public void setOrderedToSit(boolean p_21840_) {
     }
 
-    @Override
-    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
-        return !this.isTame() && !this.hasCustomName();
-    }
-
     /**
      * 1.3-block jump height. Vanilla {@link LivingEntity#getJumpPower()} returns 0.42F,
      * which produces a ~1.25-block peak via vanilla gravity (0.08) + Y drag (0.98). Bumping
-     * to 0.43F yields ~1.31 blocks.
+     * to 0.43F yields ~1.31 blocks (verified by iterating the integration:
+     * v=0.43 → 0.343 → 0.258 → 0.174 → 0.092 → 0.012 → stop, summing y to ≈ 1.31).
      */
     @Override
     protected float getJumpPower() {
         return 0.43F;
     }
 
-    // 2) performAttack: level -> level()
-    // AOE inflate of 3.0 horizontal (was 1.5) so the swing covers a wide arc once
-    // the yeti commits to attacking. The goal-trigger reach (when the yeti decides
-    // to swing) stays at vanilla MeleeAttackGoal default — testing showed the
-    // earlier 2x trigger range had yetis windmilling at distant targets.
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        return !this.isTame() && !this.hasCustomName();
+    }
+
+    // Goal-trigger reach uses vanilla Mob#getAttackBoundingBox (BB inflated by
+    // DEFAULT_ATTACK_REACH ~0.83 blocks). The 2x override stopped pursuit too
+    // early — yetis attempted to swing from outside actual hit range. With
+    // vanilla reach the yeti closes all the way before swinging; the wide
+    // AOE inflate(3.0) below still gives a generous swing arc once committed.
     private void performAttack() {
         List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(3.0D, 1.0D, 3.0D));
 
@@ -420,7 +429,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
                 continue;
             }
 
-            this.playSound(CNBSoundEvents.YETI_HIT, this.getSoundVolume() * 0.3F, this.getVoicePitch());
+            this.playSound(CNBSoundEvents.YETI_HIT.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
 
             this.doHurtTarget(entity);
         }
@@ -452,7 +461,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
         if (!this.level().getFluidState(pos).is(FluidTags.WATER)) { // Check if the block is not a liquid
-            this.playSound(CNBSoundEvents.YETI_STEP, this.getSoundVolume() * 0.3F, this.getVoicePitch());
+            this.playSound(CNBSoundEvents.YETI_STEP.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
         }
     }
 
@@ -474,17 +483,17 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return this.isBaby() ? null : CNBSoundEvents.YETI_AMBIENT;
+        return this.isBaby() ? null : CNBSoundEvents.YETI_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return this.isBaby() ? null : CNBSoundEvents.YETI_HURT;
+        return this.isBaby() ? null : CNBSoundEvents.YETI_HURT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return this.isBaby() ? null : CNBSoundEvents.YETI_HURT;
+        return this.isBaby() ? null : CNBSoundEvents.YETI_HURT.get();
     }
 
     private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
@@ -523,7 +532,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
         if ("hit.ground.sound".equals(sound)) {
             // play the sound (as before)
-            this.playSound(CNBSoundEvents.YETI_HIT, 0.4F, 1.0F);
+            this.playSound(CNBSoundEvents.YETI_HIT.get(), 0.4F, 1.0F);
 
             // spawn the particles at the same moment (client-only)
             if (this.level().isClientSide) {
@@ -537,7 +546,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
                 }
             }
         } else if ("yeti_ambient".equals(sound)) {
-            this.playSound(CNBSoundEvents.YETI_AMBIENT, 1.0F, 1.0F);
+            this.playSound(CNBSoundEvents.YETI_AMBIENT.get(), 1.0F, 1.0F);
         }
     }
 
@@ -626,19 +635,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             return super.canUse() && !this.yeti.isBaby() && this.yeti.getTarget() != this.yeti.getOwner();
         }
 
-        @Override
-        protected void checkAndPerformAttack(LivingEntity entity, double distance) {
-            double reach = this.getAttackReachSqr(entity);
-            if (distance <= reach && this.yeti.attackTimer <= 0 && this.ticksUntilNextAttack <= 0) {
-                this.resetAttackCooldown();
-            }
-        }
-
-        // Goal-trigger reach uses vanilla MeleeAttackGoal default. We want yetis to
-        // chase all the way up to the target (i.e. into actual melee distance) and
-        // only then swing — the 2x override stopped pursuit too early, leaving
-        // attacks falling short. AOE inflate(3.0) in performAttack still gives the
-        // swing a wide arc once the yeti commits.
+        // TODO[1.21.1 port]: re-implement custom attack timing. MeleeAttackGoal.getAttackReachSqr/ticksUntilNextAttack
+        // are no longer accessible; consider overriding canPerformAttack(LivingEntity) instead.
 
         @Override
         public void stop() {
@@ -648,7 +646,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
         @Override
         protected void resetAttackCooldown() {
-            this.ticksUntilNextAttack = this.adjustedTickDelay(25);
+            super.resetAttackCooldown();
+            // TODO[1.21.1 port]: ticksUntilNextAttack is now private; was set to adjustedTickDelay(25)
             this.yeti.setAttacking(true);
         }
     }

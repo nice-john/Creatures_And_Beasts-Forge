@@ -1,5 +1,8 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.client.entity.model.CactemSpearModel;
 import com.cgessinger.creaturesandbeasts.entities.ThrownCactemSpearEntity;
@@ -13,12 +16,10 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 public class ThrownCactemSpearRenderer extends EntityRenderer<ThrownCactemSpearEntity> {
-    public static final ResourceLocation TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem_spear.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem_spear.png");
     private final CactemSpearModel model;
 
     public ThrownCactemSpearRenderer(EntityRendererProvider.Context context) {
@@ -40,7 +41,7 @@ public class ThrownCactemSpearRenderer extends EntityRenderer<ThrownCactemSpearE
                 false,
                 spearEntity.isFoil()
         );
-        this.model.renderToBuffer(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+        this.model.renderToBuffer(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
 
         poseStack.popPose();
 

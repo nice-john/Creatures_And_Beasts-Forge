@@ -1,13 +1,14 @@
 package com.cgessinger.creaturesandbeasts.client.entity.model;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
 import com.cgessinger.creaturesandbeasts.entities.YetiEntity;
 import net.minecraft.resources.ResourceLocation;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
-import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.model.data.EntityModelData;
 
@@ -15,13 +16,13 @@ import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
 
 @Environment(EnvType.CLIENT)
 public class YetiModel extends GeoModel<YetiEntity> {
-    private static final ResourceLocation YETI_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/yeti.geo.json");
-    private static final ResourceLocation BABY_YETI_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/baby_yeti.geo.json");
+    private static final ResourceLocation YETI_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/yeti.geo.json");
+    private static final ResourceLocation BABY_YETI_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/baby_yeti.geo.json");
 
-    private static final ResourceLocation YETI_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/yeti/yeti.png");
-    private static final ResourceLocation BABY_YETI_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/yeti/baby_yeti.png");
+    private static final ResourceLocation YETI_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/yeti/yeti.png");
+    private static final ResourceLocation BABY_YETI_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/yeti/baby_yeti.png");
 
-    private static final ResourceLocation YETI_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/yeti.json");
+    private static final ResourceLocation YETI_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/yeti.json");
 
     @Override
     public ResourceLocation getModelResource(YetiEntity entity) {
@@ -42,7 +43,7 @@ public class YetiModel extends GeoModel<YetiEntity> {
     public void setCustomAnimations(YetiEntity animatable, long instanceId, AnimationState<YetiEntity> animationState) {
         super.setCustomAnimations(animatable, instanceId, animationState);
 
-        CoreGeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
+        GeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
 
         EntityModelData extraData = animationState.getData(ENTITY_MODEL_DATA);
 

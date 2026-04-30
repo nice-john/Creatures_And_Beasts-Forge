@@ -28,8 +28,6 @@ public class CNBEntityBucketItem extends BucketItem {
     private final Supplier<SoundEvent> emptyingSoundSupplier;
 
     public CNBEntityBucketItem(Supplier<EntityType<?>> entityType, Fluid fluid, Supplier<SoundEvent> emptyingSound, Properties builder) {
-        // Vanilla 1.20.1 BucketItem ctor takes (Fluid, Properties); Forge added a
-        // Supplier<Fluid> overload. We pass the Fluid directly on Fabric.
         super(fluid, builder);
         this.entityTypeSupplier = entityType;
         this.emptyingSoundSupplier = emptyingSound;
@@ -49,9 +47,14 @@ public class CNBEntityBucketItem extends BucketItem {
 
     private void placeEntity(ServerLevel worldIn, ItemStack stack, BlockPos pos) {
         Entity entity = this.entityTypeSupplier.get().spawn(worldIn, stack, null, pos, MobSpawnType.BUCKET, true, true);
-        if (entity instanceof Bucketable) {
-            Bucketable bucketable = (Bucketable) entity;
-            bucketable.loadFromBucketTag(stack.getOrCreateTag());
+        if (entity instanceof Bucketable bucketable) {
+            // 1.20.5+ vanilla migrated bucket data to DataComponents.BUCKET_ENTITY_DATA. The stored
+            // CompoundTag holds the same fields as the old getOrCreateTag() flow (NoAI/Health/etc).
+            net.minecraft.world.item.component.CustomData stored =
+                    stack.get(net.minecraft.core.component.DataComponents.BUCKET_ENTITY_DATA);
+            net.minecraft.nbt.CompoundTag tag =
+                    stored != null ? stored.copyTag() : new net.minecraft.nbt.CompoundTag();
+            bucketable.loadFromBucketTag(tag);
             bucketable.setFromBucket(true);
         }
     }

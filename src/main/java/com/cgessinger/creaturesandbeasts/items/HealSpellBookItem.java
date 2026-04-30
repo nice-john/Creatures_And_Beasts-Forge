@@ -7,6 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -31,10 +32,10 @@ public class HealSpellBookItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (stack.is(CNBItems.HEAL_SPELL_BOOK_1)) {
+        if (stack.is(CNBItems.HEAL_SPELL_BOOK_1.get())) {
             this.applyEffects(level, player, stack, MobEffects.REGENERATION, 200, 0);
             return this.applyCooldowns(player, stack, 800);
-        } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2)) {
+        } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2.get())) {
             this.applyEffects(level, player, stack, MobEffects.REGENERATION, 140, 1);
             this.applyEffects(level, player, stack, MobEffects.HEAL, 1, 0);
             return this.applyCooldowns(player, stack, 700);
@@ -45,7 +46,7 @@ public class HealSpellBookItem extends Item {
         }
     }
 
-    private void applyEffects(Level level, Player player, ItemStack stack, MobEffect effect, int duration, int amplifier) {
+    private void applyEffects(Level level, Player player, ItemStack stack, Holder<MobEffect> effect, int duration, int amplifier) {
         if (!player.getCooldowns().isOnCooldown(stack.getItem())) {
             player.addEffect(new MobEffectInstance(effect, duration, amplifier));
 
@@ -62,12 +63,12 @@ public class HealSpellBookItem extends Item {
         if (!player.getCooldowns().isOnCooldown(stack.getItem())) {
             player.awardStat(Stats.ITEM_USED.get(this));
 
-            player.playSound(CNBSoundEvents.PLAYER_HEAL, 1.0F, 1.0F);
+            player.playSound(CNBSoundEvents.PLAYER_HEAL.get(), 1.0F, 1.0F);
             player.playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 1.0F);
 
-            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_1, cooldownTime);
-            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_2, cooldownTime);
-            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_3, cooldownTime);
+            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_1.get(), cooldownTime);
+            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_2.get(), cooldownTime);
+            player.getCooldowns().addCooldown(CNBItems.HEAL_SPELL_BOOK_3.get(), cooldownTime);
 
             return InteractionResultHolder.success(stack);
         } else {
@@ -76,10 +77,10 @@ public class HealSpellBookItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag tooltipFlag) {
-        if (stack.is(CNBItems.HEAL_SPELL_BOOK_1)) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+        if (stack.is(CNBItems.HEAL_SPELL_BOOK_1.get())) {
             tooltip.add(Component.literal("\u00A72Level 1"));
-        } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2)) {
+        } else if (stack.is(CNBItems.HEAL_SPELL_BOOK_2.get())) {
             tooltip.add(Component.literal("\u00A74Level 2"));
         } else {
             tooltip.add(Component.literal("\u00A76Level 3"));
@@ -87,7 +88,7 @@ public class HealSpellBookItem extends Item {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
         return 7200;
     }
 }

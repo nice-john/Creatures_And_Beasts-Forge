@@ -60,10 +60,10 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.HitResult;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.*;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.*;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.Nullable;
@@ -98,12 +98,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TYPE, CNBSporelingTypes.RED_OVERWORLD.getId().toString());
-        this.entityData.define(ATTACKING, false);
-        this.entityData.define(WAVING, false);
-        this.entityData.define(INSPECTING, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TYPE, CNBSporelingTypes.RED_OVERWORLD.getId().toString());
+        builder.define(ATTACKING, false);
+        builder.define(WAVING, false);
+        builder.define(INSPECTING, false);
     }
 
     @Override
@@ -143,7 +143,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
-        this.goalSelector.addGoal(3, new FollowOwnerGoal(this, 1.0D, 10.0F, 2.0F, false));
+        this.goalSelector.addGoal(3, new FollowOwnerGoal(this, 1.0D, 10.0F, 2.0F));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
@@ -206,7 +206,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
             if (this.isTame()) {
                 InteractionResult interactionresult = super.mobInteract(player, hand);
                 if (!interactionresult.consumesAction() && this.isOwnedBy(player)) {
-                    if (player.isSecondaryUseActive() && player.getPassengers().isEmpty() && player.getItemBySlot(EquipmentSlot.CHEST).is(CNBItems.SPORELING_BACKPACK)) {
+                    if (player.isSecondaryUseActive() && player.getPassengers().isEmpty() && player.getItemBySlot(EquipmentSlot.CHEST).is(CNBItems.SPORELING_BACKPACK.get())) {
                         this.startRiding(player);
                         return InteractionResult.SUCCESS;
                     }
@@ -229,7 +229,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
 
                 InteractionResult interactionresult = super.mobInteract(player, hand);
                 if (!interactionresult.consumesAction() && this.isOwnedBy(player)) {
-                    if (player.isSecondaryUseActive() && player.getPassengers().isEmpty() && player.getItemBySlot(EquipmentSlot.CHEST).is(CNBItems.SPORELING_BACKPACK)) {
+                    if (player.isSecondaryUseActive() && player.getPassengers().isEmpty() && player.getItemBySlot(EquipmentSlot.CHEST).is(CNBItems.SPORELING_BACKPACK.get())) {
                         this.startRiding(player);
                     } else {
                         this.setOrderedToSit(!this.isOrderedToSit());
@@ -246,7 +246,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
                     itemstack.shrink(1);
                 }
 
-                if (this.random.nextInt(3) == 0) {
+                if (this.random.nextInt(3) == 0 && !net.neoforged.neoforge.event.EventHooks.onAnimalTame(this, player)) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);
@@ -270,14 +270,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return false;
     }
 
-    // Forge's getPickedResult(HitResult) doesn't exist on Fabric; vanilla's no-arg
-    // getPickResult() is the closest equivalent.
     @Override
-    public ItemStack getPickResult() {
+    public ItemStack getPickedResult(HitResult target) {
         if (this.getSporelingType().getHostility().equals(FRIENDLY)) {
-            return new ItemStack(CNBItems.SPORELING_OVERWORLD_EGG);
+            return new ItemStack(CNBItems.SPORELING_OVERWORLD_EGG.get());
         } else {
-            return new ItemStack(CNBItems.SPORELING_NETHER_EGG);
+            return new ItemStack(CNBItems.SPORELING_NETHER_EGG.get());
         }
     }
 
@@ -295,11 +293,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return hostility.equals(HOSTILE) || hostility.equals(NEUTRAL) || super.fireImmune();
     }
 
-    // TODO[fabric port]: Forge's getClassification(boolean) hook has no Fabric
-    // equivalent — would need a mixin into Mob#getCategory or registering separate
-    // EntityTypes per hostility. For now, the EntityType's static MobCategory wins
-    // and the spawn-pool category from biome modifications determines counting.
-    // Removed @Override since the vanilla supertype doesn't declare this method.
+    @Override
     public MobCategory getClassification(boolean forSpawnCount) {
         return this.getSporelingType().getHostility() == FRIENDLY ? MobCategory.CREATURE : MobCategory.MONSTER;
     }
@@ -323,53 +317,47 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
-        Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
+        // Default: biome-driven variant. SporelingSpawnEggItem.useOn calls applyEggType(...)
+        // afterwards to override based on which spawn-egg the player used (Overworld/Nether).
+        applyVariantForBiome(worldIn);
+        this.reassessGoals();
+        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
+    }
 
-        if (reason == MobSpawnType.SPAWN_EGG && dataTag != null && dataTag.contains("EggType")) {
-            String eggType = dataTag.getString("EggType");
-            if (eggType.equals("Nether")) {
-                if (biome.is(Biomes.CRIMSON_FOREST)) {
-                    this.setSporelingType(CNBSporelingTypes.CRIMSON_FUNGUS);
-                } else if (biome.is(Biomes.WARPED_FOREST)) {
-                    this.setSporelingType(CNBSporelingTypes.WARPED_FUNGUS);
-                } else {
-                    if (random.nextBoolean()) {
-                        this.setSporelingType(CNBSporelingTypes.RED_NETHER);
-                    } else {
-                        this.setSporelingType(CNBSporelingTypes.BROWN_NETHER);
-                    }
-                }
-            } else {
-                if (random.nextBoolean()) {
-                    this.setSporelingType(CNBSporelingTypes.RED_OVERWORLD);
-                } else {
-                    this.setSporelingType(CNBSporelingTypes.BROWN_OVERWORLD);
-                }
-            }
+    private void applyVariantForBiome(ServerLevelAccessor worldIn) {
+        Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
+        if (biome.is(Biomes.CRIMSON_FOREST)) {
+            this.setSporelingType(CNBSporelingTypes.CRIMSON_FUNGUS);
+        } else if (biome.is(Biomes.WARPED_FOREST)) {
+            this.setSporelingType(CNBSporelingTypes.WARPED_FUNGUS);
+        } else if (biome.is(BiomeTags.IS_NETHER)) {
+            this.setSporelingType(random.nextBoolean() ? CNBSporelingTypes.RED_NETHER : CNBSporelingTypes.BROWN_NETHER);
         } else {
+            this.setSporelingType(random.nextBoolean() ? CNBSporelingTypes.RED_OVERWORLD : CNBSporelingTypes.BROWN_OVERWORLD);
+        }
+    }
+
+    /**
+     * Forces the variant based on which spawn-egg item was used. Overworld eggs always produce
+     * a friendly red/brown overworld sporeling; Nether eggs pick crimson/warped/red-nether/brown-nether
+     * based on the local biome (matching original 1.18 behavior). Called from
+     * {@link com.cgessinger.creaturesandbeasts.items.SporelingSpawnEggItem} after spawn.
+     */
+    public void applyEggType(String eggType, ServerLevelAccessor worldIn) {
+        if ("Nether".equals(eggType)) {
+            Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
             if (biome.is(Biomes.CRIMSON_FOREST)) {
                 this.setSporelingType(CNBSporelingTypes.CRIMSON_FUNGUS);
             } else if (biome.is(Biomes.WARPED_FOREST)) {
                 this.setSporelingType(CNBSporelingTypes.WARPED_FUNGUS);
-            } else if (biome.is(BiomeTags.IS_NETHER)) {
-                if (random.nextBoolean()) {
-                    this.setSporelingType(CNBSporelingTypes.RED_NETHER);
-                } else {
-                    this.setSporelingType(CNBSporelingTypes.BROWN_NETHER);
-                }
             } else {
-                if (random.nextBoolean()) {
-                    this.setSporelingType(CNBSporelingTypes.RED_OVERWORLD);
-                } else {
-                    this.setSporelingType(CNBSporelingTypes.BROWN_OVERWORLD);
-                }
+                this.setSporelingType(random.nextBoolean() ? CNBSporelingTypes.RED_NETHER : CNBSporelingTypes.BROWN_NETHER);
             }
+        } else { // "Overworld" (default)
+            this.setSporelingType(random.nextBoolean() ? CNBSporelingTypes.RED_OVERWORLD : CNBSporelingTypes.BROWN_OVERWORLD);
         }
-
         this.reassessGoals();
-
-        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
     }
 
     @Nullable
@@ -421,12 +409,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
         switch (this.getSporelingType().getHostility()) {
             case HOSTILE:
-                return CNBSoundEvents.SPORELING_NETHER_HURT;
+                return CNBSoundEvents.SPORELING_NETHER_HURT.get();
             case NEUTRAL:
-                return CNBSoundEvents.SPORELING_WARPED_HURT;
+                return CNBSoundEvents.SPORELING_WARPED_HURT.get();
             case FRIENDLY:
             default:
-                return CNBSoundEvents.SPORELING_OVERWORLD_HURT;
+                return CNBSoundEvents.SPORELING_OVERWORLD_HURT.get();
         }
     }
 
@@ -435,12 +423,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     protected SoundEvent getDeathSound() {
         switch (this.getSporelingType().getHostility()) {
             case HOSTILE:
-                return CNBSoundEvents.SPORELING_NETHER_HURT;
+                return CNBSoundEvents.SPORELING_NETHER_HURT.get();
             case NEUTRAL:
-                return CNBSoundEvents.SPORELING_WARPED_HURT;
+                return CNBSoundEvents.SPORELING_WARPED_HURT.get();
             case FRIENDLY:
             default:
-                return CNBSoundEvents.SPORELING_OVERWORLD_HURT;
+                return CNBSoundEvents.SPORELING_OVERWORLD_HURT.get();
         }
     }
 
@@ -449,12 +437,12 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     protected SoundEvent getAmbientSound() {
         switch (this.getSporelingType().getHostility()) {
             case HOSTILE:
-                return CNBSoundEvents.SPORELING_NETHER_AMBIENT;
+                return CNBSoundEvents.SPORELING_NETHER_AMBIENT.get();
             case NEUTRAL:
-                return CNBSoundEvents.SPORELING_WARPED_AMBIENT;
+                return CNBSoundEvents.SPORELING_WARPED_AMBIENT.get();
             case FRIENDLY:
             default:
-                return CNBSoundEvents.SPORELING_OVERWORLD_AMBIENT;
+                return CNBSoundEvents.SPORELING_OVERWORLD_AMBIENT.get();
         }
     }
 
@@ -631,19 +619,14 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
             this.goalOwner = sporeling;
         }
 
-        @Override
-        protected void checkAndPerformAttack(LivingEntity entity, double distance) {
-            double d0 = this.getAttackReachSqr(entity);
-            if (distance <= d0 && this.goalOwner.attackTimer <= 0 && this.ticksUntilNextAttack <= 0) {
-                this.resetAttackCooldown();
-                this.goalOwner.playSound(CNBSoundEvents.SPORELING_BITE, 1.0F, 1.0F);
-                this.goalOwner.doHurtTarget(entity);
-            }
-        }
-
+        // 1.21 made ticksUntilNextAttack private and getAttackReachSqr inaccessible on MeleeAttackGoal.
+        // We can no longer re-implement the exact "instant attack on reach" cadence from 1.20.1, but
+        // we *can* play the bite sound and mark attacking-state via resetAttackCooldown (called once
+        // each time the goal commits to a strike).
         @Override
         protected void resetAttackCooldown() {
             super.resetAttackCooldown();
+            this.goalOwner.playSound(CNBSoundEvents.SPORELING_BITE.get(), 1.0F, 1.0F);
             this.goalOwner.setAttacking(true);
         }
     }

@@ -1,5 +1,8 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.MinipadEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -7,15 +10,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoRenderer;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
 @Environment(EnvType.CLIENT)
 public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
-    private static final ResourceLocation MINIPAD_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/minipad/minipad.geo.json");
+    private static final ResourceLocation MINIPAD_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/minipad/minipad.geo.json");
 
     public MinipadGlowLayer(GeoRenderer<MinipadEntity> entityRendererIn) {
         super(entityRendererIn);
@@ -36,14 +37,13 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
         long time = entity.level().getDayTime();
 
         if (entity.isGlowing()) {
-            RenderType eyesTexture = RenderType.eyes(new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/minipad/minipad_eyes_glow.png"));
+            RenderType eyesTexture = RenderType.eyes(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/minipad/minipad_eyes_glow.png"));
             RenderType flowerGlow = RenderType.eyes(entity.getMinipadType().getGlowTextureLocation());
             RenderType flowerTranslucent = RenderType.entityTranslucent(entity.getMinipadType().getGlowTextureLocation());
 
             poseStack.pushPose();
 
             if (!entity.getSheared()) {
-                // Render the glowing flower
                 this.getRenderer().reRender(
                         model,
                         poseStack,
@@ -54,10 +54,11 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
                         partialTick,
                         packedLight,
                         packedOverlay,
-                        1f, 1f, 1f, 1.0f
+                        0xFFFFFFFF
                 );
 
-                // Render the translucent flower with fading glow
+                int translucentAlpha = (int) (Math.pow((time - 18000) / 5000f, 2) * 0xFF);
+                int translucentColor = (Math.max(0, Math.min(0xFF, translucentAlpha)) << 24) | 0x00FFFFFF;
                 this.getRenderer().reRender(
                         model,
                         poseStack,
@@ -68,11 +69,12 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
                         partialTick,
                         packedLight,
                         packedOverlay,
-                        1f, 1f, 1f, (float) Math.pow((time - 18000) / 5000f, 2)
+                        translucentColor
                 );
             }
 
-            // Render the glowing eyes with fading
+            int eyesAlpha = (int) (((float) -Math.pow((time - 18000) / 5000f, 2) + 1) * 0xFF);
+            int eyesColor = (Math.max(0, Math.min(0xFF, eyesAlpha)) << 24) | 0x00FFFFFF;
             this.getRenderer().reRender(
                     model,
                     poseStack,
@@ -83,7 +85,7 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
                     partialTick,
                     packedLight,
                     packedOverlay,
-                    1f, 1f, 1f, (float) -Math.pow((time - 18000) / 5000f, 2) + 1
+                    eyesColor
             );
 
             poseStack.popPose();

@@ -31,7 +31,7 @@ public interface Netable {
     static <T extends LivingEntity & Netable> Optional<InteractionResult> netMobPickup(Player player, InteractionHand hand, T entity) {
         ItemStack itemstack = player.getItemInHand(hand);
 
-        if (itemstack.getItem() == CNBItems.ENTITY_NET && entity.isAlive()) {
+        if (itemstack.getItem() == CNBItems.ENTITY_NET.get() && entity.isAlive()) {
             ItemStack lizardItem = entity.getItemStack();
 
             if (lizardItem == null) {
@@ -41,7 +41,7 @@ public interface Netable {
             entity.playSound(entity.getPickupSound(), 1.0F, 1.0F);
             entity.saveToNetTag(lizardItem);
             player.addItem(lizardItem);
-            itemstack.hurtAndBreak(1, player, (player1) -> { player1.broadcastBreakEvent(hand); });
+            itemstack.hurtAndBreak(1, player, hand == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
             spawnParticles(ParticleTypes.HAPPY_VILLAGER, entity);
             Level level = entity.level();
 

@@ -1,5 +1,8 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.client.entity.model.EndWhaleModel;
 import com.cgessinger.creaturesandbeasts.client.entity.model.LilytadModel;
 import com.cgessinger.creaturesandbeasts.entities.EndWhaleEntity;
@@ -12,8 +15,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 

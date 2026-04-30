@@ -1,5 +1,8 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.client.entity.model.SporelingModel;
 import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -14,8 +17,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
@@ -65,7 +66,7 @@ public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {
     }
 
     @Override
-    public void renderRecursively(PoseStack poseStack, SporelingEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderRecursively(PoseStack poseStack, SporelingEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         if (bone.getName().equals("itemHolder")) {
             poseStack.pushPose();
             poseStack.scale(0.5F, 0.5F, 0.5F);
@@ -87,6 +88,6 @@ public class SporelingRenderer extends GeoEntityRenderer<SporelingEntity> {
             buffer = bufferSource.getBuffer(RenderType.entityTranslucent(getTextureLocation(animatable)));
         }
 
-        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 }

@@ -1,13 +1,14 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoRenderer;
@@ -15,7 +16,7 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
 @Environment(EnvType.CLIENT)
 public class CindershellGlowLayer extends GeoRenderLayer<CindershellEntity> {
-    private static final ResourceLocation GLOW_LAYER = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell_glow.png");
+    private static final ResourceLocation GLOW_LAYER = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell_glow.png");
 
     public CindershellGlowLayer(GeoRenderer<CindershellEntity> renderer) {
         super(renderer);
@@ -51,10 +52,7 @@ public class CindershellGlowLayer extends GeoRenderLayer<CindershellEntity> {
                     partialTick,
                     packedLight,
                     packedOverlay,
-                    1.0f, // Red
-                    1.0f, // Green
-                    1.0f, // Blue
-                    1.0f  // Alpha
+                    0xFFFFFFFF
             );
 
             // Pop the pose stack after rendering

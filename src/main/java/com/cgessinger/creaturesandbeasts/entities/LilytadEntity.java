@@ -42,23 +42,20 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.Items;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
-public class LilytadEntity extends Animal implements GeoAnimatable {
+public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.BOOLEAN);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -81,10 +78,10 @@ public class LilytadEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TYPE, CNBLilytadTypes.PINK.getId().toString());
-        this.entityData.define(SHEARED, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TYPE, CNBLilytadTypes.PINK.getId().toString());
+        builder.define(SHEARED, false);
     }
 
     @Override
@@ -141,7 +138,7 @@ public class LilytadEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag tag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
         switch (this.random.nextInt(3)) {
             case 0:
             default:
@@ -155,7 +152,7 @@ public class LilytadEntity extends Animal implements GeoAnimatable {
                 break;
         }
 
-        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData, tag);
+        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
     }
 
     public static boolean checkLilytadSpawnRules(EntityType<LilytadEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
@@ -193,9 +190,15 @@ public class LilytadEntity extends Animal implements GeoAnimatable {
         return this.isAlive();
     }
 
+    // 1.21 made canBreatheUnderwater() final on LivingEntity. NeoForge's replacement is the
+    // FluidType extension: an entity can declare it doesn't drown in a given fluid type.
+    // Underwater breathing in 1.21 is final on LivingEntity, derived from the
+    // EntityTypeTags.CAN_BREATHE_UNDER_WATER tag. We add this entity type to that
+    // tag in data/minecraft/tags/entity_type/can_breathe_under_water.json.
+
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    public boolean isFood(ItemStack stack) {
+        return false;
     }
 
     @Override
@@ -227,21 +230,23 @@ public class LilytadEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        ItemStack item = player.getItemInHand(hand);
-        if (item.is(Items.SHEARS) && !this.getSheared()) {
-            this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR,
-                    SoundSource.PLAYERS, 1.0F, 1.0F);
-            this.gameEvent(GameEvent.SHEAR, player);
-            if (!this.level().isClientSide) {
-                this.setSheared(true);
-                ItemStack drop = new ItemStack(this.getLilytadType().getShearItem());
-                this.spawnAtLocation(drop, 1.0F);
-            }
-            item.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+    public boolean isShearable(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
+        return !this.getSheared();
+    }
+
+    @NotNull
+    @Override
+    public List<ItemStack> onSheared(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
+        world.playSound(null, this, SoundEvents.SHEEP_SHEAR, player == null ? SoundSource.BLOCKS : SoundSource.PLAYERS, 1.0F, 1.0F);
+        this.gameEvent(GameEvent.SHEAR, player);
+        if (!world.isClientSide) {
+            this.setSheared(true);
+            java.util.List<ItemStack> items = new java.util.ArrayList<>();
+            items.add(new ItemStack(this.getLilytadType().getShearItem()));
+
+            return items;
         }
-        return super.mobInteract(player, hand);
+        return java.util.Collections.emptyList();
     }
 
     public boolean shouldLookAround() {
@@ -251,19 +256,19 @@ public class LilytadEntity extends Animal implements GeoAnimatable {
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.LILYTAD_HURT;
+        return CNBSoundEvents.LILYTAD_HURT.get();
     }
 
     @Nullable
     @Override
     protected SoundEvent getAmbientSound() {
-        return CNBSoundEvents.LILYTAD_AMBIENT;
+        return CNBSoundEvents.LILYTAD_AMBIENT.get();
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.LILYTAD_DEATH;
+        return CNBSoundEvents.LILYTAD_DEATH.get();
     }
 
     private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {

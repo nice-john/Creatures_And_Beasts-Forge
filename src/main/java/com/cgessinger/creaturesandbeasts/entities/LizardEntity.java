@@ -62,13 +62,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 
@@ -105,14 +105,14 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TYPE, CNBLizardTypes.DESERT.getId().toString());
-        this.entityData.define(HAS_EGG, false);
-        this.entityData.define(LAYING_EGG, false);
-        this.entityData.define(FROM_NET, false);
-        this.entityData.define(PARTYING, false);
-        this.entityData.define(SAD, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TYPE, CNBLizardTypes.DESERT.getId().toString());
+        builder.define(HAS_EGG, false);
+        builder.define(LAYING_EGG, false);
+        builder.define(FROM_NET, false);
+        builder.define(PARTYING, false);
+        builder.define(SAD, false);
     }
 
     @Override
@@ -196,14 +196,12 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
         Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
 
-        if (reason == MobSpawnType.SPAWN_EGG && dataTag != null && dataTag.contains("LizardType")) {
-            LizardType type = LizardType.getById(dataTag.getString("LizardType"));
-            if (type != null) {
-                this.setLizardType(type);
-            }
+        // TODO[1.21.1 port]: restore variant tagging via DataComponent (was: dataTag.getString("LizardType"))
+        if (false) {
+            // placeholder
         } else {
             if (biome.is(Biomes.DESERT) || biome.is(BiomeTags.IS_BADLANDS)) {
                 if (random.nextBoolean()) {
@@ -241,15 +239,9 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         // 1/10 chance to change variant to sad lizard variant
         this.setSad(this.getRandom().nextInt(10) == 0);
 
-        if (dataTag != null && dataTag.contains("Health")) {
-            this.setHealth(dataTag.getFloat("Health"));
-        }
+        // TODO[1.21.1 port]: restore Health/Name carryover from spawn-egg item NBT via DataComponent
 
-        if (dataTag != null && dataTag.contains("Name")) {
-            this.setCustomName(Component.nullToEmpty(dataTag.getString("Name")));
-        }
-
-        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
     }
 
     @Override
@@ -264,7 +256,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public boolean canBeLeashed(Player player) {
+    public boolean canBeLeashed() {
         return false;
     }
 
@@ -272,7 +264,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack item = player.getItemInHand(hand);
 
-        if (item.is(CNBItems.APPLE_SLICE) && this.getSad()) {
+        if (item.is(CNBItems.APPLE_SLICE.get()) && this.getSad()) {
             this.setSad(false);
             this.usePlayerItem(player, hand, item);
             spawnParticles(ParticleTypes.HEART);
@@ -294,35 +286,23 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
 
     @Override
     public void saveToNetTag(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-
+        // 1.21 routes arbitrary item NBT through DataComponents.CUSTOM_DATA. Build the tag locally
+        // then stash it on the stack via CustomData. Custom name goes to the dedicated component.
         if (this.hasCustomName()) {
-            stack.setHoverName(this.getCustomName());
+            stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, this.getCustomName());
         }
-        if (this.isNoAi()) {
-            tag.putBoolean("NoAI", this.isNoAi());
-        }
-
-        if (this.isSilent()) {
-            tag.putBoolean("Silent", this.isSilent());
-        }
-
-        if (this.isNoGravity()) {
-            tag.putBoolean("NoGravity", this.isNoGravity());
-        }
-
-        if (this.hasGlowingTag()) {
-            tag.putBoolean("Glowing", this.hasGlowingTag());
-        }
-
-        if (this.isInvulnerable()) {
-            tag.putBoolean("Invulnerable", this.isInvulnerable());
-        }
-
+        CompoundTag tag = new CompoundTag();
+        if (this.isNoAi())          tag.putBoolean("NoAI", true);
+        if (this.isSilent())        tag.putBoolean("Silent", true);
+        if (this.isNoGravity())     tag.putBoolean("NoGravity", true);
+        if (this.hasGlowingTag())   tag.putBoolean("Glowing", true);
+        if (this.isInvulnerable())  tag.putBoolean("Invulnerable", true);
         tag.putFloat("Health", this.getHealth());
         tag.putBoolean("Sad", this.getSad());
         tag.putBoolean("FromNet", true);
         tag.putString("LizardType", this.getLizardType().getId().toString());
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.of(tag));
     }
 
     @Override
@@ -383,7 +363,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel world, AgeableMob entity) {
-        LizardEntity baby = CNBEntityTypes.LIZARD.create(world);
+        LizardEntity baby = CNBEntityTypes.LIZARD.get().create(world);
         if (baby != null) {
             baby.setLizardType(((LizardEntity) entity).getLizardType());
         }
@@ -432,7 +412,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(CNBItems.APPLE_SLICE);
+        return stack.is(CNBItems.APPLE_SLICE.get());
     }
 
     public void spawnParticles(ParticleOptions data) {
@@ -462,10 +442,8 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         return 35;
     }
 
-    // Forge's getPickedResult(HitResult) doesn't exist on Fabric; vanilla's no-arg
-    // getPickResult() is the closest equivalent. The HitResult arg was unused anyway.
     @Override
-    public ItemStack getPickResult() {
+    public ItemStack getPickedResult(HitResult target) {
         return new ItemStack(this.getLizardType().getSpawnItem());
     }
 
@@ -569,7 +547,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
                 } else if (this.lizard.layEggCounter > this.adjustedTickDelay(200)) {
                     Level level = this.lizard.level();
                     level.playSound(null, blockpos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.random.nextFloat() * 0.2F);
-                    level.setBlock(this.blockPos.above(), CNBBlocks.LIZARD_EGGS.defaultBlockState().setValue(LizardEggBlock.EGGS, this.lizard.random.nextInt(6) + 1), 3);
+                    level.setBlock(this.blockPos.above(), CNBBlocks.LIZARD_EGGS.get().defaultBlockState().setValue(LizardEggBlock.EGGS, this.lizard.random.nextInt(6) + 1), 3);
 
                     LizardEggBlock lizardEggBlock = (LizardEggBlock) level.getBlockState(this.blockPos.above()).getBlock();
                     lizardEggBlock.setParents(this.lizard.getLizardType(), this.lizard.partner.getLizardType());

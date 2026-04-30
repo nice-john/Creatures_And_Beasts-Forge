@@ -45,15 +45,15 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.Nullable;
@@ -71,7 +71,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
 
     public LittleGrebeEntity(EntityType<LittleGrebeEntity> type, Level worldIn) {
         super(type, worldIn);
-        this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.setPathfindingMalus(PathType.WATER, 0.0F);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -100,11 +100,11 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
         if (spawnDataIn == null) {
             spawnDataIn = new AgeableMobGroupData(0.6F);
         }
-        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn);
     }
 
     @Override
@@ -113,9 +113,10 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
         double MAX_HEALTH = this.getAttribute(Attributes.MAX_HEALTH).getValue();
         float babyHealth = 5.0F;
         if (isBaby() && MAX_HEALTH > babyHealth) {
-            Multimap<Attribute, AttributeModifier> multimap = HashMultimap.create();
-            multimap.put(Attributes.MAX_HEALTH, new AttributeModifier(this.healthReductionUUID, "yeti_health_reduction", babyHealth - MAX_HEALTH, AttributeModifier.Operation.ADDITION));
-            this.getAttributes().addTransientAttributeModifiers(multimap);
+            this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(new AttributeModifier(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "grebe_health_reduction"),
+                    babyHealth - MAX_HEALTH,
+                    AttributeModifier.Operation.ADD_VALUE));
             this.setHealth(babyHealth);
         }
     }
@@ -123,7 +124,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     @Override
     protected void ageBoundaryReached() {
         this.stopRiding();
-        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(this.healthReductionUUID);
+        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "grebe_health_reduction"));
         this.setHealth((float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
     }
 
@@ -142,7 +143,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel p_241840_1_, AgeableMob p_241840_2_) {
-        return CNBEntityTypes.LITTLE_GREBE.create(p_241840_1_);
+        return CNBEntityTypes.LITTLE_GREBE.get().create(p_241840_1_);
     }
 
     @Override
@@ -159,26 +160,30 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     @Override
     protected SoundEvent getAmbientSound() {
         if (this.isBaby()) {
-            return CNBSoundEvents.LITTLE_GREBE_CHICK_AMBIENT;
+            return CNBSoundEvents.LITTLE_GREBE_CHICK_AMBIENT.get();
         }
-        return CNBSoundEvents.LITTLE_GREBE_AMBIENT;
+        return CNBSoundEvents.LITTLE_GREBE_AMBIENT.get();
     }
 
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.LITTLE_GREBE_HURT;
+        return CNBSoundEvents.LITTLE_GREBE_HURT.get();
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.LITTLE_GREBE_HURT;
+        return CNBSoundEvents.LITTLE_GREBE_HURT.get();
     }
 
+    // 1.21 replaced getPassengersRidingOffset with the EntityAttachments system. Configure the
+    // PASSENGER attachment to sit at 30% of the grebe's body height (chick-on-adult ride point).
     @Override
-    public double getPassengersRidingOffset() {
-        return this.getBbHeight() * 0.3D;
+    public net.minecraft.world.entity.EntityDimensions getDefaultDimensions(net.minecraft.world.entity.Pose pose) {
+        net.minecraft.world.entity.EntityDimensions base = super.getDefaultDimensions(pose);
+        return base.withAttachments(net.minecraft.world.entity.EntityAttachments.builder()
+                .attach(net.minecraft.world.entity.EntityAttachment.PASSENGER, 0.0F, base.height() * 0.3F, 0.0F));
     }
 
     @Override
@@ -201,9 +206,9 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TRAVEL_POS, new BlockPos(0, 2, 0));
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TRAVEL_POS, new BlockPos(0, 2, 0));
     }
 
     @Override

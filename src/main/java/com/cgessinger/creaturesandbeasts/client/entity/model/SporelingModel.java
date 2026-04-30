@@ -1,26 +1,27 @@
 package com.cgessinger.creaturesandbeasts.client.entity.model;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBSporelingTypes;
 import com.cgessinger.creaturesandbeasts.util.SporelingType;
 import net.minecraft.resources.ResourceLocation;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import software.bernie.geckolib.model.GeoModel;
 
 @Environment(EnvType.CLIENT)
 public class SporelingModel extends GeoModel<SporelingEntity> {
-    private static final ResourceLocation SPORELING_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/sporeling.json");
+    private static final ResourceLocation SPORELING_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/sporeling.json");
 
-    private static final ResourceLocation GOOMY_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy.geo.json");
-    private static final ResourceLocation SHRIMPSNAIL_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_shrimpsnail.geo.json");
+    private static final ResourceLocation GOOMY_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy.geo.json");
+    private static final ResourceLocation SHRIMPSNAIL_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_shrimpsnail.geo.json");
 
-    private static final ResourceLocation BIT0_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_bit0.png");
-    private static final ResourceLocation LISTACALISTA_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_listacalista.png");
-    private static final ResourceLocation YUNGWILDER_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_yungwilder.png");
-    private static final ResourceLocation GOOMY_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_goomy.png");
-    private static final ResourceLocation SHRIMPSNAIL_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_shrimpsnail.png");
+    private static final ResourceLocation BIT0_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_bit0.png");
+    private static final ResourceLocation LISTACALISTA_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_listacalista.png");
+    private static final ResourceLocation YUNGWILDER_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_yungwilder.png");
+    private static final ResourceLocation GOOMY_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_goomy.png");
+    private static final ResourceLocation SHRIMPSNAIL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_shrimpsnail.png");
 
     @Override
     public ResourceLocation getModelResource(SporelingEntity entity) {

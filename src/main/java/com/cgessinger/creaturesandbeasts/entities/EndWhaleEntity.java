@@ -32,6 +32,7 @@ import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.HoverRandomPos;
 import net.minecraft.world.entity.animal.FlyingAnimal;
@@ -45,15 +46,14 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
-import software.bernie.geckolib.util.RenderUtils;
 
 import java.util.EnumSet;
 
@@ -68,7 +68,8 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     public EndWhaleEntity(EntityType<EndWhaleEntity> entityType, Level level) {
         super(entityType, level);
-        this.setTame(false);
+        this.setTame(false, false);
+        // maxTurn: degrees of yaw correction per tick. 2 was snappy, 1 gives a slow banking feel.
         this.moveControl = new FlyingMoveControl(this, 1, true);
         this.lookControl = new EndWhaleLookControl(this);
         this.setNoGravity(true); // flyers feel better with gravity disabled
@@ -89,9 +90,9 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(SADDLED, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SADDLED, false);
     }
 
     @Override
@@ -104,7 +105,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.getBoolean("Saddled")) {
-            this.equipSaddle(SoundSource.PLAYERS);
+            this.equipSaddle(ItemStack.EMPTY, SoundSource.PLAYERS);
         }
     }
 
@@ -120,7 +121,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     @Override public boolean isSaddleable() { return this.isTame(); }
 
     @Override
-    public void equipSaddle(@Nullable SoundSource soundSource) {
+    public void equipSaddle(ItemStack stack, @Nullable SoundSource soundSource) {
         this.entityData.set(SADDLED, true);
         this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, 1.0F);
     }
@@ -145,7 +146,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     public void positionPassenger(Entity rider) {
         if (this.hasPassenger(rider)) {
-            double verticalOffset = this.getPassengersRidingOffset() + rider.getMyRidingOffset();
+            double verticalOffset = this.getPassengersRidingOffset() + 0.0;
             float whaleRoll = this.getWhaleRoll(rider) * Mth.DEG_TO_RAD;
             float whalePitch = this.getWhalePitch(rider) * Mth.DEG_TO_RAD;
 
@@ -172,9 +173,9 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         rider.setYHeadRot(rider.getYRot());
     }
 
-    @Override
+    // TODO[1.21.1 port]: getPassengersRidingOffset removed; use getPassengerAttachmentPoint
     public double getPassengersRidingOffset() {
-        return this.getDimensions(this.getPose()).height * 0.70D;
+        return this.getDimensions(this.getPose()).height() * 0.70D;
     }
 
     private float getWhaleRoll(Entity rider) {
@@ -199,7 +200,13 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     public boolean rideableUnderWater() { return true; }
-    @Override public boolean canBreatheUnderwater() { return true; }
+
+    // 1.21 made canBreatheUnderwater() final on LivingEntity. NeoForge's replacement is the
+    // FluidType extension: declare we don't drown in water. Mirrors 1.19 behavior so a saddled
+    // whale can carry its rider through water without suffocating.
+    // Underwater breathing in 1.21 is final on LivingEntity, derived from the
+    // EntityTypeTags.CAN_BREATHE_UNDER_WATER tag. We add this entity type to that
+    // tag in data/minecraft/tags/entity_type/can_breathe_under_water.json.
 
     // Movement
     public void travel(Vec3 travelVector) {
@@ -238,7 +245,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
                         BlockPos ground = BlockPos.containing(this.getX(), this.getY() - 1.0D, this.getZ());
                         float f = 0.91F;
                         if (this.onGround()) {
-                            f = this.level().getBlockState(ground).getBlock().getFriction() * 0.91F;
+                            f = this.level().getBlockState(ground).getFriction(this.level(), ground, this) * 0.91F;
                         }
                         float f1 = 0.16277137F / (f * f * f);
                         this.moveRelative(this.onGround() ? 0.06F * f1 : 0.06F, proposedMovement);
@@ -264,7 +271,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
             BlockPos ground = BlockPos.containing(this.getX(), this.getY() - 1.0D, this.getZ());
             float f = 0.91F;
             if (this.onGround()) {
-                f = this.level().getBlockState(ground).getBlock().getFriction() * 0.91F;
+                f = this.level().getBlockState(ground).getFriction(this.level(), ground, this) * 0.91F;
             }
             float f1 = 0.16277137F / (f * f * f);
 
@@ -293,7 +300,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         } else if (!this.isTame()) {
             if (itemstack.is(END_WHALE_FOOD)) {
                 if (!player.getAbilities().instabuild) itemstack.shrink(1);
-                if (this.random.nextInt(10) == 0) {
+                if (this.random.nextInt(10) == 0 && !net.neoforged.neoforge.event.EventHooks.onAnimalTame(this, player)) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);
@@ -318,7 +325,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob endWhale) { return null; }
 
     @Override
-    public int getExperienceReward() {
+    public int getBaseExperienceReward() {
         return 12 + this.level().random.nextInt(5);
     }
 
@@ -344,7 +351,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     @Nullable
     @Override
-    public SoundEvent getAmbientSound() { return CNBSoundEvents.END_WHALE_AMBIENT; }
+    public SoundEvent getAmbientSound() { return CNBSoundEvents.END_WHALE_AMBIENT.get(); }
 
     @Override public int getAmbientSoundInterval() { return 800; }
     @Override protected float getSoundVolume() { return 5.0F; }
@@ -369,7 +376,10 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     @Override
     public double getTick(Object animatable) {
-        return RenderUtils.getCurrentTick();
+        // Canonical GeckoLib helper — returns gameTime + partialTick on the client,
+        // gameTime on the server. Keeps animation time monotonic across the client/server boundary
+        // and uses the same time source GeckoLib's renderer expects internally.
+        return software.bernie.geckolib.util.RenderUtil.getCurrentTick();
     }
 
     // ---------------- Controls/Goals ----------------
@@ -439,6 +449,9 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         }
         @Override
         public boolean canUse() {
+            // Re-roll a wander target the moment the previous path finishes — no idle delay.
+            // Combined with the forward cone in findPos() and the slow yaw rate from
+            // FlyingMoveControl, this gives a continuous gliding feel.
             return this.endWhale.navigation.isDone()
                     && !this.endWhale.isVehicle()
                     && !this.endWhale.isLeashed();
@@ -463,8 +476,12 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         @Nullable
         private Vec3 findPos() {
             Vec3 vec3 = this.endWhale.getViewVector(0.5F);
-            Vec3 v = net.minecraft.world.entity.ai.util.HoverRandomPos.getPos(this.endWhale, 30, 12, vec3.x, vec3.z, (float) (Math.PI / 6), 80, 15);
-            v = v != null ? v : net.minecraft.world.entity.ai.util.AirAndWaterRandomPos.getPos(this.endWhale, 30, 12, -2, vec3.x, vec3.z, (float) (Math.PI / 6));
+            // Narrow the random angle (Math.PI = 180° spread) to a forward cone (~30°). Keeps
+            // the whale drifting roughly along its current heading instead of u-turning.
+            // Larger horizontal range/offset lets it pick farther targets so each path is a long glide.
+            float angle = (float) (Math.PI / 6.0);
+            Vec3 v = net.minecraft.world.entity.ai.util.HoverRandomPos.getPos(this.endWhale, 30, 12, vec3.x, vec3.z, angle, 80, 15);
+            v = v != null ? v : net.minecraft.world.entity.ai.util.AirAndWaterRandomPos.getPos(this.endWhale, 30, 12, -2, vec3.x, vec3.z, angle);
             if (this.endWhale.isSaddled() && v != null && this.endWhale.getOwner() != null
                     && v.distanceTo(this.endWhale.getOwner().position()) > 100.0D) {
                 v = null;
@@ -474,6 +491,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     static class EndWhaleTemptGoal extends Goal {
+        private static final double RANGE = 100.0D;
         protected final EndWhaleEntity endWhale;
         private final double speedModifier;
         @Nullable protected Player player;
@@ -491,7 +509,10 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         public boolean canUse() {
             if (this.calmDown > 0) { --this.calmDown; return false; }
             if (this.endWhale.isVehicle()) return false;
-            Player nearest = this.endWhale.level().getNearestPlayer(this.endWhale, 100.0D);
+
+            // Find nearest non-spectator player within RANGE who is holding the tempt ingredient.
+            // (TargetingConditions+selector was unreliable across loader versions; this is direct.)
+            Player nearest = this.endWhale.level().getNearestPlayer(this.endWhale, RANGE);
             if (nearest == null || nearest.isSpectator() || !this.shouldFollow(nearest)) {
                 this.player = null;
                 return false;
@@ -506,7 +527,6 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
         @Override
         public boolean canContinueToUse() {
-            // less thrashy than calling canUse() again each tick
             return this.player != null && this.player.isAlive()
                     && !this.endWhale.isVehicle() && !this.endWhale.isLeashed()
                     && this.shouldFollow(this.player)

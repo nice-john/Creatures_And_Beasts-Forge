@@ -1,5 +1,8 @@
 package com.cgessinger.creaturesandbeasts.client.armor.render;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.client.armor.model.FlowerCrownModel;
 import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -10,8 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoArmorRenderer;
@@ -38,16 +39,10 @@ public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
             float partialTick,
             int packedLight,
             int packedOverlay,
-            float red,
-            float green,
-            float blue,
-            float alpha
+            int colour
     ) {
-        // FlowerCrownItem doesn't expose a getCurrentItem() method (that was a Forge-side
-        // helper not present here); leaving armorItem null is fine because this renderer
-        // isn't currently registered (CreaturesAndBeastsClient registerFor calls are
-        // commented out pending GeckoLib renderProvider wiring).
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+        this.armorItem = animatable.getCurrentItem();
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 
     @Override

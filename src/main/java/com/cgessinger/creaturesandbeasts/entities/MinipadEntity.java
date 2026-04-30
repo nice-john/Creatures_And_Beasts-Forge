@@ -47,26 +47,23 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.Items;
-import software.bernie.geckolib.core.animatable.GeoAnimatable;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
-public class MinipadEntity extends Animal implements GeoAnimatable {
+public class MinipadEntity extends Animal implements IShearable, GeoAnimatable {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> GLOWING = SynchedEntityData.defineId(MinipadEntity.class, EntityDataSerializers.BOOLEAN);
@@ -79,7 +76,7 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
     public MinipadEntity(EntityType<? extends Animal> type, Level worldIn) {
         super(type, worldIn);
         this.shearedTimer = 0;
-        this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.setPathfindingMalus(PathType.WATER, 0.0F);
 
         this.lookControl = new LookControl(this) {
             @Override
@@ -93,11 +90,11 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
 
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(TYPE, CNBMinipadTypes.PINK.getId().toString());
-        this.entityData.define(SHEARED, false);
-        this.entityData.define(GLOWING, false);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(TYPE, CNBMinipadTypes.PINK.getId().toString());
+        builder.define(SHEARED, false);
+        builder.define(GLOWING, false);
     }
 
     @Override
@@ -169,7 +166,7 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag tag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
         switch (this.random.nextInt(3)) {
             case 0:
             default:
@@ -183,7 +180,7 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
                 break;
         }
 
-        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData, tag);
+        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
     }
 
     public static boolean checkMinipadSpawnRules(EntityType<MinipadEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
@@ -221,9 +218,15 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
         return this.isAlive();
     }
 
+    // 1.21 made canBreatheUnderwater() final on LivingEntity. NeoForge's replacement is the
+    // FluidType extension: an entity can declare it doesn't drown in a given fluid type.
+    // Underwater breathing in 1.21 is final on LivingEntity, derived from the
+    // EntityTypeTags.CAN_BREATHE_UNDER_WATER tag. We add this entity type to that
+    // tag in data/minecraft/tags/entity_type/can_breathe_under_water.json.
+
     @Override
-    public boolean canBreatheUnderwater() {
-        return true;
+    public boolean isFood(ItemStack stack) {
+        return false;
     }
 
     @Override
@@ -284,23 +287,28 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        ItemStack item = player.getItemInHand(hand);
-        if (item.is(Items.SHEARS) && !this.getSheared()) {
-            this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR,
-                    SoundSource.PLAYERS, 1.0F, 1.0F);
-            this.gameEvent(GameEvent.SHEAR, player);
-            if (!this.level().isClientSide) {
-                this.setSheared(true);
-                ItemStack drop = this.level().getDayTime() > 13000
-                        ? new ItemStack(this.getMinipadType().getGlowShearItem())
-                        : new ItemStack(this.getMinipadType().getShearItem());
-                this.spawnAtLocation(drop, 1.0F);
+    public boolean isShearable(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
+        return !this.getSheared();
+    }
+
+    @NotNull
+    @Override
+    public List<ItemStack> onSheared(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
+        world.playSound(null, this, SoundEvents.SHEEP_SHEAR, player == null ? SoundSource.BLOCKS : SoundSource.PLAYERS, 1.0F, 1.0F);
+        this.gameEvent(GameEvent.SHEAR, player);
+        if (!world.isClientSide) {
+            this.setSheared(true);
+            java.util.List<ItemStack> items = new java.util.ArrayList<>();
+
+            if (this.level().getDayTime() > 13000) {
+                items.add(new ItemStack(this.getMinipadType().getGlowShearItem()));
+            } else {
+                items.add(new ItemStack(this.getMinipadType().getShearItem()));
             }
-            item.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+
+            return items;
         }
-        return super.mobInteract(player, hand);
+        return java.util.Collections.emptyList();
     }
 
     public boolean shouldLookAround() {
@@ -308,32 +316,32 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
     }
 
     @Override
-    public int getExperienceReward() {
+    public int getBaseExperienceReward() {
         return 2 + this.level().random.nextInt(3);
     }
 
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
         if (!this.level().getFluidState(pos).is(FluidTags.WATER)) { // Check if the block is not a liquid
-            this.playSound(CNBSoundEvents.MINIPAD_STEP, this.getSoundVolume() * 0.3F, this.getVoicePitch());
+            this.playSound(CNBSoundEvents.MINIPAD_STEP.get(), this.getSoundVolume() * 0.3F, this.getVoicePitch());
         }
     }
 
     @Override
     protected SoundEvent getSwimSound() {
-        return CNBSoundEvents.MINIPAD_SWIM;
+        return CNBSoundEvents.MINIPAD_SWIM.get();
     }
 
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return CNBSoundEvents.MINIPAD_HURT;
+        return CNBSoundEvents.MINIPAD_HURT.get();
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return CNBSoundEvents.MINIPAD_HURT;
+        return CNBSoundEvents.MINIPAD_HURT.get();
     }
 
 
@@ -366,7 +374,7 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
 
     @Override
     public double getTick(Object animatable) {
-        return this.tickCount + Minecraft.getInstance().getFrameTime();
+        return this.tickCount + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
     }
 
 }

@@ -1,12 +1,13 @@
 package com.cgessinger.creaturesandbeasts.client.entity.model;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
 import net.minecraft.resources.ResourceLocation;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
-import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.model.data.EntityModelData;
 
@@ -14,14 +15,14 @@ import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
 
 @Environment(EnvType.CLIENT)
 public class CindershellModel extends GeoModel<CindershellEntity> {
-    private static final ResourceLocation CINDERSHELL_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell.geo.json");
-    private static final ResourceLocation BABY_CINDERSHELL_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/baby_cindershell.geo.json");
-    private static final ResourceLocation CINDERSHELL_FURNACE_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell_furnace.geo.json");
+    private static final ResourceLocation CINDERSHELL_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell.geo.json");
+    private static final ResourceLocation BABY_CINDERSHELL_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/baby_cindershell.geo.json");
+    private static final ResourceLocation CINDERSHELL_FURNACE_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell_furnace.geo.json");
 
-    private static final ResourceLocation CINDERSHELL_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell.png");
-    private static final ResourceLocation BABY_CINDERSHELL_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/baby_cindershell.png");
+    private static final ResourceLocation CINDERSHELL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell.png");
+    private static final ResourceLocation BABY_CINDERSHELL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/baby_cindershell.png");
 
-    private static final ResourceLocation CINDERSHELL_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/cindershell.json");
+    private static final ResourceLocation CINDERSHELL_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cindershell.json");
 
     @Override
     public ResourceLocation getModelResource(CindershellEntity entity) {
@@ -48,7 +49,7 @@ public class CindershellModel extends GeoModel<CindershellEntity> {
     public void setCustomAnimations(CindershellEntity animatable, long instanceId, AnimationState<CindershellEntity> animationState) {
         super.setCustomAnimations(animatable, instanceId, animationState);
 
-        CoreGeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
+        GeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
 
         if (head_rotation != null) {
             // Use the correct DataTicket for EntityModelData
