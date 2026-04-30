@@ -174,8 +174,23 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         }
 
         if (this.isAttacking()) {
+            // Clear the AI path so we don't fight it, then apply a subtle forward
+            // creep toward the target. Without this, the yeti freezes for the entire
+            // 24-tick attack animation and a fleeing target can backpedal out of
+            // melee — swings whiff. ~0.05 blocks/tick ≈ 1 block/sec is enough to
+            // track a walking player without overshooting.
             this.navigation.stop();
             this.attackTimer--;
+            LivingEntity attackTarget = this.getTarget();
+            if (attackTarget != null) {
+                double dx = attackTarget.getX() - this.getX();
+                double dz = attackTarget.getZ() - this.getZ();
+                double horizSqr = dx * dx + dz * dz;
+                if (horizSqr > 0.01D) {
+                    double inv = 0.05D / Math.sqrt(horizSqr);
+                    this.setDeltaMovement(dx * inv, this.getDeltaMovement().y, dz * inv);
+                }
+            }
         }
 
         if (this.eatTimer == 40) {
