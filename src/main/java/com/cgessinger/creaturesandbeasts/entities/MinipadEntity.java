@@ -286,29 +286,28 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
         return 0.45D;
     }
 
+    /** vanilla Shearable: gate by current shorn state. */
     @Override
-    public boolean isShearable(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
-        return !this.getSheared();
+    public boolean readyForShearing() {
+        return this.isAlive() && !this.getSheared() && !this.isBaby();
     }
 
-    @NotNull
+    /**
+     * vanilla Shearable.shear: drops the minipad's variant-specific shear item, glow-variant
+     * after dusk to preserve the original behaviour where night-time shears yielded the
+     * glowing flower.
+     */
     @Override
-    public List<ItemStack> onSheared(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
-        world.playSound(null, this, SoundEvents.SHEEP_SHEAR, player == null ? SoundSource.BLOCKS : SoundSource.PLAYERS, 1.0F, 1.0F);
-        this.gameEvent(GameEvent.SHEAR, player);
-        if (!world.isClientSide) {
+    public void shear(SoundSource source) {
+        this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, source, 1.0F, 1.0F);
+        this.gameEvent(GameEvent.SHEAR);
+        if (!this.level().isClientSide) {
             this.setSheared(true);
-            java.util.List<ItemStack> items = new java.util.ArrayList<>();
-
-            if (this.level().getDayTime() > 13000) {
-                items.add(new ItemStack(this.getMinipadType().getGlowShearItem()));
-            } else {
-                items.add(new ItemStack(this.getMinipadType().getShearItem()));
-            }
-
-            return items;
+            ItemStack drop = this.level().getDayTime() > 13000
+                    ? new ItemStack(this.getMinipadType().getGlowShearItem())
+                    : new ItemStack(this.getMinipadType().getShearItem());
+            this.spawnAtLocation(drop);
         }
-        return java.util.Collections.emptyList();
     }
 
     public boolean shouldLookAround() {

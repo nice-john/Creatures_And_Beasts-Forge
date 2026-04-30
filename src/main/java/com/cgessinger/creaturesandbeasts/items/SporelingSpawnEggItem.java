@@ -29,10 +29,10 @@ import java.util.Objects;
  * spawn the same {@link SporelingEntity} type, but force a friendly-vs-hostile variant via
  * {@link SporelingEntity#applyEggType(String, net.minecraft.world.level.ServerLevelAccessor)}.
  */
-public class SporelingSpawnEggItem extends DeferredSpawnEggItem {
+public class SporelingSpawnEggItem extends net.minecraft.world.item.SpawnEggItem {
     private final String eggType;
 
-    public SporelingSpawnEggItem(final DeferredHolder<EntityType<?>, ? extends EntityType<? extends Mob>> entityTypeSupplier,
+    public SporelingSpawnEggItem(final EntityType<? extends Mob> entityTypeSupplier,
                                  final int primaryColor, final int secondaryColor,
                                  final Properties properties, final String eggType) {
         super(entityTypeSupplier, primaryColor, secondaryColor, properties);

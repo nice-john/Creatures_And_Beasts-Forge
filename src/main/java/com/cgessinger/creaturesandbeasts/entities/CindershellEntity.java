@@ -251,7 +251,10 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         } else if (this.hasFurnace()) {
             if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.openMenu(this, buf -> {});
+                // Fabric: vanilla ServerPlayer.openMenu(MenuProvider). Forge/NeoForge added a
+                // 2-arg overload taking a buf consumer for extended menu data — we don't
+                // pass any extra payload, so the simple vanilla form suffices.
+                serverPlayer.openMenu(this);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         } else if (this.isFood(item) && !this.getEating()) {

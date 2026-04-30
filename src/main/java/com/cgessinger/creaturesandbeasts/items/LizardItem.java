@@ -34,10 +34,10 @@ import java.util.Objects;
  * overriding the biome-based variant pick in {@link LizardEntity#finalizeSpawn}. Net-captured
  * lizards also restore their previous state via {@link DataComponents#CUSTOM_DATA}.
  */
-public class LizardItem extends DeferredSpawnEggItem {
+public class LizardItem extends net.minecraft.world.item.SpawnEggItem {
     private final LizardType type;
 
-    public LizardItem(DeferredHolder<EntityType<?>, ? extends EntityType<? extends Mob>> entityTypeSupplier,
+    public LizardItem(EntityType<? extends Mob> entityTypeSupplier,
                       int primaryColor, int secondaryColor, Properties properties, LizardType type) {
         super(entityTypeSupplier, primaryColor, secondaryColor, properties);
         this.type = type;

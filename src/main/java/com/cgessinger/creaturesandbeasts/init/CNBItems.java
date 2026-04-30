@@ -22,24 +22,24 @@ public class CNBItems {
     // Food
     public static final Item APPLE_SLICE = register("apple_slice",
             new Item(new Item.Properties().food(
-                    new FoodProperties.Builder().nutrition(1).saturationMod(0.3F).build())));
+                    new FoodProperties.Builder().nutrition(1).saturationModifier(0.3F).build())));
 
     public static final WaterlilyBlockItem PINK_WATERLILY = register("pink_waterlily",
             new WaterlilyBlockItem(CNBBlocks.PINK_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
-                            .nutrition(4).saturationMod(0.5F).alwaysEat()
+                            .nutrition(4).saturationModifier(0.5F).alwaysEat()
                             .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     public static final WaterlilyBlockItem LIGHT_PINK_WATERLILY = register("light_pink_waterlily",
             new WaterlilyBlockItem(CNBBlocks.LIGHT_PINK_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
-                            .nutrition(4).saturationMod(0.5F).alwaysEat()
+                            .nutrition(4).saturationModifier(0.5F).alwaysEat()
                             .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     public static final WaterlilyBlockItem YELLOW_WATERLILY = register("yellow_waterlily",
             new WaterlilyBlockItem(CNBBlocks.YELLOW_WATERLILY_BLOCK,
                     new Item.Properties().food(new FoodProperties.Builder()
-                            .nutrition(4).saturationMod(0.5F).alwaysEat()
+                            .nutrition(4).saturationModifier(0.5F).alwaysEat()
                             .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
 
     // Bucketed Mobs
@@ -114,9 +114,9 @@ public class CNBItems {
     public static final LizardItem LIZARD_ITEM_MUSHROOM = register("lizard_item_mushroom", new LizardItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties(), CNBLizardTypes.MUSHROOM));
 
     public static final SporelingSpawnEggItem SPORELING_OVERWORLD_EGG = register("sporeling_overworld_egg",
-            new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xDE0942, 0xFFEBC4, new Item.Properties()));
+            new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xDE0942, 0xFFEBC4, new Item.Properties(), "Overworld"));
     public static final SporelingSpawnEggItem SPORELING_NETHER_EGG = register("sporeling_nether_egg",
-            new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xBF2828, 0xFF9245, new Item.Properties()));
+            new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xBF2828, 0xFF9245, new Item.Properties(), "Nether"));
 
     // Block Items
     public static final CinderFurnaceItem CINDERSHELL_FURNACE = register("cinder_furnace",

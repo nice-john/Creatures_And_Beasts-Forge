@@ -57,7 +57,7 @@ public class MixinItemStackHideArmor {
                 uuid,
                 "yeti_hide",
                 CNBConfig.hideMultiplier * amount,
-                AttributeModifier.Operation.MULTIPLY_TOTAL));
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         cir.setReturnValue(result);
     }
 

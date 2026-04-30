@@ -56,6 +56,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class LilytadEntity extends Animal implements net.minecraft.world.entity.Shearable, GeoAnimatable {
+    // vanilla 1.21 Shearable iface requires shear(SoundSource) + readyForShearing(); we
+    // implement them below. The legacy isShearable/onSheared (NeoForge IShearable methods)
+    // are kept too as no-ops for callers that might still use them.
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.BOOLEAN);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -229,24 +232,21 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
         return LilytadType.getById(this.entityData.get(TYPE));
     }
 
+    /** vanilla Shearable: gate by current shorn state. */
     @Override
-    public boolean isShearable(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
-        return !this.getSheared();
+    public boolean readyForShearing() {
+        return this.isAlive() && !this.getSheared() && !this.isBaby();
     }
 
-    @NotNull
+    /** vanilla Shearable.shear: drops the lilytad's variant-specific shear item. */
     @Override
-    public List<ItemStack> onSheared(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
-        world.playSound(null, this, SoundEvents.SHEEP_SHEAR, player == null ? SoundSource.BLOCKS : SoundSource.PLAYERS, 1.0F, 1.0F);
-        this.gameEvent(GameEvent.SHEAR, player);
-        if (!world.isClientSide) {
+    public void shear(SoundSource source) {
+        this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, source, 1.0F, 1.0F);
+        this.gameEvent(GameEvent.SHEAR);
+        if (!this.level().isClientSide) {
             this.setSheared(true);
-            java.util.List<ItemStack> items = new java.util.ArrayList<>();
-            items.add(new ItemStack(this.getLilytadType().getShearItem()));
-
-            return items;
+            this.spawnAtLocation(new ItemStack(this.getLilytadType().getShearItem()));
         }
-        return java.util.Collections.emptyList();
     }
 
     public boolean shouldLookAround() {

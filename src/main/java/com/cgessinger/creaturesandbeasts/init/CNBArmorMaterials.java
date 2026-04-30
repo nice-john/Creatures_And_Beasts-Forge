@@ -1,69 +1,73 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 
-import java.util.function.Supplier;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
-public enum CNBArmorMaterials implements ArmorMaterial {
-    FLOWER_CROWN("flower_crown",     2, new int[]{1, 2, 3, 1}, 5,  SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.EMPTY),
-    SPORELING_BACKPACK("sporeling_backpack", 3, new int[]{0, 0, 1, 0}, 2, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, () -> Ingredient.of(Items.LEATHER));
+/**
+ * 1.21 reworked {@link ArmorMaterial} from an interface (one-method-per-attribute) into a
+ * registered record with a defense map, layer list, and Holder-based equip sound.
+ */
+public class CNBArmorMaterials {
 
-    private static final int[] MAX_DAMAGE_ARRAY = new int[]{13, 15, 16, 11};
+    public static final Holder<ArmorMaterial> FLOWER_CROWN = register("flower_crown",
+            defenseFor(1, 2, 3, 1),
+            5,                              // enchantment value
+            0.0F,                           // toughness
+            0.0F,                           // knockback resistance
+            () -> Ingredient.EMPTY);        // repair (none)
 
-    private final String name;
-    private final int maxDamageFactor;
-    private final int[] damageReductionAmountArray;
-    private final int enchantability;
-    private final SoundEvent soundEvent;
-    private final float toughness;
-    private final float knockbackResistance;
-    private final Supplier<Ingredient> repairIngredient;
+    public static final Holder<ArmorMaterial> SPORELING_BACKPACK = register("sporeling_backpack",
+            defenseFor(0, 0, 1, 0),
+            2,
+            0.0F,
+            0.0F,
+            () -> Ingredient.of(Items.LEATHER));
 
-    CNBArmorMaterials(String name, int maxDamageFactor, int[] damageReduction,
-                      int enchantability, SoundEvent sound, float toughness,
-                      float knockbackResistance, Supplier<Ingredient> repairIngredient) {
-        this.name = name;
-        this.maxDamageFactor = maxDamageFactor;
-        this.damageReductionAmountArray = damageReduction;
-        this.enchantability = enchantability;
-        this.soundEvent = sound;
-        this.toughness = toughness;
-        this.knockbackResistance = knockbackResistance;
-        this.repairIngredient = repairIngredient;
+    private static Map<ArmorItem.Type, Integer> defenseFor(int boots, int legs, int chest, int head) {
+        Map<ArmorItem.Type, Integer> map = new EnumMap<>(ArmorItem.Type.class);
+        map.put(ArmorItem.Type.BOOTS, boots);
+        map.put(ArmorItem.Type.LEGGINGS, legs);
+        map.put(ArmorItem.Type.CHESTPLATE, chest);
+        map.put(ArmorItem.Type.HELMET, head);
+        // 1.21 also has BODY (e.g. wolf armor) – use head value as a sane fallback for items
+        // that don't actually equip in that slot.
+        map.put(ArmorItem.Type.BODY, head);
+        return map;
     }
 
-    @Override
-    public int getDurabilityForType(ArmorItem.Type type) {
-        return MAX_DAMAGE_ARRAY[type.getSlot().getIndex()] * this.maxDamageFactor;
+    private static Holder<ArmorMaterial> register(String name,
+                                                  Map<ArmorItem.Type, Integer> defense,
+                                                  int enchantmentValue,
+                                                  float toughness,
+                                                  float knockbackResistance,
+                                                  java.util.function.Supplier<Ingredient> repair) {
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name);
+        ArmorMaterial.Layer layer = new ArmorMaterial.Layer(id, "", false);
+        ArmorMaterial material = new ArmorMaterial(
+                defense,
+                enchantmentValue,
+                Holder.direct(SoundEvents.ARMOR_EQUIP_LEATHER.value()),
+                repair,
+                List.of(layer),
+                toughness,
+                knockbackResistance);
+        return Registry.registerForHolder(BuiltInRegistries.ARMOR_MATERIAL, id, material);
     }
 
-    @Override
-    public int getDefenseForType(ArmorItem.Type type) {
-        return this.damageReductionAmountArray[type.getSlot().getIndex()];
+    public static void register() {
+        // Static field initialisation registers everything when this class is loaded.
+        CreaturesAndBeasts.LOGGER.debug("Registered CNB armor materials");
     }
-
-    @Override
-    public int getEnchantmentValue() { return this.enchantability; }
-
-    @Override
-    public SoundEvent getEquipSound() { return this.soundEvent; }
-
-    @Override
-    public Ingredient getRepairIngredient() { return this.repairIngredient.get(); }
-
-    @Override
-    public String getName() { return CreaturesAndBeasts.MOD_ID + ':' + this.name; }
-
-    @Override
-    public float getToughness() { return this.toughness; }
-
-    @Override
-    public float getKnockbackResistance() { return this.knockbackResistance; }
 }

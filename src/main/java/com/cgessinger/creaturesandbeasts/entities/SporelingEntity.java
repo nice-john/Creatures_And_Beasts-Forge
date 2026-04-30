@@ -246,7 +246,6 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
                     itemstack.shrink(1);
                 }
 
-                if (this.random.nextInt(3) == 0 && !net.neoforged.neoforge.event.EventHooks.onAnimalTame(this, player)) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);

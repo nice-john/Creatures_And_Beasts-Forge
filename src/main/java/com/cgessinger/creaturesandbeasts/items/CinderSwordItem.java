@@ -43,7 +43,7 @@ public class CinderSwordItem extends SwordItem {
     }
 
     /** Ordered list of cinder-sword item suppliers, indexed by imbueLevel (0 = base, 4 = max). */
-    private static List<DeferredItem<CinderSwordItem>> tiers() {
+    private static List<CinderSwordItem> tiers() {
         return List.of(
                 CNBItems.CINDER_SWORD,
                 CNBItems.CINDER_SWORD_1,
@@ -66,16 +66,16 @@ public class CinderSwordItem extends SwordItem {
         super.inventoryTick(stack, level, entity, slot, selected);
         if (level.isClientSide || !(entity instanceof Player player)) return;
 
-        Integer ticks = stack.get(CNBDataComponents.IMBUED_TICKS.get());
+        Integer ticks = stack.get(CNBDataComponents.IMBUED_TICKS);
         if (ticks == null) return;
 
         if (ticks > 0) {
-            stack.set(CNBDataComponents.IMBUED_TICKS.get(), ticks - 1);
+            stack.set(CNBDataComponents.IMBUED_TICKS, ticks - 1);
         } else if (this.imbueLevel > 0) {
             // Degrade to next lower tier; that tier gets its own 400-tick window.
-            Item lowerTier = tiers().get(this.imbueLevel - 1).get();
+            Item lowerTier = tiers().get(this.imbueLevel - 1);
             ItemStack lowered = stack.transmuteCopy(lowerTier);
-            lowered.set(CNBDataComponents.IMBUED_TICKS.get(), IMBUE_DURATION);
+            lowered.set(CNBDataComponents.IMBUED_TICKS, IMBUE_DURATION);
             if (this.imbueLevel == 1) {
                 player.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
             }
@@ -83,7 +83,7 @@ public class CinderSwordItem extends SwordItem {
         } else {
             // imbueLevel == 0: the cooldown finished on the base tier â€” clear the component
             // so future inventoryTicks don't keep re-running this branch.
-            stack.remove(CNBDataComponents.IMBUED_TICKS.get());
+            stack.remove(CNBDataComponents.IMBUED_TICKS);
         }
     }
 
@@ -95,9 +95,9 @@ public class CinderSwordItem extends SwordItem {
 
         if (level.getFluidState(pos).is(Fluids.LAVA)) {
             // Lava-dip: jump straight to max tier with a fresh 400-tick countdown.
-            Item maxTier = tiers().get(tiers().size() - 1).get();
+            Item maxTier = tiers().get(tiers().size() - 1);
             ItemStack imbued = itemstack.transmuteCopy(maxTier);
-            imbued.set(CNBDataComponents.IMBUED_TICKS.get(), IMBUE_DURATION);
+            imbued.set(CNBDataComponents.IMBUED_TICKS, IMBUE_DURATION);
             player.setItemInHand(hand, imbued);
             player.playSound(SoundEvents.BUCKET_FILL_LAVA, 1.0F, 1.0F);
             return InteractionResultHolder.success(itemstack);
