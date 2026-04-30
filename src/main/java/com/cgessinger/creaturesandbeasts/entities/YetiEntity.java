@@ -383,8 +383,11 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     // 2) performAttack: level -> level()
+    // AOE inflate of 3.0 horizontal (was 1.5) gives the yeti's swing 2x linear reach.
+    // Pairs with YetiAttackGoal.getAttackReachSqr below — both must double for the
+    // yeti to actually decide to swing at 2x distance AND have the swing connect.
     private void performAttack() {
-        List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(1.5D, 1.0D, 1.5D));
+        List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(3.0D, 1.0D, 3.0D));
 
         for (LivingEntity entity : list) {
             if ((entity instanceof Player && entity.getUUID().equals(this.getOwnerUUID())) || (entity instanceof YetiEntity && Objects.equals(this.getOwnerUUID(), ((YetiEntity) entity).getOwnerUUID()))) {
@@ -603,6 +606,16 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             if (distance <= reach && this.yeti.attackTimer <= 0 && this.ticksUntilNextAttack <= 0) {
                 this.resetAttackCooldown();
             }
+        }
+
+        // 2x linear reach => 4x squared. Vanilla MeleeAttackGoal returns
+        //   getBbWidth() * 2 * getBbWidth() * 2 + target.getBbWidth();
+        // multiplying by 4 here lets the goal trigger when targets are up to 2x the
+        // normal melee distance away. Pairs with the AOE inflate(3.0, 1.0, 3.0) in
+        // YetiEntity.performAttack so the actual swing also reaches that far.
+        @Override
+        protected double getAttackReachSqr(LivingEntity target) {
+            return super.getAttackReachSqr(target) * 4.0D;
         }
 
         @Override
