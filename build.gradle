@@ -40,7 +40,13 @@ dependencies {
     // GeckoLib for Fabric 1.20.1
     modImplementation "software.bernie.geckolib:geckolib-fabric-1.20.1:${geckolib_version}"
 
-    // Night Config – TOML for our simple config
+    // Night Config – TOML for our simple config.
+    // The toml artifact contains only the TOML codec; CommentedFileConfig lives in
+    // :core. We must `include` both — Loom's include directive only jar-in-jars
+    // the literally listed artifact, not its transitive dependencies, so omitting
+    // :core works in dev (where the gradle classpath provides it) but throws
+    // NoClassDefFoundError at runtime in a published jar.
+    include implementation("com.electronwill.night-config:core:3.6.7")
     include implementation("com.electronwill.night-config:toml:3.6.7")
 }
 
