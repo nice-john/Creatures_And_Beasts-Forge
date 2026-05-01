@@ -15,12 +15,14 @@ import com.cgessinger.creaturesandbeasts.client.entity.render.SporelingRenderer;
 import com.cgessinger.creaturesandbeasts.client.entity.render.ThrownCactemSpearRenderer;
 import com.cgessinger.creaturesandbeasts.client.entity.render.YetiRenderer;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
+import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
 import com.cgessinger.creaturesandbeasts.items.GlowingFlowerCrownItem;
 import com.cgessinger.creaturesandbeasts.items.SporelingBackpackItem;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
@@ -56,6 +58,28 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(CactemSpearModel.LAYER_LOCATION, CactemSpearModel::createLayer);
+    }
+
+    /**
+     * Disable vanilla SpawnEggItem two-color tint on the spawn eggs that have
+     * custom full-color sprites. Vanilla's bulk ItemColor handler multiplies
+     * layer 0 by the egg's backgroundColor (and layer 1 by highlightColor), so
+     * a textured layer0 with item/generated parent gets washed-out by the
+     * primary color even though it's a solid sprite. Registering a per-item
+     * passthrough (0xFFFFFFFF = white = no tint) over the top wins because
+     * ItemColors is a last-write-wins map keyed by Item.
+     */
+    @SubscribeEvent
+    public static void onRegisterColorHandlers(RegisterColorHandlersEvent.Item event) {
+        event.register((stack, layer) -> 0xFFFFFFFF,
+                CNBItems.CACTEM_SPAWN_EGG.get(),
+                CNBItems.CINDERSHELL_SPAWN_EGG.get(),
+                CNBItems.END_WHALE_SPAWN_EGG.get(),
+                CNBItems.LILYTAD_SPAWN_EGG.get(),
+                CNBItems.MINIPAD_SPAWN_EGG.get(),
+                CNBItems.YETI_SPAWN_EGG.get(),
+                CNBItems.SPORELING_NETHER_EGG.get(),
+                CNBItems.SPORELING_OVERWORLD_EGG.get());
     }
 
     /*@SubscribeEvent
