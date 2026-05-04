@@ -12,7 +12,7 @@
 			},
 			"bones": [
 				{
-					"name": "group",
+					"name": "armorHead",
 					"pivot": [0, 24, 0],
 					"cubes": [
 						{

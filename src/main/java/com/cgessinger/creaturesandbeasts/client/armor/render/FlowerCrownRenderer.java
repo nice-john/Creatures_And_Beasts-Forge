@@ -5,13 +5,12 @@ import net.fabricmc.api.Environment;
 
 import com.cgessinger.creaturesandbeasts.client.armor.model.FlowerCrownModel;
 import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
+import com.cgessinger.creaturesandbeasts.items.GlowingFlowerCrownItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
@@ -19,13 +18,16 @@ import software.bernie.geckolib.renderer.GeoArmorRenderer;
 
 @Environment(EnvType.CLIENT)
 public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
-    private ItemStack armorItem; // Declare the armorItem field
+    private ItemStack armorItem;
 
     public FlowerCrownRenderer() {
         super(new FlowerCrownModel());
-
-        // Set the bone name for the head
-        this.headParts();
+        // Bone-to-slot binding is handled by GeckoLib via the `armorHead` bone name in
+        // flower_crown.geo.json — see grabRelevantBones() in GeoArmorRenderer (it scans
+        // for the literal strings armorHead/armorBody/armorRight*/armorLeft* and pins
+        // each to the matching HumanoidModel part). Renaming the model's only bone from
+        // "group" to "armorHead" is what makes the crown follow the player's head
+        // rotation and inherit the head's transform / scale.
     }
 
     @Override
@@ -41,15 +43,23 @@ public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
             int packedOverlay,
             int colour
     ) {
-        // FlowerCrownItem doesn't expose getCurrentItem() - the field is left null and only
-        // used by the (currently-unwired) MixinHumanoidArmorLayer for the glowing variant.
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 
+    /**
+     * Only the {@link GlowingFlowerCrownItem} variant should render full-bright at
+     * night. The previous implementation unconditionally returned
+     * {@code RenderType.eyes(texture)} (the same render type vanilla uses for
+     * spider/enderman eyes) for the regular crown too, which made it glow visibly
+     * in the dark even though it isn't the glowing variant. Defer to the default
+     * armor render type for the plain crown.
+     */
     @Override
     public RenderType getRenderType(FlowerCrownItem animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
-        // Use RenderType.eyes for glowing textures
-        return RenderType.eyes(texture);
+        if (animatable instanceof GlowingFlowerCrownItem) {
+            return RenderType.eyes(texture);
+        }
+        return super.getRenderType(animatable, texture, bufferSource, partialTick);
     }
 
     public ItemStack getCurrentItem() {
