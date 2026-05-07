@@ -144,6 +144,9 @@ public class CNBItems {
             () -> new DeferredSpawnEggItem(CNBEntityTypes.END_WHALE, 0x5609AD, 0xD4AD5F, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> CACTEM_SPAWN_EGG = ITEMS.register("cactem_spawn_egg",
             () -> new DeferredSpawnEggItem(CNBEntityTypes.CACTEM, 0x1A6E23, 0xDCEBAB, new Item.Properties()));
+    // Cheshire Tiger — Alice-in-Wonderland palette: deep purple primary, hot pink highlight.
+    public static final DeferredItem<DeferredSpawnEggItem> CHESHIRE_TIGER_SPAWN_EGG = ITEMS.register("cheshire_tiger_spawn_egg",
+            () -> new DeferredSpawnEggItem(CNBEntityTypes.CHESHIRE_TIGER, 0xA755C2, 0xE77BD0, new Item.Properties()));
 
     public static final DeferredItem<LizardItem> LIZARD_ITEM_DESERT = ITEMS.register("lizard_item_desert",
             () -> new LizardItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties(), CNBLizardTypes.DESERT));
@@ -202,6 +205,7 @@ public class CNBItems {
         output.accept(LIZARD_SPAWN_EGG.get());
         output.accept(END_WHALE_SPAWN_EGG.get());
         output.accept(CACTEM_SPAWN_EGG.get());
+        output.accept(CHESHIRE_TIGER_SPAWN_EGG.get());
         output.accept(LIZARD_ITEM_DESERT.get());
         output.accept(LIZARD_ITEM_DESERT_2.get());
         output.accept(LIZARD_ITEM_JUNGLE.get());

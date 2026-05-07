@@ -117,5 +117,6 @@ public class CreaturesAndBeasts {
         event.put(CNBEntityTypes.MINIPAD.get(), com.cgessinger.creaturesandbeasts.entities.MinipadEntity.createAttributes().build());
         event.put(CNBEntityTypes.END_WHALE.get(), com.cgessinger.creaturesandbeasts.entities.EndWhaleEntity.createAttributes().build());
         event.put(CNBEntityTypes.CACTEM.get(), com.cgessinger.creaturesandbeasts.entities.CactemEntity.createAttributes().build());
+        event.put(CNBEntityTypes.CHESHIRE_TIGER.get(), com.cgessinger.creaturesandbeasts.entities.CheshireTigerEntity.createAttributes().build());
     }
 }

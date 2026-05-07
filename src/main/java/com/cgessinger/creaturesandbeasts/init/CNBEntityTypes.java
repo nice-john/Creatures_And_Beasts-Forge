@@ -2,6 +2,7 @@ package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
+import com.cgessinger.creaturesandbeasts.entities.CheshireTigerEntity;
 import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
 import com.cgessinger.creaturesandbeasts.entities.EndWhaleEntity;
 import com.cgessinger.creaturesandbeasts.entities.LilytadEntity;
@@ -52,6 +53,11 @@ public class CNBEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<CindershellEntity>> CINDERSHELL =
             ENTITY_TYPES.register("cindershell", () -> EntityType.Builder.of(CindershellEntity::new, MobCategory.CREATURE)
                     .sized(1.25f, 1.45f).fireImmune().build(name("cindershell")));
+    // Placeholder bounding box (1.0 wide × 1.0 tall) — adjust once the model
+    // is dropped in and we can eyeball the silhouette.
+    public static final DeferredHolder<EntityType<?>, EntityType<CheshireTigerEntity>> CHESHIRE_TIGER =
+            ENTITY_TYPES.register("cheshire_tiger", () -> EntityType.Builder.of(CheshireTigerEntity::new, MobCategory.CREATURE)
+                    .sized(1.0f, 1.0f).build(name("cheshire_tiger")));
 
     /* PROJECTILES */
     public static final DeferredHolder<EntityType<?>, EntityType<LizardEggEntity>> LIZARD_EGG =

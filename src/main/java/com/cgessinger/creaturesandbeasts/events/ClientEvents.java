@@ -45,6 +45,7 @@ public class ClientEvents {
         event.registerEntityRenderer(CNBEntityTypes.MINIPAD.get(), MinipadRenderer::new);
         event.registerEntityRenderer(CNBEntityTypes.END_WHALE.get(), EndWhaleRenderer::new);
         event.registerEntityRenderer(CNBEntityTypes.CACTEM.get(), CactemRenderer::new);
+        event.registerEntityRenderer(CNBEntityTypes.CHESHIRE_TIGER.get(), com.cgessinger.creaturesandbeasts.client.entity.render.CheshireTigerRenderer::new);
         event.registerEntityRenderer(CNBEntityTypes.LIZARD_EGG.get(), manager -> new ThrownItemRenderer<>(manager, 1.0F, true));
         event.registerEntityRenderer(CNBEntityTypes.THROWN_CACTEM_SPEAR.get(), ThrownCactemSpearRenderer::new);
     }
