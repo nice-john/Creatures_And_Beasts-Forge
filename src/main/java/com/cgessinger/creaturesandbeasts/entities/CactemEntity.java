@@ -674,7 +674,15 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
                         } else if (tradeTime % 3 == 0) {
                             entityIn.lookAt(EntityAnchorArgument.Anchor.EYES, itemInstance.position());
-                            entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, itemInstance.getItem()), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
+                            // Use a fresh totem stack for the particle: by the time we
+                            // reach this branch the original itemInstance.getItem() has
+                            // been shrunk to count=0 (and the item entity discarded).
+                            // 1.21's ItemParticleOption ctor now validates against
+                            // empty stacks and throws IllegalArgumentException
+                            // ("Empty stacks are not allowed") — 1.20 had no such check.
+                            // The canUse() filter guarantees the traded item is always
+                            // a Totem of Undying, so reconstructing one is safe.
+                            entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.TOTEM_OF_UNDYING)), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
                         }
                     }
 
