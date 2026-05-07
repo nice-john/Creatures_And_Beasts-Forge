@@ -312,8 +312,23 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         return true;
     }
 
+    /**
+     * Cindershell spawn predicate. Belt-and-suspenders against "spawning in lava"
+     * reports: explicitly reject any spawn pos where the spawn block, the block
+     * below, or the block at hitbox-top contains lava, AND require the block
+     * below to be face-sturdy (real netherrack/basalt/etc., not a lava current
+     * surface). Y limit removed — biome filter (#forge:is_nether) is enough
+     * geographic restriction; the y<=50 cap concentrated cindershells in the
+     * lava-rich lower nether and made the in-lava reports more likely.
+     */
     public static boolean checkCindershellSpawnRules(EntityType<CindershellEntity> entity, LevelAccessor level, MobSpawnType mobSpawnType, BlockPos pos, RandomSource random) {
-        return pos.getY() <= 50;
+        net.minecraft.world.level.block.state.BlockState atState = level.getBlockState(pos);
+        net.minecraft.world.level.block.state.BlockState belowState = level.getBlockState(pos.below());
+        net.minecraft.world.level.block.state.BlockState aboveState = level.getBlockState(pos.above());
+        if (atState.getFluidState().is(net.minecraft.tags.FluidTags.LAVA)) return false;
+        if (belowState.getFluidState().is(net.minecraft.tags.FluidTags.LAVA)) return false;
+        if (aboveState.getFluidState().is(net.minecraft.tags.FluidTags.LAVA)) return false;
+        return belowState.isFaceSturdy(level, pos.below(), net.minecraft.core.Direction.UP);
     }
 
     @Override
