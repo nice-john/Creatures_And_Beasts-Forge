@@ -5,9 +5,11 @@
     {
       "biomes": "#c:is_nether",
       "category": "creature",
-      "weight": 40,
-      "min": 2,
-      "max": 8
+      "weight": 8,
+      "min": 1,
+      "max": 3,
+      "cost": 0.7,
+      "budget": 60.0
     }
   ]
 }

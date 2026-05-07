@@ -30,6 +30,8 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -180,8 +182,32 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         return true;
     }
 
+    /**
+     * Cindershell spawn predicate.
+     *
+     * <p>SpawnPlacementTypes.ON_GROUND already validates the block-below is sturdy
+     * (lava and other non-solid blocks fail {@code Block#isValidSpawn} via
+     * {@code isFaceSturdy}). But the heightmap pick can still land above a lava
+     * lake whose surface adjoins netherrack ledges — we get the "spawning in lava"
+     * reports because the spawn position itself sometimes intersects flowing lava
+     * or because the mob's hitbox overlaps a nearby lava block. Belt-and-suspenders:
+     * explicitly reject any spawn pos where the spawn block, the block below, or
+     * the block at hitbox-top contains lava.
+     *
+     * <p>Y range previously capped at 50, which concentrated cindershells near the
+     * lava-lake floor and made the in-lava reports more likely. Removed — biome
+     * filter (#c:is_nether via biome modifier) is enough geographic restriction.
+     */
     public static boolean checkCindershellSpawnRules(EntityType<CindershellEntity> entity, LevelAccessor level, MobSpawnType mobSpawnType, BlockPos pos, RandomSource random) {
-        return pos.getY() <= 50;
+        BlockState atState = level.getBlockState(pos);
+        BlockState belowState = level.getBlockState(pos.below());
+        BlockState aboveState = level.getBlockState(pos.above());
+        if (atState.getFluidState().is(FluidTags.LAVA)) return false;
+        if (belowState.getFluidState().is(FluidTags.LAVA)) return false;
+        if (aboveState.getFluidState().is(FluidTags.LAVA)) return false;
+        // Require an actual sturdy ground block (netherrack, basalt, magma block, etc.)
+        // so we never spawn balanced on the half-block surface of a lava current.
+        return belowState.isFaceSturdy(level, pos.below(), net.minecraft.core.Direction.UP);
     }
 
     @Override
