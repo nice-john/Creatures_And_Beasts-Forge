@@ -34,9 +34,18 @@ public final class AddCostedSpawnsBiomeModifier {
                 MobCategory.CREATURE, CNBEntityTypes.CACTEM, 10, 6, 13);
 
         // ── CINDERSHELL ─────────────────────────────────────────────────
+        // Lower weight (40 -> 8) and pack size (2-8 -> 1-3) per user feedback —
+        // packs of six showed up too frequently. Mob-charge throttle (cost 0.7,
+        // budget 60.0) caps local density so even when biome cycles fire we don't
+        // get cluster bursts. Tuning mirrors vanilla strider.
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(ConventionalBiomeTags.IN_NETHER),
-                MobCategory.CREATURE, CNBEntityTypes.CINDERSHELL, 40, 2, 8);
+                MobCategory.CREATURE, CNBEntityTypes.CINDERSHELL, 8, 1, 3);
+        BiomeModifications.create(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cindershell_spawn_cost"))
+                .add(ModificationPhase.ADDITIONS,
+                        ctx -> ctx.hasTag(ConventionalBiomeTags.IN_NETHER),
+                        (selector, modContext) ->
+                                modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.CINDERSHELL, 0.7D, 60.0D));
 
         // ── END WHALE ───────────────────────────────────────────────────
         BiomeModifications.addSpawn(
