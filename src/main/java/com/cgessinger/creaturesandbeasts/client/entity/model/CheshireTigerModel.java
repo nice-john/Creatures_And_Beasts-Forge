@@ -20,8 +20,12 @@ public class CheshireTigerModel extends GeoModel<CheshireTigerEntity> {
             ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cheshire_tiger/cheshire_tiger.geo.json");
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cheshire_tiger/cheshire_tiger.png");
+    // Animation file the user dropped in is `cheshire_tiger.animation.json`
+    // (Blockbench's default export). Our other entities use `<name>.json`,
+    // but matching the user's drop avoids a rename and the path is just a
+    // string GeckoLib opens directly.
     private static final ResourceLocation ANIMATIONS =
-            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cheshire_tiger.json");
+            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cheshire_tiger.animation.json");
 
     @Override
     public ResourceLocation getModelResource(CheshireTigerEntity entity) {
