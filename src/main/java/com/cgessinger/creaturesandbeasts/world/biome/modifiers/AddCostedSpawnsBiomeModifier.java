@@ -72,9 +72,20 @@ public final class AddCostedSpawnsBiomeModifier {
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(ConventionalBiomeTags.BADLANDS),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 23, 1, 4);
+        // Desert weight 23 -> 12 + mob-charge throttle. Vanilla deserts have no
+        // other CREATURE entries so the lizard was the sole pick at every CREATURE
+        // cycle there, and "Oh The Biomes We've Gone" tags many of its biomes
+        // c:is_desert which multiplied the effect. Strider-style charge cap
+        // (cost 0.7, budget 60.0) holds local density regardless of how many
+        // desert biomes the player wanders through.
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
-                MobCategory.CREATURE, CNBEntityTypes.LIZARD, 23, 1, 4);
+                MobCategory.CREATURE, CNBEntityTypes.LIZARD, 12, 1, 4);
+        BiomeModifications.create(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lizard_desert_spawn_cost"))
+                .add(ModificationPhase.ADDITIONS,
+                        ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
+                        (selector, modContext) ->
+                                modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.LIZARD, 0.7D, 60.0D));
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(ConventionalBiomeTags.JUNGLE),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 150, 1, 4);
