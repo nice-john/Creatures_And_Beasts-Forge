@@ -147,7 +147,16 @@ public class ConvertItemGoal extends Goal {
 
                     } else if (convertTime % 3 == 0) {
                         entityIn.lookAt(EntityAnchorArgument.Anchor.EYES, itemInstance.position());
-                        entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, itemInstance.getItem()), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
+                        // Use the sporeling's holding stack (the copy made at line 132
+                        // before we shrank the source) for the particle. itemInstance.getItem()
+                        // here is the ALREADY-SHRUNK source — count==0 if the original stack
+                        // had only one item, which trips 1.21's ItemParticleOption empty-stack
+                        // guard (Empty stacks are not allowed). 1.20 had no such check, so
+                        // this only crashes on the 1.21 line.
+                        ItemStack particleStack = entityIn.getHolding();
+                        if (!particleStack.isEmpty()) {
+                            entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, particleStack), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
+                        }
                     }
                 }
 
