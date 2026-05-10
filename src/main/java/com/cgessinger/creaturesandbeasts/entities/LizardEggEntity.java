@@ -29,8 +29,17 @@ public class LizardEggEntity extends ThrowableItemProjectile {
     @OnlyIn(Dist.CLIENT)
     public void handleEntityEvent(byte id) {
         if (id == 3) {
+            // ThrowableItemProjectile#getItem() returns the synced ITEM_STACK data, which
+            // defaults to ItemStack.EMPTY until setItem() is called. Normal throw flow
+            // (LizardEggItem#use) sets it, but /summon without an item leaves it empty —
+            // and 1.21's ItemParticleOption ctor rejects empty stacks ("Empty stacks are
+            // not allowed"). Fall back to a fresh default-item stack in that case.
+            net.minecraft.world.item.ItemStack particleStack = this.getItem();
+            if (particleStack.isEmpty()) {
+                particleStack = new net.minecraft.world.item.ItemStack(this.getDefaultItem());
+            }
             for (int i = 0; i < 8; ++i) {
-                this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, this.getItem()), this.getX(), this.getY(), this.getZ(), ((double) this.random.nextFloat() - 0.5D) * 0.08D, ((double) this.random.nextFloat() - 0.5D) * 0.08D, ((double) this.random.nextFloat() - 0.5D) * 0.08D);
+                this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, particleStack), this.getX(), this.getY(), this.getZ(), ((double) this.random.nextFloat() - 0.5D) * 0.08D, ((double) this.random.nextFloat() - 0.5D) * 0.08D, ((double) this.random.nextFloat() - 0.5D) * 0.08D);
             }
         }
 
