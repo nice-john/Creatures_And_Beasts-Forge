@@ -51,12 +51,18 @@ public final class AddCostedSpawnsBiomeModifier {
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
                 MobCategory.CREATURE, CNBEntityTypes.END_WHALE, 10, 1, 1);
-        // Density cap (charge 400, budget 1.0) so whales don't pack into a chunk.
+        // Mob-charge throttle. Was cost=400 budget=1.0 (ratio 160000), which gave
+        // an effective cutoff radius of ~400 blocks - one whale would block every
+        // other whale within the player's entire tracked range. User reported 20
+        // minutes of end exploration with zero whales.
+        // 3.0/6.0 (ratio 1.5) is a soft soft-cap: whales still throttle in dense
+        // clusters but exploration encounters work normally. Vanilla strider for
+        // reference uses 0.7/60 (ratio 0.008, basically no throttle).
         BiomeModifications.create(new ResourceLocation(CreaturesAndBeasts.MOD_ID, "end_whale_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
                         ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
                         (selector, modContext) ->
-                                modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.END_WHALE, 400.0D, 1.0D));
+                                modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.END_WHALE, 3.0D, 6.0D));
 
         // ── LILYTAD ─────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
