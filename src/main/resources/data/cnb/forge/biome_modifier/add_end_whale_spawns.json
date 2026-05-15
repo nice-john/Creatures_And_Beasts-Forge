@@ -5,9 +5,9 @@
     {
       "biomes": "#forge:is_end",
       "category": "creature",
-      "weight": 30,
-      "min": 1,
-      "max": 2,
+      "weight": 40,
+      "min": 3,
+      "max": 8,
       "cost": 3.0,
       "budget": 6.0
     }
