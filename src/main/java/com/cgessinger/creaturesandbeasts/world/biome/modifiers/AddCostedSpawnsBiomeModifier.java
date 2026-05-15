@@ -48,9 +48,13 @@ public final class AddCostedSpawnsBiomeModifier {
                                 modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.CINDERSHELL, 0.7D, 60.0D));
 
         // ── END WHALE ───────────────────────────────────────────────────
+        // Weight 10 -> 30 and max 1 -> 2: tripled weight makes end_whale more
+        // competitive in the CREATURE pool (relevant when other mods add CREATURE
+        // entries to end biomes) and the max=2 lets a spawn event produce a small
+        // pod, so a player wandering the end finds whales noticeably more often.
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
-                MobCategory.CREATURE, CNBEntityTypes.END_WHALE, 10, 1, 1);
+                MobCategory.CREATURE, CNBEntityTypes.END_WHALE, 30, 1, 2);
         // Mob-charge throttle. Was cost=400 budget=1.0 (ratio 160000), which gave
         // an effective cutoff radius of ~400 blocks - one whale would block every
         // other whale within the player's entire tracked range. User reported 20
