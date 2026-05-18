@@ -331,8 +331,19 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         return 12 + this.level().random.nextInt(5);
     }
 
+    /**
+     * Reject spawn attempts below y=50. NaturalSpawner.getRandomPosWithin picks
+     * Y uniformly between minBuildHeight and the WORLD_SURFACE heightmap height.
+     * In pure-void End chunks (most of them) WORLD_SURFACE is 0, so the picker
+     * returns y=0 or y=1 — whales spawn at the void floor where the player can't
+     * see them, fill the CREATURE mob cap, and block further spawns. End islands
+     * top out around y=70-80, so y>=50 catches mid-island and the soaring band
+     * above while filtering out invisible void-floor spawns. (NaturalSpawner
+     * downstream still rejects positions where the AABB collides with end stone,
+     * so we don't have to handle the "spawned inside an island" case.)
+     */
     public static boolean checkEndWhaleSpawnRules(EntityType<EndWhaleEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
-        return true;
+        return pos.getY() >= 50;
     }
 
     @Override
