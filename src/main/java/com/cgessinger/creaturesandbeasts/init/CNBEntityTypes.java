@@ -44,10 +44,15 @@ public class CNBEntityTypes {
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, MinipadEntity::new)
                     .dimensions(EntityDimensions.scalable(0.6f, 0.7f)).build());
 
+    // spawnableFarFromPlayer(): NaturalSpawner.canSpawnMobAt otherwise rejects
+    // candidates >128 blocks from the nearest player. End whales are large flying
+    // entities meant to soar — capping spawn attempts to a 128-block disk and
+    // watching them fly off cuts encounter rate dramatically.
     public static final EntityType<EndWhaleEntity> END_WHALE = Registry.register(
             BuiltInRegistries.ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "end_whale"),
             FabricEntityTypeBuilder.create(MobCategory.CREATURE, EndWhaleEntity::new)
+                    .spawnableFarFromPlayer()
                     .dimensions(EntityDimensions.scalable(3.0f, 1.5f)).build());
 
     public static final EntityType<CactemEntity> CACTEM = Registry.register(
