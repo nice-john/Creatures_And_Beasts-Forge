@@ -333,6 +333,16 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     @Override public boolean causeFallDamage(float a, float b, DamageSource c) { return false; }
     @Override protected void checkFallDamage(double a, boolean b, BlockState c, BlockPos d) {}
 
+    /**
+     * Default {@code Mob.getMaxSpawnClusterSize} is 4; vanilla pack-spawn caps any
+     * single spawn event at this number regardless of what the biome modifier
+     * asks for. We ask for max=8 in the biome modifier, so raising this lets the
+     * full pod actually spawn. (The "spawnableFarFromPlayer" half of this fix is
+     * on the {@code FabricEntityTypeBuilder} in {@code CNBEntityTypes} since
+     * it's builder-level state, not an entity-class override.)
+     */
+    @Override public int getMaxSpawnClusterSize() { return 8; }
+
     @Override
     protected PathNavigation createNavigation(Level level) {
         FlyingPathNavigation nav = new FlyingPathNavigation(this, level);
