@@ -40,9 +40,14 @@ public class CNBEntityTypes {
     public static final DeferredHolder<EntityType<?>, EntityType<MinipadEntity>> MINIPAD =
             ENTITY_TYPES.register("minipad", () -> EntityType.Builder.of(MinipadEntity::new, MobCategory.CREATURE)
                     .sized(0.6f, 0.7f).build(name("minipad")));
+    // canSpawnFarFromPlayer() on the builder: default is false, which means
+    // NaturalSpawner.canSpawnMobAt rejects spawn candidates >128 blocks from
+    // the nearest player. End whales are large flying entities meant to soar —
+    // confining spawns to a 128-block disk and watching them fly off cuts
+    // encounter rate dramatically.
     public static final DeferredHolder<EntityType<?>, EntityType<EndWhaleEntity>> END_WHALE =
             ENTITY_TYPES.register("end_whale", () -> EntityType.Builder.of(EndWhaleEntity::new, MobCategory.CREATURE)
-                    .sized(3.0f, 1.5f).build(name("end_whale")));
+                    .sized(3.0f, 1.5f).canSpawnFarFromPlayer().build(name("end_whale")));
     public static final DeferredHolder<EntityType<?>, EntityType<CactemEntity>> CACTEM =
             ENTITY_TYPES.register("cactem", () -> EntityType.Builder.of(CactemEntity::new, MobCategory.CREATURE)
                     .sized(0.75F, 1.0F).build(name("cactem")));
