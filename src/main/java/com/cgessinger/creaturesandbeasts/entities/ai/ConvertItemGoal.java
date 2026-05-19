@@ -17,6 +17,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.pathfinder.Path;
 
+import java.util.EnumSet;
 import java.util.List;
 
 public class ConvertItemGoal extends Goal {
@@ -35,6 +36,14 @@ public class ConvertItemGoal extends Goal {
         this.range = range;
         this.speed = speedIn;
         this.navigation = entityIn.getNavigation();
+        // Claim MOVE and LOOK so this goal blocks lower-priority goals using the
+        // same flags while it's active. Without this, tamed sporelings have
+        // FollowOwnerGoal (priority 3, claims MOVE) running concurrently with us
+        // (priority 2, no flags) — FollowOwnerGoal.tick() overwrites our path
+        // every tick and the sporeling never reaches the cursed item it spotted.
+        // Wild sporelings have no FollowOwnerGoal so were unaffected, which is
+        // why the user saw the behavior split cleanly along tamed/wild.
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
     }
 
     @Override
