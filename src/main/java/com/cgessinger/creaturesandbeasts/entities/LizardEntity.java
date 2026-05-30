@@ -46,10 +46,12 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -151,6 +153,12 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new PanicGoal(this, 1.25D));
         this.goalSelector.addGoal(2, new LizardBreedGoal(this, 1.0D));
+        // TemptGoal: previously absent, so apple slices set isFood=true (enabling breed)
+        // but the lizards wouldn't actually approach the player holding one — pairing two
+        // up required physically herding them. Adding it at priority 3 lets the player
+        // lure them together; canBeUsedToScare=false so a tempting player doesn't break
+        // panic from damage.
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.1D, Ingredient.of(CNBItems.APPLE_SLICE.get()), false));
         this.goalSelector.addGoal(3, new LizardLayEggGoal(this, 1.0D));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D) {
             @Override
@@ -255,10 +263,9 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         this.setPartying(false, null);
     }
 
-    @Override
-    public boolean canBeLeashed() {
-        return false;
-    }
+    // canBeLeashed: previously hard-overridden to false. Defaults from Mob now allow
+    // leashing as long as not already leashed — matches the user expectation of
+    // being able to drag two lizards together for breeding.
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
