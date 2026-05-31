@@ -10,7 +10,7 @@ plugins {
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 
-version = '1.7.16'
+version = '1.7.17'
 group = 'com.cgessinger.creaturesandbeasts'
 archivesBaseName = "CNB-1.21.1-neoforge"
 
