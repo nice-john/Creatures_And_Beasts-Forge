@@ -200,6 +200,11 @@ public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
     }
 
     @Override
+    public boolean requiresCustomPersistence() {
+        return super.requiresCustomPersistence() || this.hasCustomName();
+    }
+
+    @Override
     public boolean isFood(ItemStack stack) {
         return false;
     }
