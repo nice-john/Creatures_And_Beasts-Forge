@@ -6,12 +6,8 @@
     "#  "
   ],
   "key": {
-    "#": {
-      "item": "minecraft:stick"
-    },
-    "X": {
-      "item": "minecraft:string"
-    }
+    "#": "minecraft:stick",
+    "X": "minecraft:string"
   },
   "result": {
     "id": "cnb:entity_net"

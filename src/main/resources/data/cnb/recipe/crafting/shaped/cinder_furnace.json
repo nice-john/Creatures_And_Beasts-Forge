@@ -6,12 +6,8 @@
     "GXG"
   ],
   "key": {
-    "X": {
-      "item": "minecraft:nether_bricks"
-    },
-    "G": {
-      "item": "minecraft:gold_ingot"
-    }
+    "X": "minecraft:nether_bricks",
+    "G": "minecraft:gold_ingot"
   },
   "result": {
     "id": "cnb:cinder_furnace"

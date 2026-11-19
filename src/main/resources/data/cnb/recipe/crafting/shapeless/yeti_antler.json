@@ -1,9 +1,7 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "cnb:yeti_antler"
-    }
+    "cnb:yeti_antler"
   ],
   "result": {
     "id": "minecraft:bone_meal",
