@@ -1,5 +1,6 @@
 package com.cgessinger.creaturesandbeasts.init;
 
+import net.minecraft.world.entity.EntityTypes;
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.*;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;

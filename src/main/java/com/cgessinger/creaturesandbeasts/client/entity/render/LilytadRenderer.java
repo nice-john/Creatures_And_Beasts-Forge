@@ -1,50 +1,26 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import com.cgessinger.creaturesandbeasts.client.entity.model.LilytadModel;
 import com.cgessinger.creaturesandbeasts.entities.LilytadEntity;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.Identifier;
-import com.geckolib.cache.model.BakedGeoModel;
-import com.geckolib.renderer.GeoEntityRenderer;
 
-import org.jetbrains.annotations.Nullable;
+import com.geckolib.renderer.GeoEntityRenderer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
-public class LilytadRenderer extends GeoEntityRenderer<LilytadEntity> {
+public class LilytadRenderer extends GeoEntityRenderer<LilytadEntity, LivingEntityRenderState> {
     public LilytadRenderer(EntityRendererProvider.Context context) {
         super(context, new LilytadModel());
-        this.shadowRadius = 0.7F; // Set shadow size
+        this.shadowRadius = 0.7F;
     }
 
     @Override
-    public RenderType getRenderType(LilytadEntity animatable, Identifier texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
-        return RenderType.entityTranslucent(texture);
-    }
-
-    @Override
-    public void preRender(
-            PoseStack poseStack,
-            LilytadEntity animatable,
-            BakedGeoModel model,
-            MultiBufferSource bufferSource,
-            VertexConsumer buffer,
-            boolean isReRender,
-            float partialTick,
-            int packedLight,
-            int packedOverlay,
-            int colour) {
-        // Example: Adjust scale based on entity's state (e.g., baby size)
-        if (animatable.isBaby()) {
-            poseStack.scale(0.5F, 0.5F, 0.5F); // Scale down for baby entities
-        }
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    public RenderType getRenderType(LivingEntityRenderState renderState, Identifier texture) {
+        return RenderTypes.entityTranslucent(texture);
     }
 }
-

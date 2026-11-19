@@ -8,8 +8,8 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+
 
 public class CNBLootModifiers {
 
@@ -32,11 +32,11 @@ public class CNBLootModifiers {
             if (CINDERSHELL_LOOT.equals(key)) {
                 tableBuilder.withPool(
                         LootPool.lootPool()
-                                .setRolls(ConstantValue.exactly(1))
+                                .setRolls(ContextIntProviders.exactly(1))
                                 .when(LootItemRandomChanceCondition.randomChance(5f / 73f))
                                 .add(LootItem.lootTableItem(CNBItems.CINDERSHELL_SHELL_SHARD)
                                         .apply(net.minecraft.world.level.storage.loot.functions.SetItemCountFunction
-                                                .setCount(UniformGenerator.between(1, 3)))));
+                                                .setCount(ContextIntProviders.between(1, 3)))));
             }
         });
 

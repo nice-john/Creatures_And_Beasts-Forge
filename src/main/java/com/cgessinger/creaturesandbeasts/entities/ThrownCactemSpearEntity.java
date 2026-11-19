@@ -1,5 +1,9 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import net.minecraft.core.Holder;
@@ -57,23 +61,20 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
 
     // ---- Save/load (1.21 ItemStack save/load API takes a HolderLookup.Provider) ----
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         ItemStack spear = this.getSpear();
         if (!spear.isEmpty()) {
-            tag.put("CactemSpear", spear.save(this.registryAccess(), new CompoundTag()));
+            tag.store("CactemSpear", ItemStack.CODEC, spear);
         }
         tag.putBoolean("DealtDamage", this.dealtDamage);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("CactemSpear", 10)) {
-            ItemStack.parse(this.registryAccess(), tag.getCompound("CactemSpear"))
-                    .ifPresent(stack -> this.entityData.set(SPEAR, stack));
-        }
-        this.dealtDamage = tag.getBoolean("DealtDamage");
+        tag.read("CactemSpear", ItemStack.CODEC).ifPresent(stack -> this.entityData.set(SPEAR, stack));
+        this.dealtDamage = tag.getBooleanOr("DealtDamage", false);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         if (loyaltyLevel > 0 && (this.dealtDamage || this.isNoPhysics()) && owner != null) {
             if (!isAcceptibleReturnOwner()) {
                 if (!this.level().isClientSide() && this.pickup == AbstractArrow.Pickup.ALLOWED) {
-                    this.spawnAtLocation(this.getPickupItem(), 0.1F);
+                    this.spawnAtLocation((net.minecraft.server.level.ServerLevel) this.level(), this.getPickupItem(), 0.1F);
                 }
                 this.discard();
             } else {
@@ -166,8 +167,8 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         this.dealtDamage = true;
         SoundEvent soundEvent = SoundEvents.TRIDENT_HIT;
 
-        if (hit.hurt(source, damage)) {
-            if (hit.getType() == EntityType.ENDERMAN) return;
+        if (this.level() instanceof ServerLevel serverLevel && hit.hurtServer(serverLevel, source, damage)) {
+            if (hit.getType() == EntityTypes.ENDERMAN) return;
 
             if (hit instanceof LivingEntity hitLiving) {
                 // Fire Aspect: 4 sec/level burn (mirrors 1.20.1 behavior).

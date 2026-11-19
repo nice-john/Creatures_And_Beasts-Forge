@@ -86,7 +86,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
         this.goalSelector.addGoal(1, new MountAdultGoal(this, 1.2D));
         this.goalSelector.addGoal(2, new SmoothSwimGoal(this));
         this.goalSelector.addGoal(3, new PanicGoal(this, 1.0D));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, Ingredient.of(LITTLE_GREBE_FOOD), false));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, stack -> stack.is(LITTLE_GREBE_FOOD), false));
         this.goalSelector.addGoal(4, new BreedGoal(this, 1.0D));
         this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.25D));
         this.goalSelector.addGoal(6, new LittleGrebeEntity.LittleGrebeRandomStrollGoal(this, 1.0D, 60, 1));
@@ -143,11 +143,11 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel p_241840_1_, AgeableMob p_241840_2_) {
-        return CNBEntityTypes.LITTLE_GREBE.create(p_241840_1_);
+        return CNBEntityTypes.LITTLE_GREBE.create(p_241840_1_, EntitySpawnReason.BREEDING);
     }
 
     @Override
-    public boolean causeFallDamage(float distance, float damageMultiplier, DamageSource source) {
+    public boolean causeFallDamage(double distance, float damageMultiplier, DamageSource source) {
         return this.isBaby() && super.causeFallDamage(distance, damageMultiplier, source);
     }
 
@@ -213,7 +213,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return Ingredient.of(LITTLE_GREBE_FOOD).test(stack);
+        return stack.is(LITTLE_GREBE_FOOD);
     }
 
     @Override

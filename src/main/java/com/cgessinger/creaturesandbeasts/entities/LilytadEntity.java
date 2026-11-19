@@ -1,5 +1,7 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.entities.ai.FindWaterOneDeepGoal;
 import com.cgessinger.creaturesandbeasts.init.CNBLilytadTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
@@ -88,20 +90,20 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
+    public void readAdditionalSaveData(ValueInput compound) {
         super.readAdditionalSaveData(compound);
 
-        LilytadType type = LilytadType.getById(compound.getString("LilytadType"));
+        LilytadType type = LilytadType.getById(compound.getStringOr("LilytadType", ""));
         if (type == null) {
             type = CNBLilytadTypes.PINK;
         }
         this.setLilytadType(type);
-        this.shearedTimer = compound.getInt("ShearedTimer");
+        this.shearedTimer = compound.getIntOr("ShearedTimer", 0);
         this.setSheared(this.shearedTimer > 0);
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
+    public void addAdditionalSaveData(ValueOutput compound) {
         super.addAdditionalSaveData(compound);
         compound.putInt("ShearedTimer", this.shearedTimer);
         compound.putString("LilytadType", this.getLilytadType().getId().toString());
@@ -166,7 +168,7 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
     protected void pushEntities() {
         List<Entity> list = this.level().getEntities(this, this.getBoundingBox().inflate(0.2, 0, 0.2), EntitySelector.pushableBy(this));
         if (!list.isEmpty()) {
-            int i = this.level().getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+            int i = this.level() instanceof ServerLevel serverLevel ? serverLevel.getGameRules().get(GameRules.MAX_ENTITY_CRAMMING) : 0;
             if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {
                 int j = 0;
 
@@ -189,7 +191,7 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
     }
 
     @Override
-    public boolean canBeCollidedWith() {
+    public boolean canBeCollidedWith(net.minecraft.world.entity.Entity other) {
         return this.isAlive();
     }
 
@@ -245,13 +247,11 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
 
     /** vanilla Shearable.shear: drops the lilytad's variant-specific shear item. */
     @Override
-    public void shear(SoundSource source) {
-        this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, source, 1.0F, 1.0F);
+    public void shear(ServerLevel level, SoundSource source, ItemStack tool) {
+        level.playSound(null, this, SoundEvents.SHEEP_SHEAR, source, 1.0F, 1.0F);
         this.gameEvent(GameEvent.SHEAR);
-        if (!this.level().isClientSide()) {
-            this.setSheared(true);
-            this.spawnAtLocation(new ItemStack(this.getLilytadType().getShearItem()));
-        }
+        this.setSheared(true);
+        this.spawnAtLocation(level, new ItemStack(this.getLilytadType().getShearItem()));
     }
 
     public boolean shouldLookAround() {

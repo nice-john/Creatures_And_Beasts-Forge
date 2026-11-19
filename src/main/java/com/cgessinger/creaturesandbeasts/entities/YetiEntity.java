@@ -1,5 +1,8 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
 import com.google.common.collect.HashMultimap;
@@ -63,8 +66,10 @@ import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.keyframe.event.ParticleKeyframeEvent;
-import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
+import com.geckolib.animation.state.KeyFrameEvent;
+import com.geckolib.cache.animation.keyframeevent.ParticleKeyframeData;
+import com.geckolib.cache.animation.keyframeevent.SoundKeyframeData;
+import com.geckolib.animation.state.KeyFrameEvent;
 import com.geckolib.constant.dataticket.DataTicket;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.util.GeckoLibUtil;
@@ -88,9 +93,9 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     private final float babyHealth = 20.0F;
 
     private static final UniformInt PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
-    private int remainingPersistentAngerTime;
+    private long persistentAngerEndTime;
     @Nullable
-    private UUID persistentAngerTarget;
+    private EntityReference<LivingEntity> persistentAngerTarget;
 
     private int eatTimer;
     private int attackTimer;
@@ -116,8 +121,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         this.setPathfindingMalus(PathType.WATER, -1.0F);
         this.setPathfindingMalus(PathType.WATER_BORDER, -1.0F);
         this.setPathfindingMalus(PathType.LAVA, -1.0F);
-        this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
-        this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
+        this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 0.0F);
+        this.setPathfindingMalus(PathType.FIRE, 0.0F);
         this.setPathfindingMalus(PathType.LEAVES, -1.0F);
     }
 
@@ -131,16 +136,16 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
+    public void addAdditionalSaveData(ValueOutput compound) {
         super.addAdditionalSaveData(compound);
         compound.putBoolean("Passive", this.isPassive());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
+    public void readAdditionalSaveData(ValueInput compound) {
         super.readAdditionalSaveData(compound);
         if (compound.contains("Passive")) {
-            this.setPassive(compound.getBoolean("Passive"));
+            this.setPassive(compound.getBooleanOr("Passive", false));
         }
     }
 
@@ -226,29 +231,40 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     @Override
-    public int getRemainingPersistentAngerTime() {
-        return this.remainingPersistentAngerTime;
+    public long getPersistentAngerEndTime() {
+        return this.persistentAngerEndTime;
     }
 
     @Override
-    public void setRemainingPersistentAngerTime(int angerTime) {
-        this.remainingPersistentAngerTime = angerTime;
+    public void setPersistentAngerEndTime(long endTime) {
+        this.persistentAngerEndTime = endTime;
     }
 
     @Nullable
     @Override
-    public UUID getPersistentAngerTarget() {
+    public EntityReference<LivingEntity> getPersistentAngerTarget() {
         return this.persistentAngerTarget;
     }
 
     @Override
-    public void setPersistentAngerTarget(@Nullable UUID uuid) {
-        this.persistentAngerTarget = uuid;
+    public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> target) {
+        this.persistentAngerTarget = target;
     }
 
     @Override
     public void startPersistentAngerTimer() {
-        this.setRemainingPersistentAngerTime(PERSISTENT_ANGER_TIME.sample(this.random));
+        this.setTimeToRemainAngry(PERSISTENT_ANGER_TIME.sample(this.random));
+    }
+
+    // TamableAnimal moved owners to EntityReference; these keep the old UUID-based call sites.
+    @Nullable
+    public UUID getOwnerUUID() {
+        EntityReference<LivingEntity> ref = this.getOwnerReference();
+        return ref == null ? null : ref.getUUID();
+    }
+
+    public void setOwnerUUID(@Nullable UUID uuid) {
+        this.setOwnerReference(uuid == null ? null : EntityReference.of(uuid));
     }
 
     @Override
@@ -330,7 +346,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob mob) {
-        return CNBEntityTypes.YETI.create(level);
+        return CNBEntityTypes.YETI.create(level, EntitySpawnReason.BREEDING);
     }
 
     public void setEating(boolean isEating) {
@@ -431,14 +447,16 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
             this.playSound(CNBSoundEvents.YETI_HIT, this.getSoundVolume() * 0.3F, this.getVoicePitch());
 
-            this.doHurtTarget(entity);
+            if (this.level() instanceof ServerLevel serverLevel) {
+                this.doHurtTarget(serverLevel, entity);
+            }
         }
     }
 
 
     // 3) hurt: level -> level()
     @Override
-    public boolean hurt(DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         if (this.isBaby()) {
             List<YetiEntity> list = this.level().getEntitiesOfClass(
                     YetiEntity.class, this.getBoundingBox().inflate(8.0D, 4.0D, 8.0D));
@@ -455,7 +473,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             this.setPassive(false);
             this.setOwnerUUID(null);
         }
-        return super.hurt(source, amount);
+        return super.hurtServer(level, source, amount);
     }
 
     @Override
@@ -517,8 +535,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
 
-    private <E extends GeoAnimatable> void particleListener(ParticleKeyframeEvent<E> event) {
-        String effect = event.getKeyframeData().getEffect();
+    private void particleListener(KeyFrameEvent<YetiEntity, ParticleKeyframeData> event) {
+        String effect = event.keyframeData().getEffect();
 
         if ("eat.particle".equals(effect)) {
             spawnParticles(ParticleTypes.HAPPY_VILLAGER);
@@ -527,8 +545,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         // it can use Minecraft.getInstance().particleEngine on the client thread.
     }
 
-    private <E extends GeoAnimatable> void soundListener(SoundKeyframeEvent<E> event) {
-        String sound = event.getKeyframeData().getSound(); // already working
+    private void soundListener(KeyFrameEvent<YetiEntity, SoundKeyframeData> event) {
+        String sound = event.keyframeData().getSound(); // already working
 
         if ("hit.ground.sound".equals(sound)) {
             // play the sound (as before)
@@ -536,12 +554,12 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
             // spawn the particles at the same moment (client-only)
             if (this.level().isClientSide()) {
-                net.minecraft.client.particle.ParticleEngine pe = net.minecraft.client.Minecraft.getInstance().particleEngine;
+                
                 net.minecraft.core.BlockPos pos = this.blockPosition();
                 for (int x = pos.getX() - 1; x <= pos.getX() + 1; x++) {
                     for (int z = pos.getZ() - 1; z <= pos.getZ() + 1; z++) {
                         net.minecraft.core.BlockPos p = new net.minecraft.core.BlockPos(x, pos.getY() - 1, z);
-                        pe.destroy(p, this.level().getBlockState(p));
+                        this.level().addDestroyBlockEffect(p, this.level().getBlockState(p));
                     }
                 }
             }

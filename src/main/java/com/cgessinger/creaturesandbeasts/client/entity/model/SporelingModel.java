@@ -1,5 +1,6 @@
 package com.cgessinger.creaturesandbeasts.client.entity.model;
 
+import com.cgessinger.creaturesandbeasts.client.model.CnbGeoModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -8,10 +9,10 @@ import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBSporelingTypes;
 import com.cgessinger.creaturesandbeasts.util.SporelingType;
 import net.minecraft.resources.Identifier;
-import com.geckolib.model.GeoModel;
+
 
 @Environment(EnvType.CLIENT)
-public class SporelingModel extends GeoModel<SporelingEntity> {
+public class SporelingModel extends CnbGeoModel<SporelingEntity> {
     private static final Identifier SPORELING_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/sporeling.animation.json");
 
     private static final Identifier GOOMY_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy.geo.json");
@@ -24,7 +25,7 @@ public class SporelingModel extends GeoModel<SporelingEntity> {
     private static final Identifier SHRIMPSNAIL_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_shrimpsnail.png");
 
     @Override
-    public Identifier getModelResource(SporelingEntity entity) {
+    protected Identifier resolveModel(SporelingEntity entity) {
         if (entity.hasCustomName() && entity.getSporelingType().getHostility().equals(SporelingType.SporelingHostility.FRIENDLY)) {
             String customName = entity.getCustomName().getString();
             if (customName.equals("Bit0") || customName.equals("ListaCalista") || customName.equals("yungwilder")) {
@@ -39,7 +40,7 @@ public class SporelingModel extends GeoModel<SporelingEntity> {
     }
 
     @Override
-    public Identifier getTextureResource(SporelingEntity entity) {
+    protected Identifier resolveTexture(SporelingEntity entity) {
         if (entity.hasCustomName() && entity.getSporelingType().getHostility().equals(SporelingType.SporelingHostility.FRIENDLY)) {
             String customName = entity.getCustomName().getString();
             switch (customName) {

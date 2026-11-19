@@ -2,20 +2,19 @@ package com.cgessinger.creaturesandbeasts.client.particle;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
-public class CactemHealParticle extends TextureSheetParticle {
+public class CactemHealParticle extends SingleQuadParticle {
     private final SpriteSet sprites;
 
     public CactemHealParticle(ClientLevel level, double x, double y, double z, double motionX, double motionY, double motionZ, SpriteSet sprites) {
-        super(level, x, y, z);
+        super(level, x, y, z, sprites.first());
         this.xd = motionX;
         this.yd = motionY;
         this.zd = motionZ;
@@ -33,8 +32,8 @@ public class CactemHealParticle extends TextureSheetParticle {
     }
 
     @Override
-    public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+    protected SingleQuadParticle.Layer getLayer() {
+        return SingleQuadParticle.Layer.TRANSLUCENT;
     }
 
     @Environment(EnvType.CLIENT)
@@ -45,7 +44,9 @@ public class CactemHealParticle extends TextureSheetParticle {
             this.spriteSet = spriteSet;
         }
 
-        public Particle createParticle(SimpleParticleType typeIn, ClientLevel levelIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        @Override
+        public Particle createParticle(SimpleParticleType typeIn, ClientLevel levelIn, double x, double y, double z,
+                                       double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
             return new CactemHealParticle(levelIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet);
         }
     }

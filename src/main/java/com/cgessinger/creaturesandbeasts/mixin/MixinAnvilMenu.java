@@ -13,7 +13,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.DataSlot;
-import net.minecraft.world.item.ArmorItem;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.spongepowered.asm.mixin.Mixin;
@@ -49,14 +49,15 @@ public abstract class MixinAnvilMenu {
         if (left.isEmpty() || right.isEmpty()) return;
 
         // ── Yeti-hide reinforcement ───────────────────────────────────────────
-        if (left.getItem() instanceof ArmorItem armorItem && right.is(CNBItems.YETI_HIDE)) {
+        net.minecraft.world.item.equipment.Equippable equippable = left.get(DataComponents.EQUIPPABLE);
+        if (equippable != null && equippable.slot().isArmor() && right.is(CNBItems.YETI_HIDE)) {
             int current = left.getOrDefault(CNBDataComponents.HIDE_LAYERS, 0);
             int hideAmount = current + 1;
             if (hideAmount > CNBConfig.hideAmount) return; // cap reached → let vanilla handle
 
             ItemStack output = left.copy();
             output.set(CNBDataComponents.HIDE_LAYERS, hideAmount);
-            applyHideBonusToStack(output, armorItem.getEquipmentSlot(), hideAmount);
+            applyHideBonusToStack(output, equippable.slot(), hideAmount);
             cost.set(CNBConfig.hideCost);
             menu.getSlot(2).set(output);
             ci.cancel();

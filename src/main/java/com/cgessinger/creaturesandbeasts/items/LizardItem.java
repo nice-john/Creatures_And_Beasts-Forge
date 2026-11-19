@@ -1,5 +1,6 @@
 package com.cgessinger.creaturesandbeasts.items;
 
+import net.minecraft.world.entity.EntityTypes;
 import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
 import com.cgessinger.creaturesandbeasts.util.LizardType;
 import net.minecraft.core.BlockPos;

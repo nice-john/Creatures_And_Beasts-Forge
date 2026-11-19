@@ -8,8 +8,9 @@ import com.cgessinger.creaturesandbeasts.init.CNBParticleTypes;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.fabricmc.fabric.api.client.particle.v1.FabricSpriteSet;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import com.cgessinger.creaturesandbeasts.client.particle.CactemHealParticle;
@@ -36,7 +37,7 @@ public class CreaturesAndBeastsClient implements ClientModInitializer {
                 ThrownCactemSpearRenderer::new);
 
         // ── Model layers ─────────────────────────────────────────────────────
-        EntityModelLayerRegistry.registerModelLayer(CactemSpearModel.LAYER_LOCATION,
+        ModelLayerRegistry.registerModelLayer(CactemSpearModel.LAYER_LOCATION,
                 CactemSpearModel::createLayer);
 
         // ── GeckoLib armor renderers ─────────────────────────────────────────
@@ -49,14 +50,10 @@ public class CreaturesAndBeastsClient implements ClientModInitializer {
         // wiring through extension.
 
         // ── Particle factories ───────────────────────────────────────────────
-        ParticleFactoryRegistry.getInstance().register(
-                CNBParticleTypes.PINK_MINIPAD_FLOWER,       MinipadFlowerParticle.Factory::new);
-        ParticleFactoryRegistry.getInstance().register(
-                CNBParticleTypes.LIGHT_PINK_MINIPAD_FLOWER, MinipadFlowerParticle.Factory::new);
-        ParticleFactoryRegistry.getInstance().register(
-                CNBParticleTypes.YELLOW_MINIPAD_FLOWER,     MinipadFlowerParticle.Factory::new);
-        ParticleFactoryRegistry.getInstance().register(
-                CNBParticleTypes.CACTEM_HEAL_PARTICLE,      CactemHealParticle.Factory::new);
+        ParticleProviderRegistry.getInstance().register(CNBParticleTypes.PINK_MINIPAD_FLOWER, (FabricSpriteSet sprites) -> new MinipadFlowerParticle.Factory(sprites));
+        ParticleProviderRegistry.getInstance().register(CNBParticleTypes.LIGHT_PINK_MINIPAD_FLOWER, (FabricSpriteSet sprites) -> new MinipadFlowerParticle.Factory(sprites));
+        ParticleProviderRegistry.getInstance().register(CNBParticleTypes.YELLOW_MINIPAD_FLOWER, (FabricSpriteSet sprites) -> new MinipadFlowerParticle.Factory(sprites));
+        ParticleProviderRegistry.getInstance().register(CNBParticleTypes.CACTEM_HEAL_PARTICLE, (FabricSpriteSet sprites) -> new CactemHealParticle.Factory(sprites));
 
         // ── Misc client setup ────────────────────────────────────────────────
         CNBClient.init();

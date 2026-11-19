@@ -6,7 +6,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBiomeTags;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.MobCategory;
 
@@ -28,10 +28,10 @@ public final class AddCostedSpawnsBiomeModifier {
 
         // ── CACTEM ──────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.BADLANDS),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_BADLANDS),
                 MobCategory.CREATURE, CNBEntityTypes.CACTEM, 10, 6, 13);
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_DESERT),
                 MobCategory.CREATURE, CNBEntityTypes.CACTEM, 10, 6, 13);
 
         // ── CINDERSHELL ─────────────────────────────────────────────────
@@ -40,13 +40,13 @@ public final class AddCostedSpawnsBiomeModifier {
         // budget 60.0) caps local density so even when biome cycles fire we don't
         // get cluster bursts. Tuning mirrors vanilla strider.
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.IN_NETHER),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_NETHER),
                 MobCategory.CREATURE, CNBEntityTypes.CINDERSHELL, 8, 1, 3);
         BiomeModifications.create(Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cindershell_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
-                        ctx -> ctx.hasTag(ConventionalBiomeTags.IN_NETHER),
+                        ctx -> ctx.hasTag(ConventionalBiomeTags.IS_NETHER),
                         (selector, modContext) ->
-                                modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.CINDERSHELL, 0.7D, 60.0D));
+                                modContext.getMobSpawnSettings().addMobCharge(CNBEntityTypes.CINDERSHELL, 0.7D, 60.0D));
 
         // ── END WHALE ───────────────────────────────────────────────────
         // Weight 30 -> 40 and pack 1-2 -> 3-8 per user request: bigger pods make
@@ -56,7 +56,7 @@ public final class AddCostedSpawnsBiomeModifier {
         // the next pod can spawn nearby.
         if (CNBConfig.endWhaleSpawnWeight > 0) {
             BiomeModifications.addSpawn(
-                    ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
+                    ctx -> ctx.hasTag(ConventionalBiomeTags.IS_END),
                     MobCategory.CREATURE, CNBEntityTypes.END_WHALE, CNBConfig.endWhaleSpawnWeight, 3, 8);
         }
         // Mob-charge throttle. Was cost=400 budget=1.0 (ratio 160000), which gave
@@ -68,23 +68,23 @@ public final class AddCostedSpawnsBiomeModifier {
         // reference uses 0.7/60 (ratio 0.008, basically no throttle).
         BiomeModifications.create(Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "end_whale_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
-                        ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
+                        ctx -> ctx.hasTag(ConventionalBiomeTags.IS_END),
                         (selector, modContext) ->
-                                modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.END_WHALE, 3.0D, 6.0D));
+                                modContext.getMobSpawnSettings().addMobCharge(CNBEntityTypes.END_WHALE, 3.0D, 6.0D));
 
         // ── LILYTAD ─────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.SWAMP),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_SWAMP),
                 MobCategory.CREATURE, CNBEntityTypes.LILYTAD, 68, 1, 1);
 
         // ── LITTLE GREBE ────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.RIVER),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_RIVER),
                 MobCategory.CREATURE, CNBEntityTypes.LITTLE_GREBE, 53, 2, 3);
 
         // ── LIZARD ──────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.BADLANDS),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_BADLANDS),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 23, 1, 4);
         // Desert weight 23 -> 12 + mob-charge throttle. Vanilla deserts have no
         // other CREATURE entries so the lizard was the sole pick at every CREATURE
@@ -93,31 +93,31 @@ public final class AddCostedSpawnsBiomeModifier {
         // (cost 0.7, budget 60.0) holds local density regardless of how many
         // desert biomes the player wanders through.
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_DESERT),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 12, 1, 4);
         BiomeModifications.create(Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lizard_desert_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
-                        ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
+                        ctx -> ctx.hasTag(ConventionalBiomeTags.IS_DESERT),
                         (selector, modContext) ->
-                                modContext.getSpawnSettings().setSpawnCost(CNBEntityTypes.LIZARD, 0.7D, 60.0D));
+                                modContext.getMobSpawnSettings().addMobCharge(CNBEntityTypes.LIZARD, 0.7D, 60.0D));
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.JUNGLE),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_JUNGLE),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 150, 1, 4);
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.MUSHROOM),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_MUSHROOM),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 15, 1, 4);
 
         // ── MINIPAD ─────────────────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.SWAMP),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_SWAMP),
                 MobCategory.CREATURE, CNBEntityTypes.MINIPAD, 30, 3, 6);
 
         // ── SPORELING (overworld) ────────────────────────────────────────
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.MUSHROOM),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_MUSHROOM),
                 MobCategory.CREATURE, CNBEntityTypes.SPORELING, 30, 3, 5);
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.SWAMP),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_SWAMP),
                 MobCategory.CREATURE, CNBEntityTypes.SPORELING, 38, 3, 5);
         // No general convention tag for "lush caves" or "dark forest" — keep specific.
         BiomeModifications.addSpawn(
@@ -128,7 +128,7 @@ public final class AddCostedSpawnsBiomeModifier {
                 MobCategory.CREATURE, CNBEntityTypes.SPORELING, 105, 3, 5);
         // ── SPORELING (nether) ───────────────────────────────────────────
         // Per-biome weights differ (60/2/120) so we keep the matchers specific
-        // rather than collapsing to ConventionalBiomeTags.IN_NETHER.
+        // rather than collapsing to ConventionalBiomeTags.IS_NETHER.
         BiomeModifications.addSpawn(
                 AddCostedSpawnsBiomeModifier::isNetherWastes,
                 MobCategory.MONSTER, CNBEntityTypes.SPORELING, 90, 2, 4);
@@ -144,8 +144,8 @@ public final class AddCostedSpawnsBiomeModifier {
         // Fabric: c:snowy AND c:mountain — modded snowy mountain biomes
         // qualify automatically as long as the modder tagged them in.
         BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.SNOWY)
-                        && ctx.hasTag(ConventionalBiomeTags.MOUNTAIN),
+                ctx -> ctx.hasTag(ConventionalBiomeTags.IS_SNOWY)
+                        && ctx.hasTag(ConventionalBiomeTags.IS_MOUNTAIN),
                 MobCategory.CREATURE, CNBEntityTypes.YETI, 7, 2, 3);
     }
 

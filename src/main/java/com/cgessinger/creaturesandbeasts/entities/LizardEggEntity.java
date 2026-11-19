@@ -23,7 +23,7 @@ public class LizardEggEntity extends ThrowableItemProjectile {
     }
 
     public LizardEggEntity(Level worldIn, LivingEntity throwerIn) {
-        super(CNBEntityTypes.LIZARD_EGG, throwerIn, worldIn);
+        super(CNBEntityTypes.LIZARD_EGG, throwerIn, worldIn, new net.minecraft.world.item.ItemStack(CNBItems.LIZARD_EGG));
     }
 
     @Environment(EnvType.CLIENT)
@@ -39,7 +39,7 @@ public class LizardEggEntity extends ThrowableItemProjectile {
                 particleStack = new net.minecraft.world.item.ItemStack(this.getDefaultItem());
             }
             for (int i = 0; i < 8; ++i) {
-                this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, particleStack), this.getX(), this.getY(), this.getZ(), ((double) this.random.nextFloat() - 0.5D) * 0.08D, ((double) this.random.nextFloat() - 0.5D) * 0.08D, ((double) this.random.nextFloat() - 0.5D) * 0.08D);
+                this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, particleStack.getItem()), this.getX(), this.getY(), this.getZ(), ((double) this.random.nextFloat() - 0.5D) * 0.08D, ((double) this.random.nextFloat() - 0.5D) * 0.08D, ((double) this.random.nextFloat() - 0.5D) * 0.08D);
             }
         }
 
@@ -55,9 +55,9 @@ public class LizardEggEntity extends ThrowableItemProjectile {
         super.onHit(result);
         if (!this.level().isClientSide()) {
             if (this.random.nextFloat() > 0.3F) {
-                LizardEntity lizard = CNBEntityTypes.LIZARD.create(this.level());
+                LizardEntity lizard = CNBEntityTypes.LIZARD.create(this.level(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
                 lizard.setAge(-24000);
-                lizard.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                lizard.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                 this.level().addFreshEntity(lizard);
             }
 

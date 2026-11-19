@@ -1,5 +1,7 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.blocks.LizardEggBlock;
 import com.cgessinger.creaturesandbeasts.init.CNBBlocks;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
@@ -118,7 +120,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
+    public void addAdditionalSaveData(ValueOutput compound) {
         super.addAdditionalSaveData(compound);
         compound.putString("LizardType", this.getLizardType().getId().toString());
         compound.putBoolean("Sad", this.getSad());
@@ -126,19 +128,19 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
+    public void readAdditionalSaveData(ValueInput compound) {
         super.readAdditionalSaveData(compound);
-        LizardType type = LizardType.getById(compound.getString("LizardType"));
+        LizardType type = LizardType.getById(compound.getStringOr("LizardType", ""));
         if (type == null) {
             type = CNBLizardTypes.DESERT;
         }
         this.setLizardType(type);
         if (compound.contains("Sad")) {
-            setSad(compound.getBoolean("Sad"));
+            setSad(compound.getBooleanOr("Sad", false));
         }
 
         if (compound.contains("FromNet")) {
-            setFromNet(compound.getBoolean("FromNet"));
+            setFromNet(compound.getBooleanOr("FromNet", false));
         }
     }
 
@@ -158,7 +160,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         // up required physically herding them. Adding it at priority 3 lets the player
         // lure them together; canBeUsedToScare=false so a tempting player doesn't break
         // panic from damage.
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.1D, Ingredient.of(CNBItems.APPLE_SLICE), false));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.1D, stack -> stack.is(CNBItems.APPLE_SLICE), false));
         this.goalSelector.addGoal(3, new LizardLayEggGoal(this, 1.0D));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D) {
             @Override
@@ -258,8 +260,8 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    protected void actuallyHurt(DamageSource damageSrc, float damageAmount) {
-        super.actuallyHurt(damageSrc, damageAmount);
+    protected void actuallyHurt(ServerLevel level, DamageSource damageSrc, float damageAmount) {
+        super.actuallyHurt(level, damageSrc, damageAmount);
         this.setPartying(false, null);
     }
 
@@ -315,42 +317,42 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     @Override
     public void loadFromNetTag(CompoundTag compound) {
         if (compound.contains("NoAI")) {
-            this.setNoAi(compound.getBoolean("NoAI"));
+            this.setNoAi(compound.getBooleanOr("NoAI", false));
         }
 
         if (compound.contains("Silent")) {
-            this.setSilent(compound.getBoolean("Silent"));
+            this.setSilent(compound.getBooleanOr("Silent", false));
         }
 
         if (compound.contains("NoGravity")) {
-            this.setNoGravity(compound.getBoolean("NoGravity"));
+            this.setNoGravity(compound.getBooleanOr("NoGravity", false));
         }
 
         if (compound.contains("Glowing")) {
-            this.setGlowingTag(compound.getBoolean("Glowing"));
+            this.setGlowingTag(compound.getBooleanOr("Glowing", false));
         }
 
         if (compound.contains("Invulnerable")) {
-            this.setInvulnerable(compound.getBoolean("Invulnerable"));
+            this.setPermanentlyInvulnerable(compound.getBooleanOr("Invulnerable", false));
         }
 
-        if (compound.contains("Health", 99)) {
-            this.setHealth(compound.getFloat("Health"));
+        if (compound.contains("Health")) {
+            this.setHealth(compound.getFloatOr("Health", 0.0F));
         }
 
         if (compound.contains("Sad")) {
-            this.setSad(compound.getBoolean("Sad"));
+            this.setSad(compound.getBooleanOr("Sad", false));
         }
 
         if (compound.contains("LizardType")) {
-            LizardType type = LizardType.getById(compound.getString("LizardType"));
+            LizardType type = LizardType.getById(compound.getStringOr("LizardType", ""));
             if (type != null) {
                 this.setLizardType(type);
             }
         }
 
         if (compound.contains("FromNet")) {
-            this.setFromNet(compound.getBoolean("FromNet"));
+            this.setFromNet(compound.getBooleanOr("FromNet", false));
         }
     }
 
@@ -370,7 +372,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel world, AgeableMob entity) {
-        LizardEntity baby = CNBEntityTypes.LIZARD.create(world);
+        LizardEntity baby = CNBEntityTypes.LIZARD.create(world, EntitySpawnReason.BREEDING);
         if (baby != null) {
             baby.setLizardType(((LizardEntity) entity).getLizardType());
         }
@@ -508,7 +510,7 @@ static class LizardBreedGoal extends BreedGoal {
             this.animal.resetLove();
             this.partner.resetLove();
             RandomSource random = this.animal.getRandom();
-            if (this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+            if (this.level.getGameRules().get(GameRules.MOB_DROPS)) {
                 this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), random.nextInt(7) + 1));
             }
 

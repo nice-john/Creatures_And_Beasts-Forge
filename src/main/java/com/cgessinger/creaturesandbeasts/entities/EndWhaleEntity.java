@@ -1,5 +1,7 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +24,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Saddleable;
+
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -35,7 +37,7 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.ai.util.HoverRandomPos;
-import net.minecraft.world.entity.animal.FlyingAnimal;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -59,7 +61,7 @@ import java.util.EnumSet;
 
 import static com.cgessinger.creaturesandbeasts.init.CNBTags.Items.END_WHALE_FOOD;
 
-public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddleable, GeoAnimatable {
+public class EndWhaleEntity extends TamableAnimal implements GeoAnimatable {
     private static final EntityDataAccessor<Boolean> SADDLED =
             SynchedEntityData.defineId(EndWhaleEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -85,7 +87,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new EndWhaleTemptGoal(this, 1.25D, Ingredient.of(END_WHALE_FOOD)));
+        this.goalSelector.addGoal(0, new EndWhaleTemptGoal(this, 1.25D, stack -> stack.is(END_WHALE_FOOD)));
         this.goalSelector.addGoal(1, new EndWhaleWanderGoal(this));
     }
 
@@ -96,15 +98,15 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("Saddled", this.isSaddled());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.getBoolean("Saddled")) {
+        if (tag.getBooleanOr("Saddled", false)) {
             this.equipSaddle(ItemStack.EMPTY, SoundSource.PLAYERS);
         }
     }
@@ -118,21 +120,20 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     @Override public int getHeadRotSpeed() { return 20; }
 
     // Saddleable
-    @Override public boolean isSaddleable() { return this.isTame(); }
+    public boolean isSaddleable() { return this.isTame(); }
 
-    @Override
     public void equipSaddle(ItemStack stack, @Nullable SoundSource soundSource) {
         this.entityData.set(SADDLED, true);
-        this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, 1.0F);
+        this.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, 1.0F);
     }
 
     public void removeSaddle() {
         this.entityData.set(SADDLED, false);
-        this.spawnAtLocation(Items.SADDLE);
-        this.playSound(SoundEvents.HORSE_SADDLE, 0.8F, 1.0F);
+        this.spawnAtLocation((net.minecraft.server.level.ServerLevel) this.level(), Items.SADDLE);
+        this.playSound(SoundEvents.HORSE_SADDLE.value(), 0.8F, 1.0F);
     }
 
-    @Override public boolean isSaddled() { return this.entityData.get(SADDLED); }
+    public boolean isSaddled() { return this.entityData.get(SADDLED); }
 
     private void mountWhale(Player player) {
         if (!this.level().isClientSide()) {
@@ -188,7 +189,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     // Mount control helpers (1.20.x)
     @Override
-    public boolean isControlledByLocalInstance() {
+    protected boolean isLocalClientAuthoritative() {
         return this.getControllingPassenger() instanceof LivingEntity;
     }
 
@@ -232,7 +233,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
                 }
 
                 // Movement on controlling client
-                if (this.isControlledByLocalInstance()) {
+                if (this.isLocalInstanceAuthoritative()) {
                     this.setSpeed((float) this.getAttributeValue(Attributes.FLYING_SPEED));
 
                     Vec3 proposedMovement = new Vec3(0.0D, verticalMovement, forwardMovement);
@@ -257,7 +258,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
                 }
 
                 this.calculateEntityAnimation(false);
-                this.tryCheckInsideBlocks();
+                this.applyEffectsFromBlocks();
                 return;
             }
         }
@@ -296,7 +297,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
             return InteractionResult.CONSUME;
         } else if (this.isSaddled()) {
             this.mountWhale(player);
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+            return InteractionResult.SUCCESS;
         } else if (!this.isTame()) {
             if (itemstack.is(END_WHALE_FOOD)) {
                 if (!player.getAbilities().instabuild) itemstack.shrink(1);
@@ -328,7 +329,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob endWhale) { return null; }
 
     @Override
-    public int getBaseExperienceReward() {
+    public int getBaseExperienceReward(ServerLevel level) {
         return 12 + this.level().getRandom().nextInt(5);
     }
 
@@ -350,8 +351,8 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     @Override
     public float getWalkTargetValue(BlockPos pos, LevelReader level) { return 10.0F; }
 
-    @Override public boolean isFlying() { return true; }
-    @Override public boolean causeFallDamage(float a, float b, DamageSource c) { return false; }
+    public boolean isFlying() { return true; }
+    @Override public boolean causeFallDamage(double a, float b, DamageSource c) { return false; }
     @Override protected void checkFallDamage(double a, boolean b, BlockState c, BlockPos d) {}
 
     /**
@@ -369,7 +370,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         FlyingPathNavigation nav = new FlyingPathNavigation(this, level);
         nav.setCanOpenDoors(false);
         nav.setCanFloat(false);
-        nav.setCanPassDoors(false);
+        nav.getNodeEvaluator().setCanPassDoors(false);
         return nav;
     }
 
@@ -512,9 +513,9 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         private final double speedModifier;
         @Nullable protected Player player;
         private int calmDown;
-        private final Ingredient items;
+        private final java.util.function.Predicate<ItemStack> items;
 
-        public EndWhaleTemptGoal(EndWhaleEntity endWhale, double speedModifier, Ingredient temptIngredient) {
+        public EndWhaleTemptGoal(EndWhaleEntity endWhale, double speedModifier, java.util.function.Predicate<ItemStack> temptIngredient) {
             this.endWhale = endWhale;
             this.speedModifier = speedModifier;
             this.items = temptIngredient;

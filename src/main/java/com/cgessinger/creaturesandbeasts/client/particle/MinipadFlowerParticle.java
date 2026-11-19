@@ -2,20 +2,19 @@ package com.cgessinger.creaturesandbeasts.client.particle;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
-public class MinipadFlowerParticle extends TextureSheetParticle {
+public class MinipadFlowerParticle extends SingleQuadParticle {
     private final SpriteSet sprites;
 
     public MinipadFlowerParticle(ClientLevel level, double x, double y, double z, double motionX, double motionY, double motionZ, SpriteSet sprites) {
-        super(level, x, y, z);
+        super(level, x, y, z, sprites.first());
         this.xd = motionX;
         this.yd = motionY * 0.2F;
         this.zd = motionZ;
@@ -32,13 +31,13 @@ public class MinipadFlowerParticle extends TextureSheetParticle {
     }
 
     @Override
-    public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_LIT;
+    protected SingleQuadParticle.Layer getLayer() {
+        return SingleQuadParticle.Layer.bySprite(this.sprite);
     }
 
     @Override
-    public int getLightColor(float tick) {
-        int i = super.getLightColor(tick);
+    protected int getLightCoords(float tick) {
+        int i = super.getLightCoords(tick);
         int k = i >> 16 & 255;
         return 240 | k << 16;
     }
@@ -51,7 +50,9 @@ public class MinipadFlowerParticle extends TextureSheetParticle {
             this.spriteSet = spriteSet;
         }
 
-        public Particle createParticle(SimpleParticleType typeIn, ClientLevel levelIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        @Override
+        public Particle createParticle(SimpleParticleType typeIn, ClientLevel levelIn, double x, double y, double z,
+                                       double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
             return new MinipadFlowerParticle(levelIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet);
         }
     }

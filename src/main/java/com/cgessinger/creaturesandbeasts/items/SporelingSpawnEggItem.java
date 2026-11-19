@@ -1,5 +1,6 @@
 package com.cgessinger.creaturesandbeasts.items;
 
+import net.minecraft.world.entity.EntityTypes;
 import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

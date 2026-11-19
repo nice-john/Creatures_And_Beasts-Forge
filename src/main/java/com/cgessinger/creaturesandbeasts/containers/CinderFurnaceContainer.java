@@ -110,8 +110,11 @@ public class CinderFurnaceContainer extends AbstractContainerMenu {
     }
 
     protected boolean canSmelt(ItemStack stack) {
-        return this.level.getRecipeManager()
-                .getRecipeFor((RecipeType<AbstractCookingRecipe>) this.recipeType, new SingleRecipeInput(stack), this.level)
+        if (!(this.level instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
+            return false;
+        }
+        return serverLevel.recipeAccess()
+                .getRecipeFor((RecipeType<AbstractCookingRecipe>) this.recipeType, new SingleRecipeInput(stack), serverLevel)
                 .isPresent();
     }
 
@@ -157,7 +160,7 @@ public class CinderFurnaceContainer extends AbstractContainerMenu {
 
         @Override
         protected void checkTakeAchievements(ItemStack stack) {
-            stack.onCraftedBy(this.player.level(), this.player, this.removeCount);
+            stack.onCraftedBy(this.player, this.removeCount);
             if (this.player instanceof ServerPlayer serverPlayer && this.container instanceof CindershellEntity cindershell) {
                 cindershell.awardUsedRecipesAndPopExperience(serverPlayer);
             }

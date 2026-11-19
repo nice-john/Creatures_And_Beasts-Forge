@@ -1,5 +1,7 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.entities.ai.ConvertItemGoal;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
@@ -66,7 +68,6 @@ import com.geckolib.animation.*;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.animation.object.PlayState;
 import com.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.Nullable;
@@ -86,7 +87,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     private final NearestAttackableTargetGoal<Player> nearestAttackableTargetGoal = new NearestAttackableTargetGoal<>(this, Player.class, true);
     private final HurtByTargetGoal hurtByTargetGoal = new HurtByTargetGoal(this);
     private final WaveGoal waveGoal = new WaveGoal(this, Player.class, 8.0F);
-    private final TemptGoal temptGoal = new SporelingTemptGoal(this, 1.0D, Ingredient.of(SPORELING_FOOD), false);
+    private final TemptGoal temptGoal = new SporelingTemptGoal(this, 1.0D, stack -> stack.is(SPORELING_FOOD), false);
     private final PanicGoal panicGoal = new PanicGoal(this, 1.25D);
     private final ConvertItemGoal convertItemGoal = new ConvertItemGoal(this, 16.0D, 1.3D);
 
@@ -110,15 +111,15 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
+    public void addAdditionalSaveData(ValueOutput compound) {
         super.addAdditionalSaveData(compound);
         compound.putString("SporelingType", this.getSporelingType().getId().toString());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
+    public void readAdditionalSaveData(ValueInput compound) {
         super.readAdditionalSaveData(compound);
-        SporelingType type = SporelingType.getById(compound.getString("SporelingType"));
+        SporelingType type = SporelingType.getById(compound.getStringOr("SporelingType", ""));
         if (type == null) {
             type = CNBSporelingTypes.RED_OVERWORLD;
         }
@@ -134,13 +135,6 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
                 .add(Attributes.ATTACK_DAMAGE, 3.0D);
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-        if (this.getVehicle() != null) {
-            this.lerpYRot = 0.0F;
-        }
-    }
 
     @Override
     protected void registerGoals() {
@@ -286,11 +280,11 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     @Override
-    protected void actuallyHurt(DamageSource damageSource, float damage) {
+    protected void actuallyHurt(ServerLevel level, DamageSource damageSource, float damage) {
         if (damageSource.is(DamageTypes.IN_FIRE) && this.getSporelingType().getHostility() != FRIENDLY) {
             return; // Ignore fire damage if the Sporeling is not friendly
         }
-        super.actuallyHurt(damageSource, damage);
+        super.actuallyHurt(level, damageSource, damage);
     }
 
     @Override
@@ -454,9 +448,15 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         }
     }
 
+    // 26.x dropped Mob#shouldDespawnInPeaceful; hostile sporelings still vanish in peaceful.
     @Override
-    protected boolean shouldDespawnInPeaceful() {
-        return this.getSporelingType().getHostility() == SporelingType.SporelingHostility.HOSTILE;
+    public void checkDespawn() {
+        if (this.level().getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL
+                && this.getSporelingType().getHostility() == SporelingType.SporelingHostility.HOSTILE) {
+            this.discard();
+            return;
+        }
+        super.checkDespawn();
     }
 
     // Add these fields to your Sporeling class:
@@ -519,7 +519,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     }
 
     private <E extends GeoAnimatable> PlayState animationPredicate(AnimationTest<E> event) {
-        AnimationProcessor.QueuedAnimation currentAnimation = event.controller().getCurrentAnimation();
+        
 
         if (this.isPassenger()) {
             return PlayState.STOP;
@@ -527,10 +527,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
 
         if (this.isInSittingPose()) {
             event.controller().setAnimation(RawAnimation.begin().thenLoop("sporeling_sitting"));
-        } else if (currentAnimation != null &&
-                (currentAnimation.animation().name().equals("sporeling_sitting") ||
-                        currentAnimation.animation().name().equals("sporeling_stand")) &&
-                !this.isInSittingPose()) {
+        } else if ((event.isCurrentAnimationStage("sporeling_sitting") || event.isCurrentAnimationStage("sporeling_stand")) && !this.isInSittingPose()) {
             event.controller().setAnimation(RawAnimation.begin().thenPlay("sporeling_stand"));
         } else if (this.isAttacking()) {
             event.controller().setAnimation(RawAnimation.begin().thenPlay("sporeling_bite"));
@@ -634,7 +631,7 @@ static class WaveGoal extends LookAtPlayerGoal {
     static class SporelingTemptGoal extends TemptGoal {
         private final SporelingEntity sporelingEntity;
 
-        public SporelingTemptGoal(SporelingEntity sporeling, double speedModifier, Ingredient temptItems, boolean canScare) {
+        public SporelingTemptGoal(SporelingEntity sporeling, double speedModifier, java.util.function.Predicate<ItemStack> temptItems, boolean canScare) {
             super(sporeling, speedModifier, temptItems, canScare);
             this.sporelingEntity = sporeling;
         }

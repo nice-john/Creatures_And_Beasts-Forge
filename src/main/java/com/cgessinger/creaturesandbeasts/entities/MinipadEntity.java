@@ -1,5 +1,8 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.init.CNBMinipadTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
 import com.cgessinger.creaturesandbeasts.util.MinipadType;
@@ -33,7 +36,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.TryFindWaterGoal;
+
 import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.entity.animal.Animal;
@@ -98,20 +101,20 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
+    public void readAdditionalSaveData(ValueInput compound) {
         super.readAdditionalSaveData(compound);
 
-        MinipadType type = MinipadType.getById(compound.getString("MinipadType"));
+        MinipadType type = MinipadType.getById(compound.getStringOr("MinipadType", ""));
         if (type == null) {
             type = CNBMinipadTypes.PINK;
         }
         this.setMinipadType(type);
-        this.shearedTimer = compound.getInt("ShearedTimer");
+        this.shearedTimer = compound.getIntOr("ShearedTimer", 0);
         this.setSheared(this.shearedTimer > 0);
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
+    public void addAdditionalSaveData(ValueOutput compound) {
         super.addAdditionalSaveData(compound);
         compound.putInt("ShearedTimer", this.shearedTimer);
         compound.putString("MinipadType", this.getMinipadType().getId().toString());
@@ -143,7 +146,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
         }
 
         if (!this.level().isClientSide()) {
-            long time = this.level().getDayTime();
+            long time = this.level().getOverworldClockTime() % 24000L;
             this.setGlowing(time >= 13000 && time <= 23000);
         }
     }
@@ -191,7 +194,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
     protected void pushEntities() {
         List<Entity> list = this.level().getEntities(this, this.getBoundingBox().inflate(0.2, 0, 0.2), EntitySelector.pushableBy(this));
         if (!list.isEmpty()) {
-            int i = this.level().getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+            int i = this.level() instanceof ServerLevel serverLevel ? serverLevel.getGameRules().get(GameRules.MAX_ENTITY_CRAMMING) : 0;
             if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {
                 int j = 0;
 
@@ -214,7 +217,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
     }
 
     @Override
-    public boolean canBeCollidedWith() {
+    public boolean canBeCollidedWith(net.minecraft.world.entity.Entity other) {
         return this.isAlive();
     }
 
@@ -242,7 +245,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
     private void floatMinipad() {
         if (this.isInWater()) {
             CollisionContext collisioncontext = CollisionContext.of(this);
-            if (collisioncontext.isAbove(LiquidBlock.STABLE_SHAPE, this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.WATER)) {
+            if (collisioncontext.isAbove(Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D), this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.WATER)) {
                 this.setOnGround(true); // Use setOnGround instead of onGround
             } else {
                 this.setDeltaMovement(this.getDeltaMovement().scale(0.5D).add(0.0D, 0.1D, 0.0D));
@@ -303,16 +306,14 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
      * glowing flower.
      */
     @Override
-    public void shear(SoundSource source) {
-        this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, source, 1.0F, 1.0F);
+    public void shear(ServerLevel level, SoundSource source, ItemStack tool) {
+        level.playSound(null, this, SoundEvents.SHEEP_SHEAR, source, 1.0F, 1.0F);
         this.gameEvent(GameEvent.SHEAR);
-        if (!this.level().isClientSide()) {
-            this.setSheared(true);
-            ItemStack drop = this.level().getDayTime() > 13000
-                    ? new ItemStack(this.getMinipadType().getGlowShearItem())
-                    : new ItemStack(this.getMinipadType().getShearItem());
-            this.spawnAtLocation(drop);
-        }
+        this.setSheared(true);
+        ItemStack drop = this.level().getOverworldClockTime() % 24000L > 13000
+                ? new ItemStack(this.getMinipadType().getGlowShearItem())
+                : new ItemStack(this.getMinipadType().getShearItem());
+        this.spawnAtLocation(level, drop);
     }
 
     public boolean shouldLookAround() {
@@ -320,7 +321,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
     }
 
     @Override
-    public int getBaseExperienceReward() {
+    public int getBaseExperienceReward(ServerLevel level) {
         return 2 + this.level().getRandom().nextInt(3);
     }
 
@@ -508,23 +509,32 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
         }
     }
 
-     class MinipadTryFindWaterGoal extends TryFindWaterGoal {
+     class MinipadTryFindWaterGoal extends net.minecraft.world.entity.ai.goal.Goal {
         private final MinipadEntity minipad;
         private final double speedModifier;
 
         public MinipadTryFindWaterGoal(MinipadEntity minipad, double speedModifier) {
-            super(minipad);
             this.minipad = minipad;
             this.speedModifier = speedModifier;
+            this.setFlags(java.util.EnumSet.of(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE, net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            return this.minipad.onGround() && !this.minipad.level().getFluidState(this.minipad.blockPosition()).is(FluidTags.WATER);
         }
 
         @Override
         public void start() {
-                BlockPos blockpos = this.minipad.blockPosition();
-                BlockPos waterPos = this.minipad.level().getBlockState(blockpos).getCollisionShape(this.minipad.level(), blockpos).isEmpty() ? null : BlockPos.findClosestMatch(this.minipad.blockPosition(), 16, 5, (pos) -> this.minipad.level().getFluidState(pos).is(FluidTags.WATER)).orElse(null);
-                if (waterPos != null) {
-                    this.minipad.getNavigation().moveTo(waterPos.getX(), waterPos.getY(), waterPos.getZ(), this.speedModifier);
+            BlockPos origin = this.minipad.blockPosition();
+            if (this.minipad.level().getBlockState(origin).getCollisionShape(this.minipad.level(), origin).isEmpty()) {
+                return;
+            }
+            for (BlockPos pos : BlockPos.withinManhattan(origin, 16)) {
+                if (Math.abs(pos.getY() - origin.getY()) <= 5 && this.minipad.level().getFluidState(pos).is(FluidTags.WATER)) {
+                    this.minipad.getNavigation().moveTo(pos.getX(), pos.getY(), pos.getZ(), this.speedModifier);
+                    return;
                 }
+            }
         }
     }
-

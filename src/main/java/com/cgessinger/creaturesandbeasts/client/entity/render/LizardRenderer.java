@@ -1,51 +1,34 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
+import com.cgessinger.creaturesandbeasts.client.entity.model.LizardModel;
+import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
+import com.geckolib.constant.DefaultAnimations;
+import com.geckolib.renderer.base.BoneSnapshots;
+import com.geckolib.renderer.base.RenderPassInfo;
+
+import com.geckolib.renderer.GeoEntityRenderer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-
-import com.cgessinger.creaturesandbeasts.client.entity.model.LizardModel;
-import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
-import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
-import com.geckolib.renderer.GeoEntityRenderer;
-import com.geckolib.cache.model.BakedGeoModel;
-
-import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
-public class LizardRenderer extends GeoEntityRenderer<LizardEntity> {
+public class LizardRenderer extends GeoEntityRenderer<LizardEntity, LivingEntityRenderState> {
     public LizardRenderer(EntityRendererProvider.Context context) {
         super(context, new LizardModel());
         this.shadowRadius = 0.3F;
     }
 
     @Override
-    public RenderType getRenderType(LizardEntity animatable, Identifier texture, MultiBufferSource bufferSource, float partialTick) {
-        return RenderType.entityCutoutNoCull(texture);
+    public RenderType getRenderType(LivingEntityRenderState renderState, Identifier texture) {
+        return RenderTypes.entityCutout(texture);
     }
 
     @Override
-    public void preRender(
-            PoseStack poseStack,
-            LizardEntity animatable,
-            BakedGeoModel model,
-            MultiBufferSource bufferSource,
-            VertexConsumer buffer,
-            boolean isReRender,
-            float partialTick,
-            int packedLight,
-            int packedOverlay,
-            int colour) {
-        // Custom pre-render logic
-        if (animatable.isBaby()) {
-            poseStack.scale(0.5F, 0.5F, 0.5F); // Example of scaling the entity for baby models
-        }
-
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
-    }
-}
+    public void adjustModelBonesForRender(RenderPassInfo<LivingEntityRenderState> info, BoneSnapshots snapshots) {
+        super.adjustModelBonesForRender(info, snapshots);
+        DefaultAnimations.hardcodedHeadRotation(info, snapshots, "head_rotation");
+    }}

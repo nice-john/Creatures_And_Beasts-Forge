@@ -1,5 +1,9 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.containers.CinderFurnaceContainer;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
@@ -77,7 +81,8 @@ import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
+import com.geckolib.cache.animation.keyframeevent.SoundKeyframeData;
+import com.geckolib.animation.state.KeyFrameEvent;
 import com.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.Nullable;
@@ -106,7 +111,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         @Override public int get(int i) { return i == 0 ? cookingProgress : i == 1 ? cookingTotalTime : 0; }
         @Override public void set(int i, int v) { if (i == 0) cookingProgress = v; else if (i == 1) cookingTotalTime = v; }
     };
-    private final Object2IntOpenHashMap<Identifier> recipesUsed = new Object2IntOpenHashMap<>();
+    private final Object2IntOpenHashMap<ResourceKey<Recipe<?>>> recipesUsed = new Object2IntOpenHashMap<>();
 
     public CindershellEntity(EntityType<CindershellEntity> type, Level worldIn) {
         super(type, worldIn);
@@ -129,20 +134,20 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("FromBucket", this.fromBucket());
         tag.putBoolean("HasFurnace", this.hasFurnace());
-        ContainerHelper.saveAllItems(tag, this.items, this.registryAccess());
+        ContainerHelper.saveAllItems(tag, this.items);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        this.setFromBucket(tag.getBoolean("FromBucket"));
-        this.setFurnace(tag.getBoolean("HasFurnace"));
+        this.setFromBucket(tag.getBooleanOr("FromBucket", false));
+        this.setFurnace(tag.getBooleanOr("HasFurnace", false));
         this.items.clear();
-        ContainerHelper.loadAllItems(tag, this.items, this.registryAccess());
+        ContainerHelper.loadAllItems(tag, this.items);
     }
 
     @Override
@@ -150,7 +155,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         this.goalSelector.addGoal(0, new CindershellFloatGoal(this));
         this.goalSelector.addGoal(1, new PanicGoal(this, 1.25D));
         this.goalSelector.addGoal(2, new CindershellBreedGoal(this, 1.0D));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, Ingredient.of(CINDERSHELL_FOOD), false));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, stack -> stack.is(CINDERSHELL_FOOD), false));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
@@ -210,7 +215,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return Ingredient.of(CINDERSHELL_FOOD).test(stack);
+        return stack.is(CINDERSHELL_FOOD);
     }
 
     public InteractionResult tryStartEat(Player player, ItemStack stack) {
@@ -228,7 +233,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
                 this.playSound(CNBSoundEvents.CINDERSHELL_BABY_EAT, 1.3F, 1F);
                 this.usePlayerItem(player, player.getUsedItemHand(), stack);
                 this.ageUp((int) (-i / 20F * 0.1F), true);
-                return InteractionResult.sidedSuccess(this.level().isClientSide());
+                return InteractionResult.SUCCESS;
             }
             if (this.level().isClientSide()) {
                 return InteractionResult.CONSUME;
@@ -258,21 +263,21 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
             if (!player.getAbilities().instabuild) {
                 item.shrink(1);
             }
-            this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+            this.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+            return InteractionResult.SUCCESS;
         } else if (this.hasFurnace() && player.isSecondaryUseActive()) {
             // Shift-right-click while furnace is mounted: drop it back (along with any contents).
             if (!this.level().isClientSide()) {
-                this.spawnAtLocation(com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE);
+                this.spawnAtLocation((net.minecraft.server.level.ServerLevel) this.level(), com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE);
                 for (int i = 0; i < this.items.size(); i++) {
                     ItemStack stack = this.items.get(i);
-                    if (!stack.isEmpty()) this.spawnAtLocation(stack);
+                    if (!stack.isEmpty()) this.spawnAtLocation((net.minecraft.server.level.ServerLevel) this.level(), stack);
                 }
                 this.clearContent();
                 this.setFurnace(false);
-                this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.8F);
+                this.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.8F);
             }
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+            return InteractionResult.SUCCESS;
         } else if (this.hasFurnace()) {
             if (!this.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
                 // Fabric: vanilla ServerPlayer.openMenu(MenuProvider). Forge/NeoForge added a
@@ -280,7 +285,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
                 // pass any extra payload, so the simple vanilla form suffices.
                 serverPlayer.openMenu(this);
             }
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+            return InteractionResult.SUCCESS;
         } else if (this.isFood(item) && !this.getEating()) {
             return this.tryStartEat(player, item);
         }
@@ -320,7 +325,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob mob) {
-        return CNBEntityTypes.CINDERSHELL.create(level);
+        return CNBEntityTypes.CINDERSHELL.create(level, EntitySpawnReason.BREEDING);
     }
 
     @Override
@@ -329,7 +334,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     }
 
     @Override
-    public boolean causeFallDamage(float distance, float damageMultiplier, DamageSource source) {
+    public boolean causeFallDamage(double distance, float damageMultiplier, DamageSource source) {
         return false;
     }
 
@@ -420,14 +425,15 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     // ---- Cooking ----
     private Optional<RecipeHolder<? extends AbstractCookingRecipe>> findRecipe(ItemStack input) {
         if (input.isEmpty()) return Optional.empty();
-        return this.level().getRecipeManager()
-                .getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(input), this.level())
+        if (!(this.level() instanceof ServerLevel serverLevel)) return Optional.empty();
+        return serverLevel.recipeAccess()
+                .getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(input), serverLevel)
                 .map(h -> (RecipeHolder<? extends AbstractCookingRecipe>) h);
     }
 
     private boolean canBurn(@Nullable RecipeHolder<? extends AbstractCookingRecipe> holder, NonNullList<ItemStack> stack, int maxStack) {
         if (holder == null || stack.get(0).isEmpty()) return false;
-        ItemStack assembled = holder.value().assemble(new SingleRecipeInput(stack.get(0)), this.level().registryAccess());
+        ItemStack assembled = holder.value().assemble(new SingleRecipeInput(stack.get(0)));
         if (assembled.isEmpty()) return false;
         ItemStack current = stack.get(1);
         if (current.isEmpty()) return true;
@@ -439,7 +445,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     private boolean smelt(@Nullable RecipeHolder<? extends AbstractCookingRecipe> holder, NonNullList<ItemStack> stack, int maxStack) {
         if (!canBurn(holder, stack, maxStack)) return false;
         ItemStack input = stack.get(0);
-        ItemStack assembled = holder.value().assemble(new SingleRecipeInput(input), this.level().registryAccess());
+        ItemStack assembled = holder.value().assemble(new SingleRecipeInput(input));
         ItemStack current = stack.get(1);
         if (current.isEmpty()) {
             stack.set(1, assembled.copy());
@@ -453,7 +459,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     private int getTotalCookTime() {
         Optional<RecipeHolder<? extends AbstractCookingRecipe>> opt = findRecipe(this.items.get(0));
         if (opt.isEmpty()) return 200;
-        int base = opt.get().value().getCookingTime();
+        int base = opt.get().value().cookingTime();
         // Cooks at base speed in the Nether, slower elsewhere (~67% slower) — matches original 1.18 behavior.
         boolean inNether = this.level().dimension().equals(Level.NETHER);
         return (int) (base * (inNether ? 1.0F : 1.667F));
@@ -468,10 +474,10 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     public void awardUsedRecipesAndPopExperience(ServerPlayer player) {
         List<RecipeHolder<?>> list = new ArrayList<>();
         for (var entry : this.recipesUsed.object2IntEntrySet()) {
-            player.serverLevel().getRecipeManager().byKey(entry.getKey()).ifPresent(holder -> {
+            player.level().recipeAccess().byKey(entry.getKey()).ifPresent(holder -> {
                 list.add(holder);
                 if (holder.value() instanceof AbstractCookingRecipe cooking) {
-                    createExperience(player.serverLevel(), player.position(), entry.getIntValue(), cooking.getExperience());
+                    createExperience(player.level(), player.position(), entry.getIntValue(), cooking.experience());
                 }
             });
         }
@@ -540,12 +546,12 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
             state.controller().setAnimation(RawAnimation.begin().thenPlay("cindershell_eat"));
             return PlayState.CONTINUE;
         }
-        state.controller().forceAnimationReset();
+        state.controller().reset();
         return PlayState.STOP;
     }
 
-    private <E extends GeoAnimatable> void soundListener(SoundKeyframeEvent<E> event) {
-        String sound = event.getKeyframeData().getSound();
+    private void soundListener(KeyFrameEvent<CindershellEntity, SoundKeyframeData> event) {
+        String sound = event.keyframeData().getSound();
         if (sound.equals("cindershell_eat")) {
             LocalPlayer player = Minecraft.getInstance().player;
             if (player != null) {
@@ -621,16 +627,16 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     // ---- Drop equipment on death ----
     // If furnace is mounted, drop it back as an item plus any contents.
     @Override
-    protected void dropEquipment() {
-        super.dropEquipment();
+    protected void dropEquipment(ServerLevel level) {
+        super.dropEquipment(level);
         if (this.hasFurnace()) {
-            this.playSound(SoundEvents.HORSE_SADDLE, 1.0F,
+            this.playSound(SoundEvents.HORSE_SADDLE.value(), 1.0F,
                     (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.8F);
             if (!this.level().isClientSide()) {
-                this.spawnAtLocation(com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE);
+                this.spawnAtLocation((net.minecraft.server.level.ServerLevel) this.level(), com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE);
                 for (int i = 0; i < this.items.size(); i++) {
                     ItemStack stack = this.items.get(i);
-                    if (!stack.isEmpty()) this.spawnAtLocation(stack);
+                    if (!stack.isEmpty()) this.spawnAtLocation((net.minecraft.server.level.ServerLevel) this.level(), stack);
                 }
                 this.clearContent();
             }
@@ -642,9 +648,9 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     // 1.20.1 used handleNetherPortal; in 1.21 we override canChangeDimensions which gates the
     // dimension-transition step. Visual portal effect still plays but the entity stays put.
     @Override
-    public boolean canChangeDimensions(net.minecraft.world.level.Level oldLevel, net.minecraft.world.level.Level newLevel) {
+    public boolean canTeleport(net.minecraft.world.level.Level oldLevel, net.minecraft.world.level.Level newLevel) {
         if (this.hasFurnace()) return false;
-        return super.canChangeDimensions(oldLevel, newLevel);
+        return super.canTeleport(oldLevel, newLevel);
     }
 
     static class CindershellFloatGoal extends FloatGoal {

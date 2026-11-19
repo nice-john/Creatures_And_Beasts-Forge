@@ -1,60 +1,37 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
+import com.cgessinger.creaturesandbeasts.client.entity.model.MinipadModel;
+import com.cgessinger.creaturesandbeasts.entities.MinipadEntity;
+import com.geckolib.renderer.GeoEntityRenderer;
+import com.geckolib.renderer.base.RenderPassInfo;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-
-import com.cgessinger.creaturesandbeasts.client.entity.model.MinipadModel;
-import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
-import com.cgessinger.creaturesandbeasts.entities.MinipadEntity;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
-import com.geckolib.cache.model.BakedGeoModel;
-import com.geckolib.cache.model.GeoBone;
-import com.geckolib.renderer.GeoEntityRenderer;
-
-import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
-public class MinipadRenderer extends GeoEntityRenderer<MinipadEntity> {
+public class MinipadRenderer extends GeoEntityRenderer<MinipadEntity, LivingEntityRenderState> {
     public MinipadRenderer(EntityRendererProvider.Context context) {
         super(context, new MinipadModel());
-        this.addRenderLayer(new MinipadGlowLayer(this)); // Updated to `addRenderLayer`
+        this.withRenderLayer(new MinipadGlowLayer(this));
         this.shadowRadius = 0.4F;
     }
 
     @Override
-    public RenderType getRenderType(MinipadEntity animatable, Identifier texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
-        // Updated signature and implementation
-        return RenderType.entityTranslucent(texture);
+    public RenderType getRenderType(LivingEntityRenderState renderState, Identifier texture) {
+        return RenderTypes.entityTranslucent(texture);
     }
 
+    // Adults render at 0.8x (babies are scaled by the entity's age scale).
     @Override
-    public void preRender(
-            PoseStack poseStack,
-            MinipadEntity animatable,
-            BakedGeoModel model,
-            MultiBufferSource bufferSource,
-            VertexConsumer buffer,
-            boolean isReRender,
-            float partialTick,
-            int packedLight,
-            int packedOverlay,
-            int colour) {
-        // Scale the model based on the entity's size
-        if (animatable.isBaby()) {
-            poseStack.scale(0.5F, 0.5F, 0.5F);
-        } else {
-            poseStack.scale(0.8F, 0.8F, 0.8F);
+    public void scaleModelForRender(RenderPassInfo<LivingEntityRenderState> info, float widthScale, float heightScale) {
+        if (!info.renderState().isBaby) {
+            widthScale *= 0.8F;
+            heightScale *= 0.8F;
         }
-
-        // Call the superclass implementation
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+        super.scaleModelForRender(info, widthScale, heightScale);
     }
-
-
 }
-

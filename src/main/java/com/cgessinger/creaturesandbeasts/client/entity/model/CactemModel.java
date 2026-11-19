@@ -1,11 +1,12 @@
 package com.cgessinger.creaturesandbeasts.client.entity.model;
 
+import com.cgessinger.creaturesandbeasts.client.model.CnbGeoModel;
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
 import net.minecraft.resources.Identifier;
-import com.geckolib.model.GeoModel;
 
-public class CactemModel extends GeoModel<CactemEntity> {
+
+public class CactemModel extends CnbGeoModel<CactemEntity> {
     private static final Identifier ELDER_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/elder_cactem.geo.json");
     private static final Identifier WARRIOR_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/warrior_cactem.geo.json");
     private static final Identifier BABY_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/baby_cactem.geo.json");
@@ -17,7 +18,7 @@ public class CactemModel extends GeoModel<CactemEntity> {
     private static final Identifier CACTEM_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cactem.animation.json");
 
     @Override
-    public Identifier getModelResource(CactemEntity entity) {
+    protected Identifier resolveModel(CactemEntity entity) {
         if (entity.isBaby()) {
             return BABY_CACTEM_MODEL;
         } else if (entity.isElder()) {
@@ -28,7 +29,7 @@ public class CactemModel extends GeoModel<CactemEntity> {
     }
 
     @Override
-    public Identifier getTextureResource(CactemEntity entity) {
+    protected Identifier resolveTexture(CactemEntity entity) {
         if (entity.isBaby()) {
             return BABY_CACTEM_TEXTURE;
         } else if (entity.isElder()) {

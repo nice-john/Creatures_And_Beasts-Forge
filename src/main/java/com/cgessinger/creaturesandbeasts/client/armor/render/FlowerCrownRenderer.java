@@ -1,68 +1,40 @@
 package com.cgessinger.creaturesandbeasts.client.armor.render;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import com.cgessinger.creaturesandbeasts.client.armor.model.FlowerCrownModel;
 import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
 import com.cgessinger.creaturesandbeasts.items.GlowingFlowerCrownItem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
-import com.geckolib.cache.model.BakedGeoModel;
+import com.geckolib.constant.dataticket.DataTicket;
 import com.geckolib.renderer.GeoArmorRenderer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
-public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
-    private ItemStack armorItem;
+public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem, HumanoidRenderState> {
+    private static final DataTicket<Boolean> GLOWING = DataTicket.create("cnb_glowing_crown", Boolean.class);
 
     public FlowerCrownRenderer() {
         super(new FlowerCrownModel());
-        // Bone-to-slot binding is handled by GeckoLib via the `armorHead` bone name in
-        // flower_crown.geo.json — see grabRelevantBones() in GeoArmorRenderer (it scans
-        // for the literal strings armorHead/armorBody/armorRight*/armorLeft* and pins
-        // each to the matching HumanoidModel part). Renaming the model's only bone from
-        // "group" to "armorHead" is what makes the crown follow the player's head
-        // rotation and inherit the head's transform / scale.
     }
 
     @Override
-    public void preRender(
-            PoseStack poseStack,
-            FlowerCrownItem animatable,
-            BakedGeoModel model,
-            MultiBufferSource bufferSource,
-            VertexConsumer buffer,
-            boolean isReRender,
-            float partialTick,
-            int packedLight,
-            int packedOverlay,
-            int colour
-    ) {
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    public void addRenderData(FlowerCrownItem item, GeoArmorRenderer.RenderData relatedObject, HumanoidRenderState renderState, float partialTick) {
+        super.addRenderData(item, relatedObject, renderState, partialTick);
+        renderState.addGeckolibData(GLOWING, item instanceof GlowingFlowerCrownItem);
     }
 
     /**
-     * Only the {@link GlowingFlowerCrownItem} variant should render full-bright at
-     * night. The previous implementation unconditionally returned
-     * {@code RenderType.eyes(texture)} (the same render type vanilla uses for
-     * spider/enderman eyes) for the regular crown too, which made it glow visibly
-     * in the dark even though it isn't the glowing variant. Defer to the default
-     * armor render type for the plain crown.
+     * Only the {@link GlowingFlowerCrownItem} variant renders full-bright at night; the plain crown
+     * uses the default armor render type.
      */
     @Override
-    public RenderType getRenderType(FlowerCrownItem animatable, Identifier texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
-        if (animatable instanceof GlowingFlowerCrownItem) {
-            return RenderType.eyes(texture);
+    public RenderType getRenderType(HumanoidRenderState renderState, Identifier texture) {
+        if (renderState.getOrDefaultGeckolibData(GLOWING, false)) {
+            return RenderTypes.eyes(texture);
         }
-        return super.getRenderType(animatable, texture, bufferSource, partialTick);
-    }
-
-    public ItemStack getCurrentItem() {
-        return this.armorItem;
+        return super.getRenderType(renderState, texture);
     }
 }
