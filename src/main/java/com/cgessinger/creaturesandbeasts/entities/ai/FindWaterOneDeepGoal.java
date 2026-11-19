@@ -1,10 +1,10 @@
 package com.cgessinger.creaturesandbeasts.entities.ai;
 
+import com.cgessinger.creaturesandbeasts.util.BlockSearch;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.goal.TryFindWaterGoal;
 import net.minecraft.world.level.BlockGetter;
 
 import javax.annotation.Nullable;
@@ -42,7 +42,7 @@ public class FindWaterOneDeepGoal extends TryFindWaterGoal {
     protected BlockPos lookForWaterOneDeep(BlockGetter blockGetter, Entity entity, int horizontalRange) {
         BlockPos blockpos = entity.blockPosition();
         return !blockGetter.getBlockState(blockpos).getCollisionShape(blockGetter, blockpos).isEmpty() ? null :
-                BlockPos.findClosestMatch(entity.blockPosition(), horizontalRange, 10, (pos) ->
+                BlockSearch.findClosestMatch(entity.blockPosition(), horizontalRange, 10, (pos) ->
                         blockGetter.getFluidState(pos).is(FluidTags.WATER) &&
                                 blockGetter.getBlockState(pos.below()).isSolid() && // Updated to use isSolid()
                                 blockGetter.getBlockState(pos.above()).isAir()

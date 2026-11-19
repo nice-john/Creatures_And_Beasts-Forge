@@ -5,7 +5,8 @@ import com.cgessinger.creaturesandbeasts.init.CNBLilytadTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
 import com.cgessinger.creaturesandbeasts.util.LilytadType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -22,7 +23,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,27 +37,27 @@ import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.IShearable;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
+public class LilytadEntity extends Animal implements IShearable, GeoEntity {
     public static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Boolean> SHEARED = SynchedEntityData.defineId(LilytadEntity.class, EntityDataSerializers.BOOLEAN);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -86,23 +87,23 @@ public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
-        super.readAdditionalSaveData(compound);
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
 
-        LilytadType type = LilytadType.getById(compound.getString("LilytadType"));
+        LilytadType type = LilytadType.getById(input.getStringOr("LilytadType", ""));
         if (type == null) {
             type = CNBLilytadTypes.PINK;
         }
         this.setLilytadType(type);
-        this.shearedTimer = compound.getInt("ShearedTimer");
+        this.shearedTimer = input.getIntOr("ShearedTimer", 0);
         this.setSheared(this.shearedTimer > 0);
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
-        super.addAdditionalSaveData(compound);
-        compound.putInt("ShearedTimer", this.shearedTimer);
-        compound.putString("LilytadType", this.getLilytadType().getId().toString());
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("ShearedTimer", this.shearedTimer);
+        output.putString("LilytadType", this.getLilytadType().getId().toString());
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -139,7 +140,7 @@ public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData spawnGroupData) {
         switch (this.random.nextInt(3)) {
             case 0:
             default:
@@ -156,26 +157,28 @@ public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
         return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
     }
 
-    public static boolean checkLilytadSpawnRules(EntityType<LilytadEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
+    public static boolean checkLilytadSpawnRules(EntityType<LilytadEntity> animal, LevelAccessor worldIn, EntitySpawnReason reason, BlockPos pos, RandomSource randomIn) {
         return true;
     }
 
     @Override
     protected void pushEntities() {
-        List<Entity> list = this.level().getEntities(this, this.getBoundingBox().inflate(0.2, 0, 0.2), EntitySelector.pushableBy(this));
+        List<Entity> list = this.level().getPushableEntities(this, this.getBoundingBox().inflate(0.2, 0, 0.2));
         if (!list.isEmpty()) {
-            int i = this.level().getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
-            if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {
-                int j = 0;
+            if (this.level() instanceof ServerLevel serverLevel) {
+                int i = serverLevel.getGameRules().get(GameRules.MAX_ENTITY_CRAMMING);
+                if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {
+                    int j = 0;
 
-                for (Entity entity : list) {
-                    if (!entity.isPassenger()) {
-                        ++j;
+                    for (Entity entity : list) {
+                        if (!entity.isPassenger()) {
+                            ++j;
+                        }
                     }
-                }
 
-                if (j > i - 1) {
-                    this.hurt(this.damageSources().cramming(), 6.0F);
+                    if (j > i - 1) {
+                        this.hurtServer(serverLevel, this.damageSources().cramming(), 6.0F);
+                    }
                 }
             }
 
@@ -187,7 +190,7 @@ public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
     }
 
     @Override
-    public boolean canBeCollidedWith() {
+    public boolean canBeCollidedWith(@Nullable Entity other) {
         return this.isAlive();
     }
 
@@ -247,7 +250,7 @@ public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
     public List<ItemStack> onSheared(@Nullable Player player, ItemStack item, Level world, BlockPos pos) {
         world.playSound(null, this, SoundEvents.SHEEP_SHEAR, player == null ? SoundSource.BLOCKS : SoundSource.PLAYERS, 1.0F, 1.0F);
         this.gameEvent(GameEvent.SHEAR, player);
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             this.setSheared(true);
             java.util.List<ItemStack> items = new java.util.ArrayList<>();
             items.add(new ItemStack(this.getLilytadType().getShearItem()));
@@ -279,29 +282,22 @@ public class LilytadEntity extends Animal implements IShearable, GeoAnimatable {
         return CNBSoundEvents.LILYTAD_DEATH.get();
     }
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
+    private PlayState animationPredicate(AnimationTest<LilytadEntity> event) {
         if (!(walkAnimation.speed() > -0.05F && walkAnimation.speed() < 0.05F)) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("lilytad.walk"));
-            return PlayState.CONTINUE;
+            return event.setAndContinue(RawAnimation.begin().thenLoop("lilytad.walk"));
         }
         return PlayState.STOP;
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+        controllers.add(new AnimationController<>("controller", 0, this::animationPredicate));
     }
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.cache;
     }
-
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount; // Use the entity's internal tick count
-    }
-
 
 
     static class LilytadPanicGoal extends PanicGoal {

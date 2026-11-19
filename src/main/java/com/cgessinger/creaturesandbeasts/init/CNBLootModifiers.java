@@ -4,6 +4,7 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -14,6 +15,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 import java.util.Random;
 
 public class CNBLootModifiers {
@@ -29,8 +31,8 @@ public class CNBLootModifiers {
 
         private final Random rand = new Random();
 
-        protected NetherBridgeLootModifier(LootItemCondition[] conditionsIn) {
-            super(conditionsIn);
+        protected NetherBridgeLootModifier(Optional<Holder<LootItemCondition>> condition, int priority) {
+            super(condition, priority);
         }
 
         @Nonnull

@@ -1,59 +1,51 @@
 package com.cgessinger.creaturesandbeasts.client.entity.render;
 
 import com.cgessinger.creaturesandbeasts.client.entity.model.EndWhaleModel;
-import com.cgessinger.creaturesandbeasts.client.entity.model.LilytadModel;
 import com.cgessinger.creaturesandbeasts.entities.EndWhaleEntity;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.geckolib.constant.dataticket.DataTicket;
+import com.geckolib.renderer.base.RenderPassInfo;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import org.jspecify.annotations.Nullable;
+public class EndWhaleRenderer extends CnbEntityRenderer<EndWhaleEntity> {
+    /** Banking (roll) and pitch offsets between the whale and its rider, in degrees. */
+    private record RiderTilt(float rollDegrees, float pitchDegrees) {}
 
-
-@OnlyIn(Dist.CLIENT)
-public class EndWhaleRenderer extends GeoEntityRenderer<EndWhaleEntity> {
+    private static final DataTicket<RiderTilt> RIDER_TILT = DataTicket.create("cnb_end_whale_rider_tilt", RiderTilt.class);
 
     public EndWhaleRenderer(EntityRendererProvider.Context context) {
-        super(context, new EndWhaleModel());
-        this.shadowRadius = 1.5F;
-    }
-
-
-    public RenderType getRenderType(EndWhaleEntity animatable, float partialTicks, PoseStack stack, @Nullable MultiBufferSource renderTypeBuffer, @Nullable VertexConsumer vertexBuilder, int packedLightIn, ResourceLocation textureLocation) {
-        return RenderType.entityCutoutNoCull(textureLocation);
+        super(context, new EndWhaleModel(), 1.5F, 1.0F, 1.0F, false, id -> RenderTypes.entityCutout(id));
     }
 
     @Override
-    protected void applyRotations(EndWhaleEntity endWhale, PoseStack matrixStackIn, float ageInTicks, float rotationYaw, float partialTicks) {
-        super.applyRotations(endWhale, matrixStackIn, ageInTicks, rotationYaw, partialTicks);
-
+    public void addRenderData(EndWhaleEntity animatable, @Nullable Void relatedObject, LivingEntityRenderState renderState, float partialTick) {
+        super.addRenderData(animatable, relatedObject, renderState, partialTick);
         // Only apply visual roll/tilt when ridden, not rotation changes
-        Entity rider = endWhale.getFirstPassenger();
-
+        Entity rider = animatable.getFirstPassenger();
         if (rider != null) {
-            // Get smooth interpolated rotations
-            float whaleRotY = Mth.rotLerp(partialTicks, endWhale.yRotO, endWhale.getYRot());
-            float wantedRotY = Mth.rotLerp(partialTicks, rider.yRotO, rider.getYRot());
-
-            float whaleRotX = Mth.lerp(partialTicks, endWhale.xRotO, endWhale.getXRot());
-            float wantedRotX = Mth.lerp(partialTicks, rider.xRotO, rider.getXRot());
-
-            // Apply ONLY the difference for banking/tilting effect
-            // Reduce these multipliers if it still looks too jerky
-            float rollAmount = Mth.wrapDegrees(whaleRotY - wantedRotY) * 0.25F; // Reduced from /2 (0.5)
-            float pitchAmount = Mth.wrapDegrees(whaleRotX - wantedRotX) * 0.5F; // Reduced from 1.0
-
-            matrixStackIn.mulPose(Axis.ZP.rotationDegrees(rollAmount));
-            matrixStackIn.mulPose(Axis.XP.rotationDegrees(pitchAmount));
+            float whaleRotY = Mth.rotLerp(partialTick, animatable.yRotO, animatable.getYRot());
+            float wantedRotY = Mth.rotLerp(partialTick, rider.yRotO, rider.getYRot());
+            float whaleRotX = Mth.lerp(partialTick, animatable.xRotO, animatable.getXRot());
+            float wantedRotX = Mth.lerp(partialTick, rider.xRotO, rider.getXRot());
+            // Apply only the difference for a banking/tilting effect
+            float roll = Mth.wrapDegrees(whaleRotY - wantedRotY) * 0.25F;
+            float pitch = Mth.wrapDegrees(whaleRotX - wantedRotX) * 0.5F;
+            renderState.addGeckolibData(RIDER_TILT, new RiderTilt(roll, pitch));
         }
-        // When not ridden, no additional rotations needed - let vanilla handle it
+    }
+
+    @Override
+    public void adjustRenderPose(RenderPassInfo<LivingEntityRenderState> info) {
+        super.adjustRenderPose(info);
+        RiderTilt tilt = info.renderState().getGeckolibData(RIDER_TILT);
+        if (tilt != null) {
+            info.poseStack().rotateDegrees(Axis.ZP, tilt.rollDegrees());
+            info.poseStack().rotateDegrees(Axis.XP, tilt.pitchDegrees());
+        }
     }
 }

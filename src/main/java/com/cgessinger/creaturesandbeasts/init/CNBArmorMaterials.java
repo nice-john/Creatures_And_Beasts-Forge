@@ -1,69 +1,52 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 
 import java.util.EnumMap;
-import java.util.List;
+import java.util.Map;
 
 public class CNBArmorMaterials {
-    public static final DeferredRegister<ArmorMaterial> ARMOR_MATERIALS =
-            DeferredRegister.create(Registries.ARMOR_MATERIAL, CreaturesAndBeasts.MOD_ID);
-
-    public static final Holder<ArmorMaterial> FLOWER_CROWN = register(
-            "flower_crown",
+    // Durability 0 keeps both pieces undamageable, matching the 1.21.1 items (no durability set).
+    public static final ArmorMaterial FLOWER_CROWN = new ArmorMaterial(
+            0,
             mapOf(1, 2, 3, 1),
             5,
+            SoundEvents.ARMOR_EQUIP_LEATHER,
             0.0F,
             0.0F,
-            () -> Ingredient.EMPTY
+            CNBTags.Items.REPAIRS_FLOWER_CROWN,
+            assetId("flower_crown")
     );
 
-    public static final Holder<ArmorMaterial> SPORELING_BACKPACK = register(
-            "sporeling_backpack",
+    public static final ArmorMaterial SPORELING_BACKPACK = new ArmorMaterial(
+            0,
             mapOf(0, 0, 1, 0),
             2,
+            SoundEvents.ARMOR_EQUIP_LEATHER,
             0.0F,
             0.0F,
-            () -> Ingredient.of(Items.LEATHER)
+            CNBTags.Items.REPAIRS_SPORELING_BACKPACK,
+            assetId("sporeling_backpack")
     );
 
-    private static EnumMap<ArmorItem.Type, Integer> mapOf(int feet, int legs, int chest, int head) {
-        EnumMap<ArmorItem.Type, Integer> map = new EnumMap<>(ArmorItem.Type.class);
-        map.put(ArmorItem.Type.BOOTS, feet);
-        map.put(ArmorItem.Type.LEGGINGS, legs);
-        map.put(ArmorItem.Type.CHESTPLATE, chest);
-        map.put(ArmorItem.Type.HELMET, head);
-        map.put(ArmorItem.Type.BODY, chest);
+    private static Map<ArmorType, Integer> mapOf(int feet, int legs, int chest, int head) {
+        EnumMap<ArmorType, Integer> map = new EnumMap<>(ArmorType.class);
+        map.put(ArmorType.BOOTS, feet);
+        map.put(ArmorType.LEGGINGS, legs);
+        map.put(ArmorType.CHESTPLATE, chest);
+        map.put(ArmorType.HELMET, head);
+        map.put(ArmorType.BODY, chest);
         return map;
     }
 
-    private static DeferredHolder<ArmorMaterial, ArmorMaterial> register(
-            String name,
-            EnumMap<ArmorItem.Type, Integer> defense,
-            int enchantability,
-            float toughness,
-            float knockbackResistance,
-            java.util.function.Supplier<Ingredient> repairIngredient
-    ) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name);
-        return ARMOR_MATERIALS.register(name, () -> new ArmorMaterial(
-                defense,
-                enchantability,
-                Holder.direct(SoundEvents.ARMOR_EQUIP_LEATHER.value()),
-                repairIngredient,
-                List.of(new ArmorMaterial.Layer(id)),
-                toughness,
-                knockbackResistance
-        ));
+    private static ResourceKey<EquipmentAsset> assetId(String name) {
+        return ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name));
     }
 }

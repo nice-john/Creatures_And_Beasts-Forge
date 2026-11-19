@@ -2,48 +2,11 @@ package com.cgessinger.creaturesandbeasts.client.entity.render;
 
 import com.cgessinger.creaturesandbeasts.client.entity.model.LittleGrebeModel;
 import com.cgessinger.creaturesandbeasts.entities.LittleGrebeEntity;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-
-@OnlyIn(Dist.CLIENT)
-public class LittleGrebeRenderer extends GeoEntityRenderer<LittleGrebeEntity> {
-
+public class LittleGrebeRenderer extends CnbEntityRenderer<LittleGrebeEntity> {
     public LittleGrebeRenderer(EntityRendererProvider.Context context) {
-        super(context, new LittleGrebeModel());
-        this.shadowRadius = 0.4F;
-    }
-
-    @Override
-    public RenderType getRenderType(LittleGrebeEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
-        return RenderType.entityCutoutNoCull(texture);
-    }
-
-    @Override
-    public void preRender(
-            PoseStack poseStack,
-            LittleGrebeEntity animatable,
-            BakedGeoModel model,
-            MultiBufferSource bufferSource,
-            VertexConsumer buffer,
-            boolean isReRender,
-            float partialTick,
-            int packedLight,
-            int packedOverlay,
-            int colour) {
-        // Example scaling logic: adjust size if the entity is a baby
-        if (animatable.isBaby()) {
-            poseStack.scale(0.5F, 0.5F, 0.5F);
-        }
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+        super(context, new LittleGrebeModel(), 0.4F, 0.5F, 1.0F, true, id -> RenderTypes.entityCutout(id));
     }
 }
-

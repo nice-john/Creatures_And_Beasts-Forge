@@ -1,50 +1,54 @@
 plugins {
-    id 'net.neoforged.gradle.userdev' version '7.0.165'
-    // GradleUp fork is the maintained successor of johnrengelman/shadow (which was abandoned
-    // and bundles ASM 9.5 — too old to read Java 21 bytecode, fails with "Unsupported class
-    // file major version 65"). 8.3.x ships ASM 9.7+. Drop-in replacement.
-    id 'com.gradleup.shadow' version '8.3.5'
-    id 'eclipse'
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+    id 'com.gradleup.shadow' version '9.6.1'
+    id 'idea'
 }
 
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
-
-version = '1.7.18'
+version = '2.0.0'
 group = 'com.cgessinger.creaturesandbeasts'
-archivesBaseName = "CNB-1.21.1-neoforge"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-
-minecraft {
-    accessTransformers {
-        file('src/main/resources/META-INF/accesstransformer.cfg')
-    }
+base {
+    archivesName = 'CNB-26.3-neoforge'
 }
 
-runs {
-    configureEach {
-        systemProperty 'forge.logging.markers', 'REGISTRIES'
-        systemProperty 'forge.logging.console.level', 'debug'
-        modSource project.sourceSets.main
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+neoForge {
+    version = '26.3.0.113'
+
+    // GeckoLib 5 injects GeoRenderState into vanilla render states; MDG needs the data file to compile against it.
+    interfaceInjectionData.from('interface_injections.json')
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'cnb'
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'cnb'
+        }
+
+        data {
+            clientData()
+            programArguments.addAll '--mod', 'cnb', '--all',
+                    '--output', file('src/generated/resources/').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
     }
 
-    client {
-        workingDirectory project.file('run')
-        systemProperty 'forge.enabledGameTestNamespaces', 'cnb'
-    }
-
-    server {
-        workingDirectory project.file('run')
-        systemProperty 'forge.enabledGameTestNamespaces', 'cnb'
-        programArgument '--nogui'
-    }
-
-    data {
-        workingDirectory project.file('run')
-        programArguments.addAll '--mod', 'cnb', '--all',
-                '--output', file('src/generated/resources/').getAbsolutePath(),
-                '--existing', file('src/main/resources/').getAbsolutePath()
+    mods {
+        cnb {
+            sourceSet(sourceSets.main)
+        }
     }
 }
 
@@ -61,6 +65,7 @@ repositories {
         name = 'GeckoLib'
         url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
         content {
+            includeGroupByRegex("com\\.geckolib.*")
             includeGroupByRegex("software\\.bernie.*")
             includeGroup("com.eliotlash.mclib")
         }
@@ -69,11 +74,8 @@ repositories {
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:21.1.150"
-
-    // GeckoLib (NeoForge 1.21.1)
-    implementation 'software.bernie.geckolib:geckolib-neoforge-1.21.1:4.8.3'
-    implementation 'com.eliotlash.mclib:mclib:20'
+    // GeckoLib 5.5 (NeoForge 26.3); base package is com.geckolib
+    implementation 'com.geckolib:geckolib-neoforge-26.3:5.5.7'
 
     implementation 'org.infernalstudios:config:3.0.3'
     packIntoJar 'org.infernalstudios:config:3.0.3'
@@ -101,3 +103,5 @@ jar {
 }
 
 tasks.build.dependsOn shadowJar
+
+tasks.withType(JavaCompile).configureEach { options.compilerArgs.addAll(['-Xmaxerrs', '10000']) }

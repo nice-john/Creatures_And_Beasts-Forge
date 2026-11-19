@@ -10,11 +10,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -25,8 +23,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.common.DeferredSpawnEggItem;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import net.minecraft.world.item.SpawnEggItem;
 
 import java.util.Objects;
 
@@ -36,12 +33,11 @@ import java.util.Objects;
  * overriding the biome-based variant pick in {@link LizardEntity#finalizeSpawn}. Net-captured
  * lizards also restore their previous state via {@link DataComponents#CUSTOM_DATA}.
  */
-public class LizardItem extends DeferredSpawnEggItem {
+public class LizardItem extends SpawnEggItem {
     private final LizardType type;
 
-    public LizardItem(DeferredHolder<EntityType<?>, ? extends EntityType<? extends Mob>> entityTypeSupplier,
-                      int primaryColor, int secondaryColor, Properties properties, LizardType type) {
-        super(entityTypeSupplier, primaryColor, secondaryColor, properties);
+    public LizardItem(Properties properties, LizardType type) {
+        super(properties);
         this.type = type;
     }
 
@@ -64,9 +60,9 @@ public class LizardItem extends DeferredSpawnEggItem {
                 ? clickedPos
                 : clickedPos.relative(direction);
 
-        EntityType<?> entitytype = this.getType(itemstack);
+        EntityType<?> entitytype = getType(itemstack);
         Entity entity = entitytype.spawn(serverLevel, itemstack, context.getPlayer(), spawnPos,
-                MobSpawnType.SPAWN_EGG, true, !Objects.equals(clickedPos, spawnPos) && direction == Direction.UP);
+                EntitySpawnReason.SPAWN_ITEM_USE, true, !Objects.equals(clickedPos, spawnPos) && direction == Direction.UP);
 
         if (entity instanceof LizardEntity lizard) {
             applyVariantAndStoredData(lizard, itemstack);
@@ -77,22 +73,22 @@ public class LizardItem extends DeferredSpawnEggItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
         HitResult hit = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
-        if (hit.getType() != HitResult.Type.BLOCK) return InteractionResultHolder.pass(itemstack);
-        if (!(level instanceof ServerLevel serverLevel)) return InteractionResultHolder.success(itemstack);
+        if (hit.getType() != HitResult.Type.BLOCK) return InteractionResult.PASS;
+        if (!(level instanceof ServerLevel serverLevel)) return InteractionResult.SUCCESS;
 
         BlockHitResult bhr = (BlockHitResult) hit;
         BlockPos pos = bhr.getBlockPos();
-        if (!(level.getBlockState(pos).getBlock() instanceof LiquidBlock)) return InteractionResultHolder.pass(itemstack);
+        if (!(level.getBlockState(pos).getBlock() instanceof LiquidBlock)) return InteractionResult.PASS;
         if (!level.mayInteract(player, pos) || !player.mayUseItemAt(pos, bhr.getDirection(), itemstack)) {
-            return InteractionResultHolder.fail(itemstack);
+            return InteractionResult.FAIL;
         }
 
-        EntityType<?> entitytype = this.getType(itemstack);
-        Entity entity = entitytype.spawn(serverLevel, itemstack, player, pos, MobSpawnType.SPAWN_EGG, false, false);
-        if (entity == null) return InteractionResultHolder.pass(itemstack);
+        EntityType<?> entitytype = getType(itemstack);
+        Entity entity = entitytype.spawn(serverLevel, itemstack, player, pos, EntitySpawnReason.SPAWN_ITEM_USE, false, false);
+        if (entity == null) return InteractionResult.PASS;
 
         if (entity instanceof LizardEntity lizard) {
             applyVariantAndStoredData(lizard, itemstack);
@@ -100,7 +96,7 @@ public class LizardItem extends DeferredSpawnEggItem {
         if (!player.getAbilities().instabuild) itemstack.shrink(1);
         player.awardStat(Stats.ITEM_USED.get(this));
         level.gameEvent(player, GameEvent.ENTITY_PLACE, player.position());
-        return InteractionResultHolder.consume(itemstack);
+        return InteractionResult.CONSUME;
     }
 
     /**

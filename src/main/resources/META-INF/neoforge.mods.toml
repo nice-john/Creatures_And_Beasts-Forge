@@ -8,7 +8,7 @@ modId="cnb"
 version="${file.jarVersion}"
 displayName="Creatures and Beasts: Unofficial Port"
 displayURL="https://github.com/CreaturesAndBeasts/Creatures_And_Beasts-Forge"
-logoFile="logo.png"
+bannerFile="logo.png"
 credits="Credits to AzureDoom and Christian for contributions to the code"
 authors="Joosh, CGessinger, and HellionGames"
 description='''
@@ -18,26 +18,22 @@ Creatures and Beasts is a vanilla-style creature mod which fills each biome with
 [[dependencies.cnb]]
     modId = "neoforge"
     type = "required"
-    versionRange = "[21.1.150,)"
+    versionRange = "[26.3.0.113,)"
     ordering = "NONE"
     side = "BOTH"
 
 [[dependencies.cnb]]
     modId = "minecraft"
     type = "required"
-    versionRange = "[1.21.1,1.21.2)"
+    versionRange = "[26.3]"
     ordering = "NONE"
     side = "BOTH"
 
 [[dependencies.cnb]]
     modId = "geckolib"
     type = "required"
-    versionRange = "[4.8.3,)"
+    versionRange = "[5.5.7,)"
     ordering = "BEFORE"
     side = "BOTH"
 
-# End Whale rider tilt + jitter-suppression mixin. Disabled for now — re-enable
-# by uncommenting the block below. Source files (MixinLivingEntityRenderer.java
-# + cnb.mixins.json) remain in place.
-# [[mixins]]
-#     config = "cnb.mixins.json"
+# The End Whale rider-tilt mixin was dropped in the 26.3 port (it was disabled on 1.21.1; the rider tilt now lives in EndWhaleRenderer).

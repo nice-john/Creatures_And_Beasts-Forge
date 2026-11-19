@@ -1,5 +1,7 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.blocks.LizardEggBlock;
 import com.cgessinger.creaturesandbeasts.init.CNBBlocks;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
@@ -7,7 +9,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.init.CNBLizardTypes;
 import com.cgessinger.creaturesandbeasts.util.LizardType;
 import com.cgessinger.creaturesandbeasts.util.Netable;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -35,7 +37,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -52,7 +54,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -64,19 +66,19 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 
 import javax.annotation.Nullable;
 
-public class LizardEntity extends Animal implements GeoAnimatable, Netable {
+public class LizardEntity extends Animal implements GeoEntity, Netable {
     private static final EntityDataAccessor<String> TYPE = SynchedEntityData.defineId(LizardEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Boolean> PARTYING = SynchedEntityData.defineId(LizardEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> SAD = SynchedEntityData.defineId(LizardEntity.class, EntityDataSerializers.BOOLEAN);
@@ -118,28 +120,23 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
-        super.addAdditionalSaveData(compound);
-        compound.putString("LizardType", this.getLizardType().getId().toString());
-        compound.putBoolean("Sad", this.getSad());
-        compound.putBoolean("FromNet", this.fromNet());
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putString("LizardType", this.getLizardType().getId().toString());
+        output.putBoolean("Sad", this.getSad());
+        output.putBoolean("FromNet", this.fromNet());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
-        super.readAdditionalSaveData(compound);
-        LizardType type = LizardType.getById(compound.getString("LizardType"));
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        LizardType type = LizardType.getById(input.getStringOr("LizardType", ""));
         if (type == null) {
             type = CNBLizardTypes.DESERT;
         }
         this.setLizardType(type);
-        if (compound.contains("Sad")) {
-            setSad(compound.getBoolean("Sad"));
-        }
-
-        if (compound.contains("FromNet")) {
-            setFromNet(compound.getBoolean("FromNet"));
-        }
+        setSad(input.getBooleanOr("Sad", this.getSad()));
+        setFromNet(input.getBooleanOr("FromNet", this.fromNet()));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -199,12 +196,12 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         }
     }
 
-    public static boolean checkLizardSpawnRules(EntityType<LizardEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
+    public static boolean checkLizardSpawnRules(EntityType<LizardEntity> animal, LevelAccessor worldIn, EntitySpawnReason reason, BlockPos pos, RandomSource randomIn) {
         return worldIn.getRawBrightness(pos, 0) > 8;
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, EntitySpawnReason reason, @Nullable SpawnGroupData spawnDataIn) {
         Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
 
         // TODO[1.21.1 port]: restore variant tagging via DataComponent (was: dataTag.getString("LizardType"))
@@ -258,8 +255,8 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    protected void actuallyHurt(DamageSource damageSrc, float damageAmount) {
-        super.actuallyHurt(damageSrc, damageAmount);
+    protected void actuallyHurt(ServerLevel level, DamageSource damageSrc, float damageAmount) {
+        super.actuallyHurt(level, damageSrc, damageAmount);
         this.setPartying(false, null);
     }
 
@@ -303,7 +300,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         if (this.isSilent())        tag.putBoolean("Silent", true);
         if (this.isNoGravity())     tag.putBoolean("NoGravity", true);
         if (this.hasGlowingTag())   tag.putBoolean("Glowing", true);
-        if (this.isInvulnerable())  tag.putBoolean("Invulnerable", true);
+        if (this.isPermanentlyInvulnerable())  tag.putBoolean("Invulnerable", true);
         tag.putFloat("Health", this.getHealth());
         tag.putBoolean("Sad", this.getSad());
         tag.putBoolean("FromNet", true);
@@ -315,42 +312,42 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     @Override
     public void loadFromNetTag(CompoundTag compound) {
         if (compound.contains("NoAI")) {
-            this.setNoAi(compound.getBoolean("NoAI"));
+            this.setNoAi(compound.getBooleanOr("NoAI", false));
         }
 
         if (compound.contains("Silent")) {
-            this.setSilent(compound.getBoolean("Silent"));
+            this.setSilent(compound.getBooleanOr("Silent", false));
         }
 
         if (compound.contains("NoGravity")) {
-            this.setNoGravity(compound.getBoolean("NoGravity"));
+            this.setNoGravity(compound.getBooleanOr("NoGravity", false));
         }
 
         if (compound.contains("Glowing")) {
-            this.setGlowingTag(compound.getBoolean("Glowing"));
+            this.setGlowingTag(compound.getBooleanOr("Glowing", false));
         }
 
         if (compound.contains("Invulnerable")) {
-            this.setInvulnerable(compound.getBoolean("Invulnerable"));
+            this.setPermanentlyInvulnerable(compound.getBooleanOr("Invulnerable", false));
         }
 
-        if (compound.contains("Health", 99)) {
-            this.setHealth(compound.getFloat("Health"));
+        if (compound.contains("Health")) {
+            this.setHealth(compound.getFloatOr("Health", this.getHealth()));
         }
 
         if (compound.contains("Sad")) {
-            this.setSad(compound.getBoolean("Sad"));
+            this.setSad(compound.getBooleanOr("Sad", false));
         }
 
         if (compound.contains("LizardType")) {
-            LizardType type = LizardType.getById(compound.getString("LizardType"));
+            LizardType type = LizardType.getById(compound.getStringOr("LizardType", ""));
             if (type != null) {
                 this.setLizardType(type);
             }
         }
 
         if (compound.contains("FromNet")) {
-            this.setFromNet(compound.getBoolean("FromNet"));
+            this.setFromNet(compound.getBooleanOr("FromNet", false));
         }
     }
 
@@ -370,7 +367,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel world, AgeableMob entity) {
-        LizardEntity baby = CNBEntityTypes.LIZARD.get().create(world);
+        LizardEntity baby = CNBEntityTypes.LIZARD.get().create(world, EntitySpawnReason.BREEDING);
         if (baby != null) {
             baby.setLizardType(((LizardEntity) entity).getLizardType());
         }
@@ -450,19 +447,19 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
     }
 
     @Override
-    public ItemStack getPickedResult(HitResult target) {
+    public ItemStack getPickResult() {
         return new ItemStack(this.getLizardType().getSpawnItem());
     }
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
+    private PlayState animationPredicate(AnimationTest<LizardEntity> event) {
         if (this.entityData.get(LAYING_EGG)) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_dig"));
+            event.setAnimation(RawAnimation.begin().thenLoop("lizard_dig"));
             return PlayState.CONTINUE;
         } else if (event.isMoving()) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_walk"));
+            event.setAnimation(RawAnimation.begin().thenLoop("lizard_walk"));
             return PlayState.CONTINUE;
         } else if (this.isPartying()) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_dance"));
+            event.setAnimation(RawAnimation.begin().thenLoop("lizard_dance"));
             return PlayState.CONTINUE;
         }
         return PlayState.STOP;
@@ -470,7 +467,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 4, this::animationPredicate));
+        controllers.add(new AnimationController<>("controller", 4, this::animationPredicate));
 
     }
 
@@ -480,10 +477,6 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         return this.cache;
     }
 
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount; // Use the entity's internal tick count
-    }
 
 
 
@@ -516,8 +509,8 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
             this.animal.resetLove();
             this.partner.resetLove();
             RandomSource random = this.animal.getRandom();
-            if (this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-                this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), random.nextInt(7) + 1));
+            if (this.level.getGameRules().get(GameRules.MOB_DROPS)) {
+                ExperienceOrb.award(this.level, this.animal.position(), random.nextInt(7) + 1);
             }
 
         }
@@ -553,7 +546,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
                     this.lizard.setLayingEgg(true);
                 } else if (this.lizard.layEggCounter > this.adjustedTickDelay(200)) {
                     Level level = this.lizard.level();
-                    level.playSound(null, blockpos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.random.nextFloat() * 0.2F);
+                    level.playSound(null, blockpos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.getRandom().nextFloat() * 0.2F);
                     level.setBlock(this.blockPos.above(), CNBBlocks.LIZARD_EGGS.get().defaultBlockState().setValue(LizardEggBlock.EGGS, this.lizard.random.nextInt(6) + 1), 3);
 
                     LizardEggBlock lizardEggBlock = (LizardEggBlock) level.getBlockState(this.blockPos.above()).getBlock();

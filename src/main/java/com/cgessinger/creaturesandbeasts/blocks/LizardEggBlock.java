@@ -8,6 +8,9 @@ import com.cgessinger.creaturesandbeasts.util.LizardType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -36,8 +39,8 @@ public class LizardEggBlock extends Block {
     private LizardType parent1;
     private LizardType parent2;
 
-    public LizardEggBlock() {
-        super(BlockBehaviour.Properties.of().mapColor(MapColor.SAND)
+    public LizardEggBlock(BlockBehaviour.Properties properties) {
+        super(properties.mapColor(MapColor.SAND)
                 .strength(0.5F)
                 .sound(SoundType.METAL)
                 .randomTicks()
@@ -57,10 +60,10 @@ public class LizardEggBlock extends Block {
         if (this.canGrow(worldIn)) {
             this.removeOneEgg(worldIn, pos, state);
             worldIn.levelEvent(2001, pos, Block.getId(state));
-            LizardEntity lizard = CNBEntityTypes.LIZARD.get().create(worldIn);
+            LizardEntity lizard = CNBEntityTypes.LIZARD.get().create(worldIn, EntitySpawnReason.BREEDING);
             lizard.setAge(-24000);
             lizard.setLizardType(lizard.getRandom().nextBoolean() ? this.parent1 : this.parent2);
-            lizard.moveTo(pos.getX() + 0.3D, pos.getY(), pos.getZ() + 0.3D, 0.0F, 0.0F);
+            lizard.snapTo(pos.getX() + 0.3D, pos.getY(), pos.getZ() + 0.3D, 0.0F, 0.0F);
             worldIn.addFreshEntity(lizard);
         }
     }
@@ -71,17 +74,20 @@ public class LizardEggBlock extends Block {
     }
 
     @Override
-    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
+    public void playerDestroy(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
         super.playerDestroy(level, player, pos, state, blockEntity, stack);
         this.removeOneEgg(level, pos, state);
     }
 
     private boolean canGrow(Level worldIn) {
-        float f = worldIn.getTimeOfDay(1.0F);
+        // Same curve vanilla DimensionType.timeOfDay() used before world clocks replaced getTimeOfDay().
+        double d = Mth.frac(worldIn.getOverworldClockTime() / 24000.0D - 0.25D);
+        double e = 0.5D - Math.cos(d * Math.PI) / 2.0D;
+        float f = (float) ((d * 2.0D + e) / 3.0D);
         if ((double) f < 0.69D && (double) f > 0.65D) {
             return true;
         } else {
-            return worldIn.random.nextInt(200) == 0;
+            return worldIn.getRandom().nextInt(200) == 0;
         }
     }
 

@@ -190,13 +190,4 @@
       "color": 0,
       "children": [0, 1, 2, 3]
     }
-  ],
-  "overrides": [
-    {
-      "predicate": {
-        "throwing": 1
-      },
-      "model": "cnb:item/cactem_spear_throwing"
-    }
-  ]
-}
+  ]}

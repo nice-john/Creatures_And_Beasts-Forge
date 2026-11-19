@@ -1,5 +1,9 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import com.geckolib.cache.animation.keyframeevent.SoundKeyframeData;
+import com.geckolib.animation.state.KeyFrameEvent;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.init.CNBParticleTypes;
@@ -11,7 +15,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -29,7 +32,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -54,28 +57,26 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoAnimatable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
-public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEntity, GeoAnimatable {
+public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEntity {
     private static final EntityDataAccessor<Boolean> ELDER = SynchedEntityData.defineId(CactemEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(CactemEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> SPEAR_SHOWN = SynchedEntityData.defineId(CactemEntity.class, EntityDataSerializers.BOOLEAN);
@@ -105,6 +106,9 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
     public CactemEntity(EntityType<CactemEntity> entity, Level level) {
         super(entity, level);
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            this.setDropChance(slot, 0.0F);
+        }
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -125,12 +129,13 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
 
-        if (tag.contains("IsElder")) {
-            this.setElder(tag.getBoolean("IsElder"));
-        } else if (tag.contains("Age") && tag.getInt("Age") >= 0) {
+        java.util.Optional<Boolean> savedElder = input.read("IsElder", com.mojang.serialization.Codec.BOOL);
+        if (savedElder.isPresent()) {
+            this.setElder(savedElder.get());
+        } else if (input.getIntOr("Age", -1) >= 0) {
             this.setItemInHand(this.getUsedItemHand(), new ItemStack(CNBItems.CACTEM_SPEAR.get()));
         }
 
@@ -138,9 +143,9 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
-        super.addAdditionalSaveData(tag);
-        tag.putBoolean("IsElder", this.entityData.get(ELDER));
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putBoolean("IsElder", this.entityData.get(ELDER));
     }
 
     @Override
@@ -178,7 +183,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     @Override
     public void tick() {
         // Check if the entity is on the server side and if goals need to be updated
-        if (!this.level().isClientSide && this.shouldUpdateGoals) {
+        if (!this.level().isClientSide() && this.shouldUpdateGoals) {
             this.reassessGoals(); // Reassess the entity's goals
             this.shouldUpdateGoals = false; // Reset the flag
         }
@@ -210,8 +215,8 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    public int getBaseExperienceReward() {
-        return 3 + this.level().random.nextInt(4);
+    protected int getBaseExperienceReward(ServerLevel level) {
+        return 3 + this.getRandom().nextInt(4);
     }
 
     @Override
@@ -220,7 +225,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroup) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData spawnGroup) {
         double elderChance = level.getRandom().nextDouble();
 
         if (spawnGroup == null) {
@@ -273,7 +278,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         double MAX_HEALTH = this.getAttribute(Attributes.MAX_HEALTH).getValue();
         if (isBaby() && MAX_HEALTH > this.babyHealth) {
             this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(new AttributeModifier(
-                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "cactem_health_reduction"),
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "cactem_health_reduction"),
                     this.babyHealth - MAX_HEALTH,
                     AttributeModifier.Operation.ADD_VALUE));
             this.setHealth(this.babyHealth);
@@ -296,17 +301,12 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         }
 
         float percentHealth = this.getHealth() / this.babyHealth;
-        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "cactem_health_reduction"));
+        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "cactem_health_reduction"));
         this.setHealth(percentHealth * (float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
 
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             this.shouldUpdateGoals = true;
         }
-    }
-
-    @Override
-    protected float getEquipmentDropChance(EquipmentSlot p_21520_) {
-        return 0.0F;
     }
 
     // 1.21 lost getStandingEyeHeight(Pose, EntityDimensions). Restore the original "eye at 50% of body
@@ -320,7 +320,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob entity) {
-        return CNBEntityTypes.CACTEM.get().create(level);
+        return CNBEntityTypes.CACTEM.get().create(level, EntitySpawnReason.BREEDING);
     }
 
     @Override
@@ -335,7 +335,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    public float getScale() {
+    public float getAgeScale() {
         return this.isBaby() ? 0.75F : 1.0F;
     }
 
@@ -411,32 +411,32 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
 
         // Animation predicate for general animations
-        private <E extends GeoEntity> PlayState animationPredicate(AnimationState<E> event) {
+        private <E extends GeoEntity> PlayState animationPredicate(AnimationTest<E> event) {
             if (this.isHealing()) {
-                event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_elder_heal"));
+                event.setAnimation(RawAnimation.begin().thenPlay("cactem_elder_heal"));
             } else if (this.isTrading()) {
-                event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_admire"));
+                event.setAnimation(RawAnimation.begin().thenPlay("cactem_admire"));
             } else if (!(walkAnimation.speed() > -0.075F && walkAnimation.speed() < 0.075F)) {
                 if (this.isElder()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_elder_walk"));
+                    event.setAnimation(RawAnimation.begin().thenPlay("cactem_elder_walk"));
                 } else if (this.isBaby()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_baby_run"));
+                    event.setAnimation(RawAnimation.begin().thenPlay("cactem_baby_run"));
                 } else if (this.isAttacking() || !this.isSpearShown()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_run_throw"));
+                    event.setAnimation(RawAnimation.begin().thenPlay("cactem_run_throw"));
                 } else {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_run"));
+                    event.setAnimation(RawAnimation.begin().thenPlay("cactem_run"));
                     this.setIdleAnim(this.random.nextInt(2));
                 }
             } else {
                 if (this.isElder()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
+                    event.setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
                 } else if (this.isBaby()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
+                    event.setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
                 } else {
                     if (this.getIdleAnim() == 0) {
-                        event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
+                        event.setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
                     } else {
-                        event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
+                        event.setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
                     }
                 }
             }
@@ -444,37 +444,19 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         }
 
         // Animation predicate for attack animations
-        private <E extends GeoEntity> PlayState attackAnimationPredicate(AnimationState<E> event) {
-            var controller = event.getController();
-            var currentAnimation = controller.getCurrentAnimation();
-
-            if (this.isAttacking() || (currentAnimation != null && "cactem_throw".equals(currentAnimation.animation().name()) && controller.getAnimationState().equals(AnimationController.State.RUNNING))) {
-                controller.setAnimation(RawAnimation.begin().thenPlay("cactem_throw"));
-                return PlayState.CONTINUE;
+        private PlayState attackAnimationPredicate(AnimationTest<CactemEntity> event) {
+            if (this.isAttacking() || (event.isCurrentAnimationStage("cactem_throw") && !event.controller().hasAnimationFinished())) {
+                return event.setAndContinue(RawAnimation.begin().thenPlay("cactem_throw"));
             }
 
-            controller.forceAnimationReset();
+            event.controller().reset();
             this.setSpearShown(true);
             return PlayState.STOP;
         }
 
-        // Sound listener for keyframe events
-        private <E extends GeoEntity> void soundListener(AnimationState<E> event) {
-            LocalPlayer player = Minecraft.getInstance().player;
-            if (event.getController().getCurrentAnimation() != null) {
-                String sound = event.getController().getCurrentAnimation().animation().name();
-
-                if (sound.equals("cactem_heal")) {
-                    player.playSound(CNBSoundEvents.CACTEM_HEAL.get(), 1.0F, 1.0F);
-                } else if (sound.equals("spear_throw")) {
-                    player.playSound(CNBSoundEvents.SPEAR_THROW.get(), 1.0F, 1.0F);
-                }
-            }
-        }
-
-    private void soundListener(SoundKeyframeEvent<CactemEntity> event) {
+    private void soundListener(KeyFrameEvent<CactemEntity, SoundKeyframeData> event) {
         LocalPlayer player = Minecraft.getInstance().player;
-        String soundKey = event.getKeyframeData().getSound(); // Correctly retrieves the sound key.
+        String soundKey = event.keyframeData().getSound();
 
         if (soundKey.equals("cactem_heal")) {
             player.playSound(CNBSoundEvents.CACTEM_HEAL.get(), 1.0F, 1.0F);
@@ -486,8 +468,8 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
     @Override
         public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-            AnimationController<CactemEntity> controller = new AnimationController<>(this, "controller", 0, this::animationPredicate);
-            AnimationController<CactemEntity> attackController = new AnimationController<>(this, "attackController", 0, this::attackAnimationPredicate);
+            AnimationController<CactemEntity> controller = new AnimationController<>("controller", 0, this::animationPredicate);
+            AnimationController<CactemEntity> attackController = new AnimationController<>("attackController", 0, this::attackAnimationPredicate);
 
             controller.setSoundKeyframeHandler(this::soundListener);
             attackController.setSoundKeyframeHandler(this::soundListener);
@@ -646,7 +628,9 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
                 returnItem = new ItemStack(Items.DEAD_BUSH);
             }
 
-            entityIn.spawnAtLocation(returnItem);
+            if (entityIn.level() instanceof ServerLevel serverLevel) {
+                entityIn.spawnAtLocation(serverLevel, returnItem);
+            }
             this.entityIn.playSound(SoundEvents.ITEM_PICKUP, 0.8F, 1.0F);
         }
 
@@ -682,7 +666,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
                             // ("Empty stacks are not allowed") — 1.20 had no such check.
                             // The canUse() filter guarantees the traded item is always
                             // a Totem of Undying, so reconstructing one is safe.
-                            entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.TOTEM_OF_UNDYING)), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
+                            entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, Items.TOTEM_OF_UNDYING), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
                         }
                     }
 

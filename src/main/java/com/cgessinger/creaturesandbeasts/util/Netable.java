@@ -46,7 +46,7 @@ public interface Netable {
             Level level = entity.level();
 
             entity.discard();
-            return Optional.of(InteractionResult.sidedSuccess(level.isClientSide));
+            return Optional.of(InteractionResult.SUCCESS);
         } else {
             return Optional.empty();
         }

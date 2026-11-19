@@ -3,18 +3,17 @@ package com.cgessinger.creaturesandbeasts.client.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-public class MinipadFlowerParticle extends TextureSheetParticle {
+public class MinipadFlowerParticle extends SingleQuadParticle {
     private final SpriteSet sprites;
 
-    public MinipadFlowerParticle(ClientLevel level, double x, double y, double z, double motionX, double motionY, double motionZ, SpriteSet sprites) {
-        super(level, x, y, z);
+    public MinipadFlowerParticle(ClientLevel level, double x, double y, double z, double motionX, double motionY, double motionZ, SpriteSet sprites, RandomSource random) {
+        super(level, x, y, z, sprites.get(random));
         this.xd = motionX;
         this.yd = motionY * 0.2F;
         this.zd = motionZ;
@@ -31,18 +30,16 @@ public class MinipadFlowerParticle extends TextureSheetParticle {
     }
 
     @Override
-    public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_LIT;
+    protected SingleQuadParticle.Layer getLayer() {
+        return SingleQuadParticle.Layer.OPAQUE;
     }
 
     @Override
-    public int getLightColor(float tick) {
-        int i = super.getLightColor(tick);
+    public int getLightCoords(float tick) {
+        int i = super.getLightCoords(tick);
         int k = i >> 16 & 255;
         return 240 | k << 16;
     }
-
-    @OnlyIn(Dist.CLIENT)
     public static class Factory implements ParticleProvider<SimpleParticleType> {
         private final SpriteSet spriteSet;
 
@@ -50,8 +47,9 @@ public class MinipadFlowerParticle extends TextureSheetParticle {
             this.spriteSet = spriteSet;
         }
 
-        public Particle createParticle(SimpleParticleType typeIn, ClientLevel levelIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            return new MinipadFlowerParticle(levelIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet);
+        @Override
+        public Particle createParticle(SimpleParticleType typeIn, ClientLevel levelIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
+            return new MinipadFlowerParticle(levelIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet, random);
         }
     }
 }

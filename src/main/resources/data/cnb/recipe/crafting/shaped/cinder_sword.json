@@ -6,12 +6,8 @@
     "#"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:nether_brick"
-    },
-    "X": {
-      "item": "cnb:cindershell_shell_shard"
-    }
+    "#": "minecraft:nether_brick",
+    "X": "cnb:cindershell_shell_shard"
   },
   "result": {
     "id": "cnb:cinder_sword"

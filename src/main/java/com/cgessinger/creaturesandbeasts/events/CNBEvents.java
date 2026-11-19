@@ -9,13 +9,12 @@ import com.cgessinger.creaturesandbeasts.items.HealSpellBookItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -30,8 +29,8 @@ import java.util.List;
 public class CNBEvents {
 
     /** Stable id for the yeti-hide armor bonus on a stack — used to find/replace prior bonuses. */
-    private static final ResourceLocation HIDE_BONUS_ID =
-            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "yeti_hide_bonus");
+    private static final Identifier HIDE_BONUS_ID =
+            Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "yeti_hide_bonus");
 
     @SubscribeEvent
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
@@ -66,18 +65,19 @@ public class CNBEvents {
         if (left.isEmpty() || right.isEmpty()) return;
 
         // ---- Yeti hide reinforcement ----
-        if (left.getItem() instanceof ArmorItem armor && right.is(CNBItems.YETI_HIDE.get())) {
+        net.minecraft.world.item.equipment.Equippable equippable = left.get(DataComponents.EQUIPPABLE);
+        if (equippable != null && equippable.slot().isArmor() && right.is(CNBItems.YETI_HIDE.get())) {
             int currentLayers = left.getOrDefault(CNBDataComponents.HIDE_LAYERS.get(), 0);
             int newLayers = currentLayers + 1;
             if (newLayers > CNBConfig.hideAmount) return; // can't reinforce further
 
-            EquipmentSlot slot = armor.getType().getSlot();
+            EquipmentSlot slot = equippable.slot();
             ItemStack output = left.copy();
             output.set(CNBDataComponents.HIDE_LAYERS.get(), newLayers);
             applyHideBonusToStack(output, slot, newLayers);
 
             event.setOutput(output);
-            event.setCost(CNBConfig.hideCost);
+            event.setXpCost(CNBConfig.hideCost);
             event.setMaterialCost(1);
             return;
         }
@@ -98,7 +98,7 @@ public class CNBEvents {
                 return;
             }
             event.setOutput(output);
-            event.setCost(cost);
+            event.setXpCost(cost);
             event.setMaterialCost(1);
         }
     }

@@ -1,6 +1,6 @@
 package com.cgessinger.creaturesandbeasts.util;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
@@ -11,17 +11,17 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class LilytadType {
-    private static final Map<ResourceLocation, LilytadType> LILYTAD_TYPES = new LinkedHashMap<>();
+    private static final Map<Identifier, LilytadType> LILYTAD_TYPES = new LinkedHashMap<>();
 
-    private ResourceLocation id;
-    private ResourceLocation texture;
+    private Identifier id;
+    private Identifier texture;
     private Supplier<Item> shearItem;
 
-    public LilytadType(@Nullable Item shearItem, ResourceLocation id, ResourceLocation texture) {
+    public LilytadType(@Nullable Item shearItem, Identifier id, Identifier texture) {
         this(() -> shearItem, id, texture);
     }
 
-    public LilytadType(@Nullable Supplier<Item> shearItem, ResourceLocation id, ResourceLocation texture) {
+    public LilytadType(@Nullable Supplier<Item> shearItem, Identifier id, Identifier texture) {
         this.id = id;
         this.texture = texture;
         this.shearItem = shearItem;
@@ -42,24 +42,24 @@ public class LilytadType {
     }
 
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
-    public void setId(ResourceLocation id) {
+    public void setId(Identifier id) {
         this.id = id;
     }
 
-    public ResourceLocation getTextureLocation() {
+    public Identifier getTextureLocation() {
         return this.texture;
     }
 
-    public void setTextureLocation(ResourceLocation textureLocation) {
+    public void setTextureLocation(Identifier textureLocation) {
         this.texture = textureLocation;
     }
 
     public static LilytadType registerLilytadType(LilytadType minipadType) {
-        ResourceLocation id = minipadType.getId();
+        Identifier id = minipadType.getId();
         if (LILYTAD_TYPES.containsKey(id)) {
             throw new IllegalStateException(String.format("%s already exists in the LilytadType registry.", id.toString()));
         }
@@ -72,12 +72,12 @@ public class LilytadType {
         if (id == null) {
             return null;
         } else {
-            return getById(ResourceLocation.tryParse(id));
+            return getById(Identifier.tryParse(id));
         }
     }
 
     @Nullable
-    public static LilytadType getById(@Nullable ResourceLocation id) {
+    public static LilytadType getById(@Nullable Identifier id) {
         return LILYTAD_TYPES.get(id);
     }
 

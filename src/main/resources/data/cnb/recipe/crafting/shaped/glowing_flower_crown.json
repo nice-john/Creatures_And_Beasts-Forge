@@ -4,9 +4,7 @@
     "FFF"
   ],
   "key": {
-    "F": {
-      "tag": "cnb:glowing_minipad_flowers"
-    }
+    "F": "#cnb:glowing_minipad_flowers"
   },
   "result": {
     "id": "cnb:glowing_flower_crown"

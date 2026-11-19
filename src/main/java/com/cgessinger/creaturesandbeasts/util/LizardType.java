@@ -1,6 +1,6 @@
 package com.cgessinger.creaturesandbeasts.util;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,21 +12,21 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class LizardType {
-    private static final Map<ResourceLocation, LizardType> LIZARD_TYPES = new LinkedHashMap<>();
+    private static final Map<Identifier, LizardType> LIZARD_TYPES = new LinkedHashMap<>();
 
-    private ResourceLocation id;
-    private Pair<ResourceLocation, ResourceLocation> textures;
+    private Identifier id;
+    private Pair<Identifier, Identifier> textures;
     private Supplier<Item> spawnItem;
 
-    public LizardType(@Nullable Item spawnItem, ResourceLocation id, ResourceLocation texture, ResourceLocation sadTexture) {
+    public LizardType(@Nullable Item spawnItem, Identifier id, Identifier texture, Identifier sadTexture) {
         this(() -> spawnItem, id, texture, sadTexture);
     }
 
-    public LizardType(@Nullable Supplier<Item> spawnItem, ResourceLocation id, ResourceLocation texture, ResourceLocation sadTexture) {
+    public LizardType(@Nullable Supplier<Item> spawnItem, Identifier id, Identifier texture, Identifier sadTexture) {
         this(spawnItem, id, Pair.of(texture, sadTexture));
     }
 
-    public LizardType(@Nullable Supplier<Item> spawnItem, ResourceLocation id, Pair<ResourceLocation, ResourceLocation> textures) {
+    public LizardType(@Nullable Supplier<Item> spawnItem, Identifier id, Pair<Identifier, Identifier> textures) {
         this.id = id;
         this.textures = textures;
         this.spawnItem = spawnItem;
@@ -47,32 +47,32 @@ public class LizardType {
     }
 
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
-    public void setId(ResourceLocation id) {
+    public void setId(Identifier id) {
         this.id = id;
     }
 
-    public ResourceLocation getTextureLocation() {
+    public Identifier getTextureLocation() {
         return this.textures.getLeft();
     }
 
-    public void setTextureLocation(ResourceLocation textureLocation) {
+    public void setTextureLocation(Identifier textureLocation) {
         this.textures = Pair.of(textureLocation, this.textures.getRight());
     }
 
-    public ResourceLocation getSadTextureLocation() {
+    public Identifier getSadTextureLocation() {
         return this.textures.getRight();
     }
 
-    public void setSadTextureLocation(ResourceLocation textureLocation) {
+    public void setSadTextureLocation(Identifier textureLocation) {
         this.textures = Pair.of(this.textures.getLeft(), textureLocation);
     }
 
     public static LizardType registerLizardType(LizardType lizardType) {
-        ResourceLocation id = lizardType.getId();
+        Identifier id = lizardType.getId();
         if (LIZARD_TYPES.containsKey(id)) {
             throw new IllegalStateException(String.format("%s already exists in the LizardType registry.", id.toString()));
         }
@@ -85,12 +85,12 @@ public class LizardType {
         if (id == null) {
             return null;
         } else {
-            return getById(ResourceLocation.tryParse(id));
+            return getById(Identifier.tryParse(id));
         }
     }
 
     @Nullable
-    public static LizardType getById(@Nullable ResourceLocation id) {
+    public static LizardType getById(@Nullable Identifier id) {
         return LIZARD_TYPES.get(id);
     }
 

@@ -2,7 +2,7 @@ package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.util.LilytadType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 import javax.annotation.Nullable;
@@ -21,7 +21,7 @@ public class CNBLilytadTypes {
 
     private static LilytadType registerWithCNBDirectory(String namespace, String name) {
         return registerWithCNBDirectory(
-                () -> BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(namespace, name + "_waterlily")),
+                () -> BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(namespace, name + "_waterlily")),
                 namespace, name);
     }
 
@@ -32,8 +32,8 @@ public class CNBLilytadTypes {
     private static LilytadType registerWithCNBDirectory(@Nullable Supplier<Item> shearItem, String namespace, String name) {
         return register(new LilytadType(
                 shearItem,
-                ResourceLocation.fromNamespaceAndPath(namespace, name),
-                ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/lilytad/lilytad_" + name + ".png")));
+                Identifier.fromNamespaceAndPath(namespace, name),
+                Identifier.fromNamespaceAndPath(MOD_ID, "textures/entity/lilytad/lilytad_" + name + ".png")));
     }
 
     private static LilytadType register(LilytadType lilytadType) {

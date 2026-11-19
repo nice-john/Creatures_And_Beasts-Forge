@@ -5,9 +5,7 @@
     "LLL"
   ],
   "key": {
-    "L": {
-      "item": "minecraft:leather"
-    }
+    "L": "minecraft:leather"
   },
   "result": {
     "id": "cnb:sporeling_backpack"

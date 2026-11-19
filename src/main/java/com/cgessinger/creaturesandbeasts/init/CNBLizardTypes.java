@@ -2,7 +2,7 @@ package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.util.LizardType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 import javax.annotation.Nullable;
@@ -23,7 +23,7 @@ public class CNBLizardTypes {
 
     private static LizardType registerWithCNBDirectory(String itemName, String namespace, String name) {
         return registerWithCNBDirectory(
-                () -> BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(namespace, itemName)),
+                () -> BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(namespace, itemName)),
                 namespace, name);
     }
 
@@ -34,9 +34,9 @@ public class CNBLizardTypes {
     private static LizardType registerWithCNBDirectory(@Nullable Supplier<Item> spawnItem, String namespace, String name) {
         return register(new LizardType(
                 spawnItem,
-                ResourceLocation.fromNamespaceAndPath(namespace, name),
-                ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/lizard/lizard_" + name + ".png"),
-                ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/lizard/sad_lizard_" + name + ".png")));
+                Identifier.fromNamespaceAndPath(namespace, name),
+                Identifier.fromNamespaceAndPath(MOD_ID, "textures/entity/lizard/lizard_" + name + ".png"),
+                Identifier.fromNamespaceAndPath(MOD_ID, "textures/entity/lizard/sad_lizard_" + name + ".png")));
     }
 
     private static LizardType register(LizardType lizardType) {

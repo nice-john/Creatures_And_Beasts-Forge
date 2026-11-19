@@ -4,21 +4,26 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.client.entity.model.CactemSpearModel;
 import com.cgessinger.creaturesandbeasts.entities.ThrownCactemSpearEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Unit;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+public class ThrownCactemSpearRenderer extends EntityRenderer<ThrownCactemSpearEntity, ThrownCactemSpearRenderer.State> {
+    public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem_spear.png");
 
-@OnlyIn(Dist.CLIENT)
-public class ThrownCactemSpearRenderer extends EntityRenderer<ThrownCactemSpearEntity> {
-    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem_spear.png");
+    public static class State extends EntityRenderState {
+        public float xRot;
+        public float yRot;
+        public boolean isFoil;
+    }
+
     private final CactemSpearModel model;
 
     public ThrownCactemSpearRenderer(EntityRendererProvider.Context context) {
@@ -26,30 +31,33 @@ public class ThrownCactemSpearRenderer extends EntityRenderer<ThrownCactemSpearE
         this.model = new CactemSpearModel(context.bakeLayer(CactemSpearModel.LAYER_LOCATION));
     }
 
-    public void render(ThrownCactemSpearEntity spearEntity, float p_116112_, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLightIn) {
-        poseStack.pushPose();
-
-        // Rotate the spear based on its yaw and pitch
-        poseStack.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partialTicks, spearEntity.yRotO, spearEntity.getYRot()) + 180.0F));
-        poseStack.mulPose(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, spearEntity.xRotO, spearEntity.getXRot())));
-
-        // Render the spear
-        VertexConsumer vertexConsumer = ItemRenderer.getFoilBufferDirect(
-                buffer,
-                this.model.renderType(this.getTextureLocation(spearEntity)),
-                false,
-                spearEntity.isFoil()
-        );
-        this.model.renderToBuffer(poseStack, vertexConsumer, packedLightIn, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
-
-        poseStack.popPose();
-
-        // Call the super method
-        super.render(spearEntity, p_116112_, partialTicks, poseStack, buffer, packedLightIn);
+    @Override
+    public State createRenderState() {
+        return new State();
     }
 
+    @Override
+    public void extractRenderState(ThrownCactemSpearEntity entity, State state, float partialTicks) {
+        super.extractRenderState(entity, state, partialTicks);
+        state.yRot = entity.getYRot(partialTicks);
+        state.xRot = entity.getXRot(partialTicks);
+        state.isFoil = entity.isFoil();
+    }
 
-    public ResourceLocation getTextureLocation(ThrownCactemSpearEntity spearEntity) {
-        return TEXTURE;
+    @Override
+    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        poseStack.pushPose();
+        // Rotate the spear based on its yaw and pitch
+        poseStack.rotateDegrees(Axis.YP, state.yRot + 180.0F);
+        poseStack.rotateDegrees(Axis.XP, state.xRot);
+        if (state.isFoil) {
+            collector.submitModel(this.model, Unit.INSTANCE, poseStack, RenderTypes.entitySolidGlint(TEXTURE),
+                    state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        } else {
+            collector.submitModel(this.model, Unit.INSTANCE, poseStack, TEXTURE,
+                    state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        }
+        poseStack.popPose();
+        super.submit(state, poseStack, collector, camera);
     }
 }

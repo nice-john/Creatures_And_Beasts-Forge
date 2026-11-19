@@ -2,108 +2,41 @@ package com.cgessinger.creaturesandbeasts.client.entity.render;
 
 import com.cgessinger.creaturesandbeasts.client.entity.model.CactemModel;
 import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
-import com.cgessinger.creaturesandbeasts.entities.LittleGrebeEntity;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import com.geckolib.constant.dataticket.DataTicket;
+import com.geckolib.renderer.base.BoneSnapshots;
+import com.geckolib.renderer.base.RenderPassInfo;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import org.jspecify.annotations.Nullable;
+public class CactemRenderer extends CnbEntityRenderer<CactemEntity> {
+    private static final DataTicket<Boolean> SPEAR_SHOWN = DataTicket.create("cnb_cactem_spear_shown", Boolean.class);
 
-@OnlyIn(Dist.CLIENT)
-public class CactemRenderer extends GeoEntityRenderer<CactemEntity> {
-    private CactemEntity entity;
-
-    public CactemRenderer(EntityRendererProvider.Context renderManager) {
-        super(renderManager, new CactemModel());
-        this.shadowRadius = 0.4F;
+    public CactemRenderer(EntityRendererProvider.Context context) {
+        super(context, new CactemModel(), 0.4F, 0.5F, 1.0F, false, id -> RenderTypes.entityCutout(id));
+        // A Totem of Undying is shown in the cactem's hand while it trades.
+        this.withRenderLayer(new HeldItemBoneLayer<CactemEntity, LivingEntityRenderState>(context, this, "ItemHolder",
+                ItemDisplayContext.THIRD_PERSON_LEFT_HAND,
+                cactem -> cactem.isTrading() ? new ItemStack(Items.TOTEM_OF_UNDYING) : ItemStack.EMPTY,
+                cactem -> HeldItemBoneLayer.Pose.at(-0.2F, 0.15F, -0.05F).rotX(-90.0F).scaled(0.5F)));
     }
 
     @Override
-    public void preRender(
-            PoseStack poseStack,
-            CactemEntity animatable,
-            BakedGeoModel model,
-            MultiBufferSource bufferSource,
-            VertexConsumer buffer,
-            boolean isReRender,
-            float partialTick,
-            int packedLight,
-            int packedOverlay,
-            int colour) {
-        // Custom pre-render logic
-        if (animatable.isBaby()) {
-            poseStack.scale(0.5F, 0.5F, 0.5F); // Example of scaling the entity for baby models
-        }
-
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    public void addRenderData(CactemEntity animatable, @Nullable Void relatedObject, LivingEntityRenderState renderState, float partialTick) {
+        super.addRenderData(animatable, relatedObject, renderState, partialTick);
+        renderState.addGeckolibData(SPEAR_SHOWN, animatable.isSpearShown());
     }
 
+    // The spear is only drawn while the cactem is still holding it.
     @Override
-    public RenderType getRenderType(CactemEntity animatable, ResourceLocation texture, MultiBufferSource bufferSource, float partialTick) {
-        return RenderType.entityCutoutNoCull(texture);
-    }
-
-    @Override
-    public void renderRecursively(
-            PoseStack poseStack,
-            CactemEntity animatable,
-            GeoBone bone,
-            RenderType renderType,
-            MultiBufferSource bufferSource,
-            VertexConsumer buffer,
-            boolean isReRender,
-            float partialTick,
-            int packedLight,
-            int packedOverlay,
-            int colour) {
-        // Check if the bone name is "ItemHolder" and if the animatable is trading
-        if (bone.getName().equals("ItemHolder") && animatable.isTrading()) {
-            poseStack.pushPose();
-            poseStack.scale(0.5F, 0.5F, 0.5F);
-            poseStack.translate(-0.4F, 0.3F, -0.1F);
-            poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
-            Minecraft.getInstance().getItemRenderer().renderStatic(
-                    new ItemStack(Items.TOTEM_OF_UNDYING),
-                    ItemDisplayContext.THIRD_PERSON_LEFT_HAND,
-                    packedLight,
-                    OverlayTexture.NO_OVERLAY,
-                    poseStack,
-                    bufferSource,
-                    Minecraft.getInstance().level,
-                    0
-            );
-            poseStack.popPose();
-            buffer = bufferSource.getBuffer(RenderType.entityTranslucent(getTextureLocation(animatable)));
-        }
-
-        // Render spear only if it's shown
-        if (!bone.getName().equals("spear") || animatable.isSpearShown()) {
-            super.renderRecursively(
-                    poseStack,
-                    animatable,
-                    bone,
-                    renderType,
-                    bufferSource,
-                    buffer,
-                    isReRender,
-                    partialTick,
-                    packedLight,
-                    packedOverlay,
-                    colour
-            );
+    public void adjustModelBonesForRender(RenderPassInfo<LivingEntityRenderState> info, BoneSnapshots snapshots) {
+        super.adjustModelBonesForRender(info, snapshots);
+        if (!info.renderState().getOrDefaultGeckolibData(SPEAR_SHOWN, true)) {
+            snapshots.get("spear").ifPresent(bone -> bone.setScale(0.0F, 0.0F, 0.0F));
         }
     }
 }

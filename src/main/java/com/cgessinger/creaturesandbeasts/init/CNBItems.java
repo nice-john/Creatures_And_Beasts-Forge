@@ -1,8 +1,6 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import com.cgessinger.creaturesandbeasts.items.CNBEntityBucketItem;
-import com.cgessinger.creaturesandbeasts.items.CNBFuelItem;
 import com.cgessinger.creaturesandbeasts.items.CinderFurnaceItem;
 import com.cgessinger.creaturesandbeasts.items.CinderSwordItem;
 import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
@@ -19,151 +17,133 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.MobBucketItem;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class CNBItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(CreaturesAndBeasts.MOD_ID);
 
+    private static FoodProperties waterlilyFood() {
+        return new FoodProperties.Builder().nutrition(4).saturationModifier(0.5F).alwaysEdible().build();
+    }
+
+    private static Consumable waterlilyConsumable() {
+        return Consumables.defaultFood()
+                .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1), 1.0F))
+                .build();
+    }
+
     // Food
-    public static final DeferredItem<Item> APPLE_SLICE = ITEMS.register("apple_slice",
-            () -> new Item(new Item.Properties().food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.3F).build())));
+    public static final DeferredItem<Item> APPLE_SLICE = ITEMS.registerItem("apple_slice", Item::new,
+            p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.3F).build()));
 
-    public static final DeferredItem<WaterlilyBlockItem> PINK_WATERLILY = ITEMS.register("pink_waterlily",
-            () -> new WaterlilyBlockItem(CNBBlocks.PINK_WATERLILY_BLOCK.get(),
-                    new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationModifier(0.5F).alwaysEdible()
-                            .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
+    public static final DeferredItem<WaterlilyBlockItem> PINK_WATERLILY = ITEMS.registerItem("pink_waterlily",
+            props -> new WaterlilyBlockItem(CNBBlocks.PINK_WATERLILY_BLOCK.get(), props),
+            p -> p.food(waterlilyFood(), waterlilyConsumable()));
 
-    public static final DeferredItem<WaterlilyBlockItem> LIGHT_PINK_WATERLILY = ITEMS.register("light_pink_waterlily",
-            () -> new WaterlilyBlockItem(CNBBlocks.LIGHT_PINK_WATERLILY_BLOCK.get(),
-                    new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationModifier(0.5F).alwaysEdible()
-                            .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
+    public static final DeferredItem<WaterlilyBlockItem> LIGHT_PINK_WATERLILY = ITEMS.registerItem("light_pink_waterlily",
+            props -> new WaterlilyBlockItem(CNBBlocks.LIGHT_PINK_WATERLILY_BLOCK.get(), props),
+            p -> p.food(waterlilyFood(), waterlilyConsumable()));
 
-    public static final DeferredItem<WaterlilyBlockItem> YELLOW_WATERLILY = ITEMS.register("yellow_waterlily",
-            () -> new WaterlilyBlockItem(CNBBlocks.YELLOW_WATERLILY_BLOCK.get(),
-                    new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationModifier(0.5F).alwaysEdible()
-                            .effect(new MobEffectInstance(MobEffects.HEAL, 1), 1.0F).build())));
+    public static final DeferredItem<WaterlilyBlockItem> YELLOW_WATERLILY = ITEMS.registerItem("yellow_waterlily",
+            props -> new WaterlilyBlockItem(CNBBlocks.YELLOW_WATERLILY_BLOCK.get(), props),
+            p -> p.food(waterlilyFood(), waterlilyConsumable()));
 
     // Bucketed Mobs
-    public static final DeferredItem<CNBEntityBucketItem> CINDERSHELL_BUCKET = ITEMS.register("cindershell_bucket",
-            () -> new CNBEntityBucketItem(CNBEntityTypes.CINDERSHELL::get, Fluids.LAVA,
-                    () -> SoundEvents.BUCKET_EMPTY_LAVA, new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<MobBucketItem> CINDERSHELL_BUCKET = ITEMS.registerItem("cindershell_bucket",
+            props -> new MobBucketItem(CNBEntityTypes.CINDERSHELL.get(), Fluids.LAVA, SoundEvents.BUCKET_EMPTY_LAVA, props),
+            p -> p.stacksTo(1));
 
     // Misc. Items
-    public static final DeferredItem<Item> ENTITY_NET = ITEMS.register("entity_net",
-            () -> new Item(new Item.Properties().durability(64)));
-    public static final DeferredItem<LizardEggItem> LIZARD_EGG = ITEMS.register("lizard_egg",
-            () -> new LizardEggItem(CNBBlocks.LIZARD_EGGS.get()));
-    public static final DeferredItem<CNBFuelItem> CINDERSHELL_SHELL_SHARD = ITEMS.register("cindershell_shell_shard",
-            () -> new CNBFuelItem(6400));
-    public static final DeferredItem<Item> YETI_ANTLER = ITEMS.register("yeti_antler",
-            () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> YETI_HIDE = ITEMS.register("yeti_hide",
-            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ENTITY_NET = ITEMS.registerItem("entity_net", Item::new, p -> p.durability(64));
+    public static final DeferredItem<LizardEggItem> LIZARD_EGG = ITEMS.registerItem("lizard_egg",
+            props -> new LizardEggItem(CNBBlocks.LIZARD_EGGS.get(), props));
+    // Burn time (6400) lives in data/neoforge/data_maps/item/furnace_fuels.json
+    public static final DeferredItem<Item> CINDERSHELL_SHELL_SHARD = ITEMS.registerSimpleItem("cindershell_shell_shard");
+    public static final DeferredItem<Item> YETI_ANTLER = ITEMS.registerSimpleItem("yeti_antler");
+    public static final DeferredItem<Item> YETI_HIDE = ITEMS.registerSimpleItem("yeti_hide");
 
-    public static final DeferredItem<Item> PINK_MINIPAD_FLOWER = ITEMS.register("pink_minipad_flower",
-            () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> LIGHT_PINK_MINIPAD_FLOWER = ITEMS.register("light_pink_minipad_flower",
-            () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> YELLOW_MINIPAD_FLOWER = ITEMS.register("yellow_minipad_flower",
-            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> PINK_MINIPAD_FLOWER = ITEMS.registerSimpleItem("pink_minipad_flower");
+    public static final DeferredItem<Item> LIGHT_PINK_MINIPAD_FLOWER = ITEMS.registerSimpleItem("light_pink_minipad_flower");
+    public static final DeferredItem<Item> YELLOW_MINIPAD_FLOWER = ITEMS.registerSimpleItem("yellow_minipad_flower");
 
-    public static final DeferredItem<Item> PINK_MINIPAD_FLOWER_GLOW = ITEMS.register("pink_minipad_flower_glow",
-            () -> new MinipadFlowerGlowItem(new Item.Properties()));
-    public static final DeferredItem<Item> LIGHT_PINK_MINIPAD_FLOWER_GLOW = ITEMS.register("light_pink_minipad_flower_glow",
-            () -> new MinipadFlowerGlowItem(new Item.Properties()));
-    public static final DeferredItem<Item> YELLOW_MINIPAD_FLOWER_GLOW = ITEMS.register("yellow_minipad_flower_glow",
-            () -> new MinipadFlowerGlowItem(new Item.Properties()));
+    public static final DeferredItem<Item> PINK_MINIPAD_FLOWER_GLOW = ITEMS.<Item>registerItem("pink_minipad_flower_glow", MinipadFlowerGlowItem::new);
+    public static final DeferredItem<Item> LIGHT_PINK_MINIPAD_FLOWER_GLOW = ITEMS.<Item>registerItem("light_pink_minipad_flower_glow", MinipadFlowerGlowItem::new);
+    public static final DeferredItem<Item> YELLOW_MINIPAD_FLOWER_GLOW = ITEMS.<Item>registerItem("yellow_minipad_flower_glow", MinipadFlowerGlowItem::new);
 
-    public static final DeferredItem<HealSpellBookItem> HEAL_SPELL_BOOK_1 = ITEMS.register("heal_spell_book_1",
-            () -> new HealSpellBookItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredItem<HealSpellBookItem> HEAL_SPELL_BOOK_2 = ITEMS.register("heal_spell_book_2",
-            () -> new HealSpellBookItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredItem<HealSpellBookItem> HEAL_SPELL_BOOK_3 = ITEMS.register("heal_spell_book_3",
-            () -> new HealSpellBookItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<HealSpellBookItem> HEAL_SPELL_BOOK_1 = ITEMS.registerItem("heal_spell_book_1", HealSpellBookItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<HealSpellBookItem> HEAL_SPELL_BOOK_2 = ITEMS.registerItem("heal_spell_book_2", HealSpellBookItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<HealSpellBookItem> HEAL_SPELL_BOOK_3 = ITEMS.registerItem("heal_spell_book_3", HealSpellBookItem::new, p -> p.stacksTo(1));
 
     // Armor
-    public static final DeferredItem<FlowerCrownItem> FLOWER_CROWN = ITEMS.register("flower_crown",
-            () -> new FlowerCrownItem(
-                    CNBArmorMaterials.FLOWER_CROWN,
-                    Ingredient.of(PINK_MINIPAD_FLOWER.get(), LIGHT_PINK_MINIPAD_FLOWER.get(), YELLOW_MINIPAD_FLOWER.get()),
-                    ArmorItem.Type.HELMET,
-                    new Item.Properties()
-            ));
+    public static final DeferredItem<FlowerCrownItem> FLOWER_CROWN = ITEMS.registerItem("flower_crown",
+            props -> new FlowerCrownItem(CNBArmorMaterials.FLOWER_CROWN, props));
 
-    public static final DeferredItem<GlowingFlowerCrownItem> GLOWING_FLOWER_CROWN = ITEMS.register("glowing_flower_crown",
-            () -> new GlowingFlowerCrownItem(
-                    CNBArmorMaterials.FLOWER_CROWN,
-                    Ingredient.of(PINK_MINIPAD_FLOWER_GLOW.get(), LIGHT_PINK_MINIPAD_FLOWER_GLOW.get(), YELLOW_MINIPAD_FLOWER_GLOW.get()),
-                    ArmorItem.Type.HELMET,
-                    new Item.Properties()
-            ));
+    public static final DeferredItem<GlowingFlowerCrownItem> GLOWING_FLOWER_CROWN = ITEMS.registerItem("glowing_flower_crown",
+            props -> new GlowingFlowerCrownItem(CNBArmorMaterials.FLOWER_CROWN, props));
 
-    public static final DeferredItem<SporelingBackpackItem> SPORELING_BACKPACK = ITEMS.register("sporeling_backpack",
-            () -> new SporelingBackpackItem(
-                    CNBArmorMaterials.SPORELING_BACKPACK,
-                    ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties()
-            ));
+    public static final DeferredItem<SporelingBackpackItem> SPORELING_BACKPACK = ITEMS.registerItem("sporeling_backpack",
+            props -> new SporelingBackpackItem(CNBArmorMaterials.SPORELING_BACKPACK, props));
 
     // Tools
-    public static final DeferredItem<CinderSwordItem> CINDER_SWORD = ITEMS.register("cinder_sword",
-            () -> new CinderSwordItem(CNBItemTiers.CINDER, 0, 3, -2.4F, new Item.Properties()));
-    public static final DeferredItem<CinderSwordItem> CINDER_SWORD_1 = ITEMS.register("cinder_sword_1",
-            () -> new CinderSwordItem(CNBItemTiers.CINDER, 1, 4, -2.4F, new Item.Properties()));
-    public static final DeferredItem<CinderSwordItem> CINDER_SWORD_2 = ITEMS.register("cinder_sword_2",
-            () -> new CinderSwordItem(CNBItemTiers.CINDER, 2, 5, -2.4F, new Item.Properties()));
-    public static final DeferredItem<CinderSwordItem> CINDER_SWORD_3 = ITEMS.register("cinder_sword_3",
-            () -> new CinderSwordItem(CNBItemTiers.CINDER, 3, 6, -2.4F, new Item.Properties()));
-    public static final DeferredItem<CinderSwordItem> CINDER_SWORD_4 = ITEMS.register("cinder_sword_4",
-            () -> new CinderSwordItem(CNBItemTiers.CINDER, 4, 7, -2.4F, new Item.Properties()));
+    public static final DeferredItem<CinderSwordItem> CINDER_SWORD = ITEMS.registerItem("cinder_sword",
+            props -> new CinderSwordItem(CNBItemTiers.CINDER, 0, 3, -2.4F, props));
+    public static final DeferredItem<CinderSwordItem> CINDER_SWORD_1 = ITEMS.registerItem("cinder_sword_1",
+            props -> new CinderSwordItem(CNBItemTiers.CINDER, 1, 4, -2.4F, props));
+    public static final DeferredItem<CinderSwordItem> CINDER_SWORD_2 = ITEMS.registerItem("cinder_sword_2",
+            props -> new CinderSwordItem(CNBItemTiers.CINDER, 2, 5, -2.4F, props));
+    public static final DeferredItem<CinderSwordItem> CINDER_SWORD_3 = ITEMS.registerItem("cinder_sword_3",
+            props -> new CinderSwordItem(CNBItemTiers.CINDER, 3, 6, -2.4F, props));
+    public static final DeferredItem<CinderSwordItem> CINDER_SWORD_4 = ITEMS.registerItem("cinder_sword_4",
+            props -> new CinderSwordItem(CNBItemTiers.CINDER, 4, 7, -2.4F, props));
 
-    public static final DeferredItem<SpearItem> CACTEM_SPEAR = ITEMS.register("cactem_spear",
-            () -> new SpearItem(new Item.Properties().durability(100)));
+    public static final DeferredItem<SpearItem> CACTEM_SPEAR = ITEMS.registerItem("cactem_spear", SpearItem::new, p -> p.durability(100));
 
-    // Spawn Eggs
-    public static final DeferredItem<DeferredSpawnEggItem> GREBE_SPAWN_EGG = ITEMS.register("little_grebe_spawn_egg",
-            () -> new DeferredSpawnEggItem(CNBEntityTypes.LITTLE_GREBE, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties()));
-    public static final DeferredItem<DeferredSpawnEggItem> CINDERSHELL_SPAWN_EGG = ITEMS.register("cindershell_spawn_egg",
-            () -> new DeferredSpawnEggItem(CNBEntityTypes.CINDERSHELL, 0x0D0403, 0xC64500, new Item.Properties()));
-    public static final DeferredItem<DeferredSpawnEggItem> LILYTAD_SPAWN_EGG = ITEMS.register("lilytad_spawn_egg",
-            () -> new DeferredSpawnEggItem(CNBEntityTypes.LILYTAD, 0x37702E, 0x102417, new Item.Properties()));
-    public static final DeferredItem<DeferredSpawnEggItem> YETI_SPAWN_EGG = ITEMS.register("yeti_spawn_egg",
-            () -> new DeferredSpawnEggItem(CNBEntityTypes.YETI, 0xD7E1E7, 0x887E96, new Item.Properties()));
-    public static final DeferredItem<DeferredSpawnEggItem> MINIPAD_SPAWN_EGG = ITEMS.register("minipad_spawn_egg",
-            () -> new DeferredSpawnEggItem(CNBEntityTypes.MINIPAD, 0x3EA62E, 0x194F28, new Item.Properties()));
-    public static final DeferredItem<DeferredSpawnEggItem> LIZARD_SPAWN_EGG = ITEMS.register("lizard_spawn_egg",
-            () -> new DeferredSpawnEggItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties()));
-    public static final DeferredItem<DeferredSpawnEggItem> END_WHALE_SPAWN_EGG = ITEMS.register("end_whale_spawn_egg",
-            () -> new DeferredSpawnEggItem(CNBEntityTypes.END_WHALE, 0x5609AD, 0xD4AD5F, new Item.Properties()));
-    public static final DeferredItem<DeferredSpawnEggItem> CACTEM_SPAWN_EGG = ITEMS.register("cactem_spawn_egg",
-            () -> new DeferredSpawnEggItem(CNBEntityTypes.CACTEM, 0x1A6E23, 0xDCEBAB, new Item.Properties()));
+    // Spawn Eggs (the egg sprites are custom, untinted models)
+    public static final DeferredItem<SpawnEggItem> GREBE_SPAWN_EGG = ITEMS.registerItem("little_grebe_spawn_egg",
+            SpawnEggItem::new, p -> p.spawnEgg(CNBEntityTypes.LITTLE_GREBE.get()));
+    public static final DeferredItem<SpawnEggItem> CINDERSHELL_SPAWN_EGG = ITEMS.registerItem("cindershell_spawn_egg",
+            SpawnEggItem::new, p -> p.spawnEgg(CNBEntityTypes.CINDERSHELL.get()));
+    public static final DeferredItem<SpawnEggItem> LILYTAD_SPAWN_EGG = ITEMS.registerItem("lilytad_spawn_egg",
+            SpawnEggItem::new, p -> p.spawnEgg(CNBEntityTypes.LILYTAD.get()));
+    public static final DeferredItem<SpawnEggItem> YETI_SPAWN_EGG = ITEMS.registerItem("yeti_spawn_egg",
+            SpawnEggItem::new, p -> p.spawnEgg(CNBEntityTypes.YETI.get()));
+    public static final DeferredItem<SpawnEggItem> MINIPAD_SPAWN_EGG = ITEMS.registerItem("minipad_spawn_egg",
+            SpawnEggItem::new, p -> p.spawnEgg(CNBEntityTypes.MINIPAD.get()));
+    public static final DeferredItem<SpawnEggItem> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg",
+            SpawnEggItem::new, p -> p.spawnEgg(CNBEntityTypes.LIZARD.get()));
+    public static final DeferredItem<SpawnEggItem> END_WHALE_SPAWN_EGG = ITEMS.registerItem("end_whale_spawn_egg",
+            SpawnEggItem::new, p -> p.spawnEgg(CNBEntityTypes.END_WHALE.get()));
+    public static final DeferredItem<SpawnEggItem> CACTEM_SPAWN_EGG = ITEMS.registerItem("cactem_spawn_egg",
+            SpawnEggItem::new, p -> p.spawnEgg(CNBEntityTypes.CACTEM.get()));
 
-    public static final DeferredItem<LizardItem> LIZARD_ITEM_DESERT = ITEMS.register("lizard_item_desert",
-            () -> new LizardItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties(), CNBLizardTypes.DESERT));
-    public static final DeferredItem<LizardItem> LIZARD_ITEM_DESERT_2 = ITEMS.register("lizard_item_desert_2",
-            () -> new LizardItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties(), CNBLizardTypes.DESERT_2));
-    public static final DeferredItem<LizardItem> LIZARD_ITEM_JUNGLE = ITEMS.register("lizard_item_jungle",
-            () -> new LizardItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties(), CNBLizardTypes.JUNGLE));
-    public static final DeferredItem<LizardItem> LIZARD_ITEM_JUNGLE_2 = ITEMS.register("lizard_item_jungle_2",
-            () -> new LizardItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties(), CNBLizardTypes.JUNGLE_2));
-    public static final DeferredItem<LizardItem> LIZARD_ITEM_MUSHROOM = ITEMS.register("lizard_item_mushroom",
-            () -> new LizardItem(CNBEntityTypes.LIZARD, 0x00FFFFFF, 0x00FFFFFF, new Item.Properties(), CNBLizardTypes.MUSHROOM));
+    public static final DeferredItem<LizardItem> LIZARD_ITEM_DESERT = ITEMS.registerItem("lizard_item_desert",
+            props -> new LizardItem(props, CNBLizardTypes.DESERT), p -> p.spawnEgg(CNBEntityTypes.LIZARD.get()));
+    public static final DeferredItem<LizardItem> LIZARD_ITEM_DESERT_2 = ITEMS.registerItem("lizard_item_desert_2",
+            props -> new LizardItem(props, CNBLizardTypes.DESERT_2), p -> p.spawnEgg(CNBEntityTypes.LIZARD.get()));
+    public static final DeferredItem<LizardItem> LIZARD_ITEM_JUNGLE = ITEMS.registerItem("lizard_item_jungle",
+            props -> new LizardItem(props, CNBLizardTypes.JUNGLE), p -> p.spawnEgg(CNBEntityTypes.LIZARD.get()));
+    public static final DeferredItem<LizardItem> LIZARD_ITEM_JUNGLE_2 = ITEMS.registerItem("lizard_item_jungle_2",
+            props -> new LizardItem(props, CNBLizardTypes.JUNGLE_2), p -> p.spawnEgg(CNBEntityTypes.LIZARD.get()));
+    public static final DeferredItem<LizardItem> LIZARD_ITEM_MUSHROOM = ITEMS.registerItem("lizard_item_mushroom",
+            props -> new LizardItem(props, CNBLizardTypes.MUSHROOM), p -> p.spawnEgg(CNBEntityTypes.LIZARD.get()));
 
-    public static final DeferredItem<SporelingSpawnEggItem> SPORELING_OVERWORLD_EGG = ITEMS.register("sporeling_overworld_egg",
-            () -> new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xDE0942, 0xFFEBC4, new Item.Properties(), "Overworld"));
-    public static final DeferredItem<SporelingSpawnEggItem> SPORELING_NETHER_EGG = ITEMS.register("sporeling_nether_egg",
-            () -> new SporelingSpawnEggItem(CNBEntityTypes.SPORELING, 0xBF2828, 0xFF9245, new Item.Properties(), "Nether"));
+    public static final DeferredItem<SporelingSpawnEggItem> SPORELING_OVERWORLD_EGG = ITEMS.registerItem("sporeling_overworld_egg",
+            props -> new SporelingSpawnEggItem(props, "Overworld"), p -> p.spawnEgg(CNBEntityTypes.SPORELING.get()));
+    public static final DeferredItem<SporelingSpawnEggItem> SPORELING_NETHER_EGG = ITEMS.registerItem("sporeling_nether_egg",
+            props -> new SporelingSpawnEggItem(props, "Nether"), p -> p.spawnEgg(CNBEntityTypes.SPORELING.get()));
 
     // Block Items
-    public static final DeferredItem<CinderFurnaceItem> CINDERSHELL_FURNACE = ITEMS.register("cinder_furnace",
-            () -> new CinderFurnaceItem(CNBBlocks.CINDER_FURNACE.get(), new Item.Properties()));
+    public static final DeferredItem<CinderFurnaceItem> CINDERSHELL_FURNACE = ITEMS.registerItem("cinder_furnace",
+            props -> new CinderFurnaceItem(CNBBlocks.CINDER_FURNACE.get(), props), p -> p.useBlockDescriptionPrefix());
 
     public static void addItemsToCreativeTab(CreativeModeTab.Output output) {
         output.accept(APPLE_SLICE.get());

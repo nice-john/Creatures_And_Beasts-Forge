@@ -7,7 +7,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.util.random.Weight;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -29,7 +30,7 @@ public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityTy
     ).apply(builder, AddCostedSpawnsBiomeModifier::new));
 
     @Override
-    public void modify(Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {
+    public void modify(RegistryAccess registries, Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {
         if (phase == Phase.ADD) {
             MobSpawnSettingsBuilder spawns = builder.getMobSpawnSettings();
             for (CostSpawnerData costSpawnerData : this.spawnerData) {
@@ -40,15 +41,15 @@ public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityTy
                         && !costSpawnerData.biomesIntersect().get().contains(biome)) {
                     continue;
                 }
-                Weight weight = costSpawnerData.weight;
+                int weight = costSpawnerData.weight;
                 if (this.entityType == CNBEntityTypes.END_WHALE.get()) {
                     if (CNBConfig.endWhaleSpawnWeight <= 0) continue;
-                    weight = Weight.of(CNBConfig.endWhaleSpawnWeight);
+                    weight = CNBConfig.endWhaleSpawnWeight;
                 }
-                spawns.addSpawn(costSpawnerData.category, new MobSpawnSettings.SpawnerData(this.entityType, weight, costSpawnerData.min, costSpawnerData.max));
+                spawns.addSpawn(this.entityType, costSpawnerData.category, weight, UniformInt.of(costSpawnerData.min, costSpawnerData.max));
 
                 if (costSpawnerData.cost > 0.0D && costSpawnerData.budget > 0.0D) {
-                    spawns.addMobCharge(this.entityType, costSpawnerData.cost, costSpawnerData.budget);
+                    spawns.addMobSpawnCost(this.entityType, costSpawnerData.cost, costSpawnerData.budget);
                 }
             }
         }
@@ -60,12 +61,12 @@ public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityTy
     }
 
 
-    private record CostSpawnerData(HolderSet<Biome> biomes, Optional<HolderSet<Biome>> biomesIntersect, MobCategory category, Weight weight, int min, int max, double cost, double budget) {
+    private record CostSpawnerData(HolderSet<Biome> biomes, Optional<HolderSet<Biome>> biomesIntersect, MobCategory category, int weight, int min, int max, double cost, double budget) {
         private static final Codec<CostSpawnerData> CODEC = RecordCodecBuilder.create(builder -> builder.group(
                 Biome.LIST_CODEC.fieldOf("biomes").forGetter(CostSpawnerData::biomes),
                 Biome.LIST_CODEC.optionalFieldOf("biomes_intersect").forGetter(CostSpawnerData::biomesIntersect),
                 MobCategory.CODEC.fieldOf("category").forGetter(CostSpawnerData::category),
-                Weight.CODEC.fieldOf("weight").forGetter(CostSpawnerData::weight),
+                Codec.INT.fieldOf("weight").forGetter(CostSpawnerData::weight),
                 Codec.INT.fieldOf("min").forGetter(CostSpawnerData::min),
                 Codec.INT.fieldOf("max").forGetter(CostSpawnerData::max),
                 Codec.DOUBLE.optionalFieldOf("cost", 0.0D).forGetter(CostSpawnerData::cost),

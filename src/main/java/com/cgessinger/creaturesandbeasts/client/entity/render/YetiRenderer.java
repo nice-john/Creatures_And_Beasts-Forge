@@ -2,75 +2,25 @@ package com.cgessinger.creaturesandbeasts.client.entity.render;
 
 import com.cgessinger.creaturesandbeasts.client.entity.model.YetiModel;
 import com.cgessinger.creaturesandbeasts.entities.YetiEntity;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import com.geckolib.renderer.base.RenderPassInfo;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-
-import javax.annotation.Nullable;
-
-@OnlyIn(Dist.CLIENT)
-public class YetiRenderer extends GeoEntityRenderer<YetiEntity> {
-    private YetiEntity entity;
-
+public class YetiRenderer extends CnbEntityRenderer<YetiEntity> {
     public YetiRenderer(EntityRendererProvider.Context context) {
-        super(context, new YetiModel());
-        this.shadowRadius = 0.7F;
+        super(context, new YetiModel(), 0.7F, 1.0F, 1.0F, true, id -> RenderTypes.entityTranslucent(id));
+        this.withRenderLayer(new HeldItemBoneLayer<YetiEntity, LivingEntityRenderState>(context, this, "ItemHolder",
+                ItemDisplayContext.THIRD_PERSON_LEFT_HAND, YetiEntity::getHolding,
+                yeti -> yeti.isBaby()
+                        ? HeldItemBoneLayer.Pose.at(0.05F, 0.3F, 0.15F).rotZ(-10.0F).rotY(-43.0F).rotZ(10.0F)
+                        : HeldItemBoneLayer.Pose.at(0.3F, 1.0F, 0.0F)));
     }
 
+    // The baby yeti's head bone is modelled lying down, so it yaws around Z.
     @Override
-    public void preRender(PoseStack poseStack, YetiEntity animatable, BakedGeoModel model, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
-        this.entity = animatable;
-        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
-    }
-
-    @Override
-    public void renderRecursively(PoseStack poseStack, YetiEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
-        if (bone.getName().equals("ItemHolder")) {
-            poseStack.pushPose();
-
-            if (this.entity != null && this.entity.isBaby()) {
-                poseStack.translate(bone.getPosX() + 0.05D, bone.getPosY() + 0.3D, bone.getPosZ() + 0.15D);
-                poseStack.mulPose(Axis.ZP.rotationDegrees(-10.0F));
-                poseStack.mulPose(Axis.YP.rotationDegrees(-43.0F));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(10.0F));
-            } else if (this.entity != null) {
-                poseStack.translate(bone.getPosX() + 0.3D, bone.getPosY() + 1.0D, bone.getPosZ());
-            }
-
-            // Render the held item
-            Minecraft.getInstance().getItemRenderer().renderStatic(
-                    this.entity.getHolding(),
-                    ItemDisplayContext.THIRD_PERSON_LEFT_HAND,
-                    packedLight,
-                    packedOverlay,
-                    poseStack,
-                    bufferSource,
-                    Minecraft.getInstance().level,
-                    0
-            );
-
-            poseStack.popPose();
-
-            // Restore the render buffer for GeckoLib
-            buffer = bufferSource.getBuffer(RenderType.entityTranslucent(getTextureLocation(animatable)));
-        }
-
-        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
-    }
-
-    @Override
-    public RenderType getRenderType(YetiEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
-        return RenderType.entityTranslucent(texture);
+    protected boolean headYawOnZ(RenderPassInfo<LivingEntityRenderState> info) {
+        return isBaby(info);
     }
 }

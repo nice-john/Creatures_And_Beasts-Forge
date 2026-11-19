@@ -1,31 +1,27 @@
 package com.cgessinger.creaturesandbeasts.client.armor.model;
 
-import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
-import net.minecraft.resources.ResourceLocation;
+import com.geckolib.model.GeoModel;
+import com.geckolib.renderer.base.GeoRenderState;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import software.bernie.geckolib.model.GeoModel;
-
-@OnlyIn(Dist.CLIENT)
 public class FlowerCrownModel extends GeoModel<FlowerCrownItem> {
-    private static final ResourceLocation FLOWER_CROWN_MODEL = ResourceLocation.fromNamespaceAndPath("cnb", "geo/armor/flower_crown.geo.json");
-    private static final ResourceLocation FLOWER_CROWN_TEXTURE = ResourceLocation.fromNamespaceAndPath("cnb", "textures/armor/flower_crown.png");
-    private static final ResourceLocation FLOWER_CROWN_ANIMATION = ResourceLocation.fromNamespaceAndPath("cnb", "animations/flower_crown.animation.json");
+    private static final Identifier FLOWER_CROWN_MODEL = Identifier.fromNamespaceAndPath("cnb", "geo/armor/flower_crown.geo.json");
+    private static final Identifier FLOWER_CROWN_TEXTURE = Identifier.fromNamespaceAndPath("cnb", "textures/armor/flower_crown.png");
+    private static final Identifier FLOWER_CROWN_ANIMATION = Identifier.fromNamespaceAndPath("cnb", "animations/flower_crown.animation.json");
 
     @Override
-    public ResourceLocation getModelResource(FlowerCrownItem animatable) {
+    public Identifier getModelResource(GeoRenderState renderState) {
         return FLOWER_CROWN_MODEL;
     }
 
     @Override
-    public ResourceLocation getTextureResource(FlowerCrownItem animatable) {
+    public Identifier getTextureResource(GeoRenderState renderState) {
         return FLOWER_CROWN_TEXTURE;
     }
 
     @Override
-    public ResourceLocation getAnimationResource(FlowerCrownItem animatable) {
+    public Identifier getAnimationResource(FlowerCrownItem animatable) {
         return FLOWER_CROWN_ANIMATION;
     }
 }
-

@@ -103,7 +103,9 @@ public class ConvertItemGoal extends Goal {
         entityIn.setInspecting(false);
 
         if (entityIn.getHolding().is(Items.DIRT)) {
-            entityIn.spawnAtLocation(new ItemStack(Items.MYCELIUM, 1));
+            if (entityIn.level() instanceof ServerLevel sl) {
+                entityIn.spawnAtLocation(sl, new ItemStack(Items.MYCELIUM, 1));
+            }
         } else {
             ItemStack returnItem = entityIn.getHolding().copy();
 
@@ -122,7 +124,9 @@ public class ConvertItemGoal extends Goal {
                         mut.removeIf(holder -> holder.is(EnchantmentTags.CURSE)));
             }
 
-            entityIn.spawnAtLocation(returnItem);
+            if (entityIn.level() instanceof ServerLevel sl) {
+                entityIn.spawnAtLocation(sl, returnItem);
+            }
             if (entityIn.level() instanceof ServerLevel serverLevel) {
                 ExperienceOrb.award(serverLevel, entityIn.position(), entityIn.getRandom().nextInt(16) + 1);
             }
@@ -164,7 +168,7 @@ public class ConvertItemGoal extends Goal {
                         // this only crashes on the 1.21 line.
                         ItemStack particleStack = entityIn.getHolding();
                         if (!particleStack.isEmpty()) {
-                            entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, particleStack), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
+                            entityIn.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(particleStack)), entityIn.getRandomX(0.5F) + entityIn.getLookAngle().x / 2.0D, entityIn.getRandomY(), entityIn.getRandomZ(0.5F) + entityIn.getLookAngle().z / 2.0D, 4D, 0D, 0D);
                         }
                     }
                 }

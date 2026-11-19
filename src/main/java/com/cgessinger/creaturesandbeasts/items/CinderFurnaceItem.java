@@ -16,8 +16,8 @@ public class CinderFurnaceItem extends BlockItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> components, TooltipFlag flag) {
-        super.appendHoverText(stack, context, components, flag);
-        components.add(Component.translatable("cnb.item.tooltip.cinder_furnace"));
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> components, TooltipFlag flag) {
+        super.appendHoverText(stack, context, display, components, flag);
+        components.accept(Component.translatable("cnb.item.tooltip.cinder_furnace"));
     }
 }

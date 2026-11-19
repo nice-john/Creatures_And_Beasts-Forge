@@ -1,7 +1,7 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -14,9 +14,12 @@ public class CNBTags {
         public static final TagKey<Item> END_WHALE_FOOD = tag("end_whale_food");
         public static final TagKey<Item> LITTLE_GREBE_FOOD = tag("little_grebe_food");
         public static final TagKey<Item> SPORELING_FOOD = tag("sporeling_food");
+        public static final TagKey<Item> REPAIRS_FLOWER_CROWN = tag("repairs_flower_crown");
+        public static final TagKey<Item> REPAIRS_SPORELING_BACKPACK = tag("repairs_sporeling_backpack");
+        public static final TagKey<Item> REPAIRS_CINDER_TOOLS = tag("repairs_cinder_tools");
 
         private static TagKey<Item> tag(String name) {
-            return ItemTags.create(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name));
+            return ItemTags.create(Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name));
         }
     }
 }

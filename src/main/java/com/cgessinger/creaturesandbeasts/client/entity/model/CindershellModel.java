@@ -2,29 +2,20 @@ package com.cgessinger.creaturesandbeasts.client.entity.model;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.CindershellEntity;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.model.data.EntityModelData;
+public class CindershellModel extends CnbGeoModel<CindershellEntity> {
+    private static final Identifier CINDERSHELL_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell.geo.json");
+    private static final Identifier BABY_CINDERSHELL_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/baby_cindershell.geo.json");
+    private static final Identifier CINDERSHELL_FURNACE_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell_furnace.geo.json");
 
-import static software.bernie.geckolib.constant.DataTickets.ENTITY_MODEL_DATA;
+    private static final Identifier CINDERSHELL_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell.png");
+    private static final Identifier BABY_CINDERSHELL_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/baby_cindershell.png");
 
-@OnlyIn(Dist.CLIENT)
-public class CindershellModel extends GeoModel<CindershellEntity> {
-    private static final ResourceLocation CINDERSHELL_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell.geo.json");
-    private static final ResourceLocation BABY_CINDERSHELL_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/baby_cindershell.geo.json");
-    private static final ResourceLocation CINDERSHELL_FURNACE_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cindershell/cindershell_furnace.geo.json");
-
-    private static final ResourceLocation CINDERSHELL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell.png");
-    private static final ResourceLocation BABY_CINDERSHELL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/baby_cindershell.png");
-
-    private static final ResourceLocation CINDERSHELL_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cindershell.animation.json");
+    private static final Identifier CINDERSHELL_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cindershell.animation.json");
 
     @Override
-    public ResourceLocation getModelResource(CindershellEntity entity) {
+    protected Identifier selectModel(CindershellEntity entity) {
         if (entity.isBaby()) {
             return BABY_CINDERSHELL_MODEL;
         } else if (entity.hasFurnace()) {
@@ -35,28 +26,14 @@ public class CindershellModel extends GeoModel<CindershellEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureResource(CindershellEntity entity) {
+    protected Identifier selectTexture(CindershellEntity entity) {
         return entity.isBaby() ? BABY_CINDERSHELL_TEXTURE : CINDERSHELL_TEXTURE;
     }
 
     @Override
-    public ResourceLocation getAnimationResource(CindershellEntity entity) {
+    public Identifier getAnimationResource(CindershellEntity entity) {
         return CINDERSHELL_ANIMATIONS;
     }
 
-    @Override
-    public void setCustomAnimations(CindershellEntity animatable, long instanceId, AnimationState<CindershellEntity> animationState) {
-        super.setCustomAnimations(animatable, instanceId, animationState);
-
-        GeoBone head_rotation = this.getAnimationProcessor().getBone("head_rotation");
-
-        if (head_rotation != null) {
-            // Use the correct DataTicket for EntityModelData
-            EntityModelData extraData = animationState.getData(ENTITY_MODEL_DATA);
-
-            head_rotation.setRotX(extraData.headPitch() * ((float) Math.PI / 180F));
-            head_rotation.setRotY(extraData.netHeadYaw() * ((float) Math.PI / 180F));
-        }
-    }
 
 }

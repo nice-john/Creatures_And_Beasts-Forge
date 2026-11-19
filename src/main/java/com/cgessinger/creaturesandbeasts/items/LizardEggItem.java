@@ -1,16 +1,14 @@
 package com.cgessinger.creaturesandbeasts.items;
 
-import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.LizardEggEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
@@ -19,64 +17,37 @@ import net.minecraft.world.level.block.Block;
 
 public class LizardEggItem extends BlockItem {
 
-    public LizardEggItem(Block block) {
-        super(block, new Item.Properties().stacksTo(16));
-    }
-
-    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
-        ItemStack itemstack = playerIn.getItemInHand(handIn);
-        worldIn.playSound(null, playerIn.getX(), playerIn.getY(), playerIn.getZ(), SoundEvents.EGG_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (worldIn.random.nextFloat() * 0.4F + 0.8F));
-        if (!worldIn.isClientSide) {
-            LizardEggEntity eggentity = new LizardEggEntity(worldIn, playerIn);
-            eggentity.setItem(itemstack);
-            eggentity.shootFromRotation(playerIn, playerIn.getXRot(), playerIn.getYRot(), 0.0F, 1.5F, 1.0F);
-            worldIn.addFreshEntity(eggentity);
-        }
-
-        playerIn.awardStat(Stats.ITEM_USED.get(this));
-        if (!playerIn.getAbilities().instabuild) {
-            itemstack.shrink(1);
-        }
-
-        return InteractionResultHolder.sidedSuccess(itemstack, worldIn.isClientSide());
-    }
-
-    public InteractionResult useOn(UseOnContext context) {
-        if (context.isSecondaryUseActive()) {
-            InteractionResult interactionresult = this.place(new BlockPlaceContext(context));
-            if (!interactionresult.consumesAction() && true /* TODO[1.21.1 port]: was isEdible() */) {
-                InteractionResult interactionresult1 = this.use(context.getLevel(), context.getPlayer(), context.getHand()).getResult();
-                return interactionresult1 == InteractionResult.CONSUME ? InteractionResult.CONSUME_PARTIAL : interactionresult1;
-            } else {
-                return interactionresult;
-            }
-        }
-
-        Player player = context.getPlayer();
-
-        if (player == null) {
-            return InteractionResult.FAIL;
-        }
-
-        ItemStack itemstack = player.getItemInHand(context.getHand());
-        context.getLevel().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.EGG_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (context.getLevel().random.nextFloat() * 0.4F + 0.8F));
-        if (!context.getLevel().isClientSide) {
-            LizardEggEntity eggentity = new LizardEggEntity(context.getLevel(), player);
-            eggentity.setItem(itemstack);
-            eggentity.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
-            context.getLevel().addFreshEntity(eggentity);
-        }
-
-        player.awardStat(Stats.ITEM_USED.get(this));
-        if (!player.getAbilities().instabuild) {
-            itemstack.shrink(1);
-        }
-
-        return InteractionResultHolder.sidedSuccess(itemstack, context.getLevel().isClientSide()).getResult();
+    public LizardEggItem(Block block, Properties properties) {
+        super(block, properties.stacksTo(16));
     }
 
     @Override
-    public String getDescriptionId() {
-        return this.getOrCreateDescriptionId();
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        ItemStack itemstack = player.getItemInHand(hand);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.EGG_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+        if (level instanceof ServerLevel) {
+            LizardEggEntity eggentity = new LizardEggEntity(level, player);
+            eggentity.setItem(itemstack.copyWithCount(1));
+            eggentity.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 1.5F, 1.0F);
+            level.addFreshEntity(eggentity);
+        }
+        player.awardStat(Stats.ITEM_USED.get(this));
+        itemstack.consume(1, player);
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        if (player == null) {
+            return InteractionResult.FAIL;
+        }
+        if (context.isSecondaryUseActive()) {
+            InteractionResult placed = this.place(new BlockPlaceContext(context));
+            if (placed.consumesAction()) {
+                return placed;
+            }
+        }
+        return this.use(context.getLevel(), player, context.getHand());
     }
 }

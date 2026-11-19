@@ -1,10 +1,12 @@
 package com.cgessinger.creaturesandbeasts.entities;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -17,7 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -55,25 +57,21 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         builder.define(SPEAR, new ItemStack(CNBItems.CACTEM_SPEAR.get()));
     }
 
-    // ---- Save/load (1.21 ItemStack save/load API takes a HolderLookup.Provider) ----
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
-        super.addAdditionalSaveData(tag);
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
         ItemStack spear = this.getSpear();
         if (!spear.isEmpty()) {
-            tag.put("CactemSpear", spear.save(this.registryAccess(), new CompoundTag()));
+            output.store("CactemSpear", ItemStack.CODEC, spear);
         }
-        tag.putBoolean("DealtDamage", this.dealtDamage);
+        output.putBoolean("DealtDamage", this.dealtDamage);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
-        if (tag.contains("CactemSpear", 10)) {
-            ItemStack.parse(this.registryAccess(), tag.getCompound("CactemSpear"))
-                    .ifPresent(stack -> this.entityData.set(SPEAR, stack));
-        }
-        this.dealtDamage = tag.getBoolean("DealtDamage");
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        input.read("CactemSpear", ItemStack.CODEC).ifPresent(stack -> this.entityData.set(SPEAR, stack));
+        this.dealtDamage = input.getBooleanOr("DealtDamage", false);
     }
 
     @Override
@@ -87,8 +85,8 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         int loyaltyLevel = enchantLevel(Enchantments.LOYALTY);
         if (loyaltyLevel > 0 && (this.dealtDamage || this.isNoPhysics()) && owner != null) {
             if (!isAcceptibleReturnOwner()) {
-                if (!this.level().isClientSide && this.pickup == AbstractArrow.Pickup.ALLOWED) {
-                    this.spawnAtLocation(this.getPickupItem(), 0.1F);
+                if (this.level() instanceof ServerLevel serverLevel && this.pickup == AbstractArrow.Pickup.ALLOWED) {
+                    this.spawnAtLocation(serverLevel, this.getPickupItem(), 0.1F);
                 }
                 this.discard();
             } else {
@@ -97,7 +95,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
                 this.setPosRaw(this.getX(),
                         this.getY() + toOwner.y * 0.015D * (double) loyaltyLevel,
                         this.getZ());
-                if (this.level().isClientSide) {
+                if (this.level().isClientSide()) {
                     this.yOld = this.getY();
                 }
                 double d0 = 0.05D * (double) loyaltyLevel;
@@ -117,16 +115,11 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
      * and the player never gets it back. Mirrors 1.19 behavior.
      */
     @Override
-    protected void tickDespawn() {
+    public void tickDespawn() {
         int loyaltyLevel = enchantLevel(Enchantments.LOYALTY);
         if (this.pickup != AbstractArrow.Pickup.ALLOWED || loyaltyLevel <= 0) {
             super.tickDespawn();
         }
-    }
-
-    @Override
-    protected ItemStack getPickupItem() {
-        return this.getSpear().copy();
     }
 
     @Override
@@ -166,8 +159,8 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         this.dealtDamage = true;
         SoundEvent soundEvent = SoundEvents.TRIDENT_HIT;
 
-        if (hit.hurt(source, damage)) {
-            if (hit.getType() == EntityType.ENDERMAN) return;
+        if (hit.hurtOrSimulate(source, damage)) {
+            if (hit.getType() == net.minecraft.world.entity.EntityTypes.ENDERMAN) return;
 
             if (hit instanceof LivingEntity hitLiving) {
                 // Fire Aspect: 4 sec/level burn (mirrors 1.20.1 behavior).
