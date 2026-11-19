@@ -14,12 +14,12 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 @Environment(EnvType.CLIENT)
 public class ThrownCactemSpearRenderer extends EntityRenderer<ThrownCactemSpearEntity> {
-    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem_spear.png");
+    public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem_spear.png");
     private final CactemSpearModel model;
 
     public ThrownCactemSpearRenderer(EntityRendererProvider.Context context) {
@@ -50,7 +50,7 @@ public class ThrownCactemSpearRenderer extends EntityRenderer<ThrownCactemSpearE
     }
 
 
-    public ResourceLocation getTextureLocation(ThrownCactemSpearEntity spearEntity) {
+    public Identifier getTextureLocation(ThrownCactemSpearEntity spearEntity) {
         return TEXTURE;
     }
 }

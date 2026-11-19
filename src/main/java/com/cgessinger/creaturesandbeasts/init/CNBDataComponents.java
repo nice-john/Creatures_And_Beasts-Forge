@@ -6,7 +6,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Custom DataComponentType registry. Anything we want to stash on an ItemStack and have survive
@@ -39,7 +39,7 @@ public class CNBDataComponents {
 
     private static <T> DataComponentType<T> register(String name, DataComponentType<T> type) {
         return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
-                ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name), type);
+                Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name), type);
     }
 
     public static void register() {

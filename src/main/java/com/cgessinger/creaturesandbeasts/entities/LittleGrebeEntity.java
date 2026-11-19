@@ -21,7 +21,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -47,14 +47,14 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.Nullable;
 import java.util.Random;
@@ -95,12 +95,12 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
         this.goalSelector.addGoal(9, new GoToWaterGoal(this, 0.8D));
     }
 
-    public static boolean checkGrebeSpawnRules(EntityType<LittleGrebeEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
+    public static boolean checkGrebeSpawnRules(EntityType<LittleGrebeEntity> animal, LevelAccessor worldIn, EntitySpawnReason reason, BlockPos pos, RandomSource randomIn) {
         return worldIn.getRawBrightness(pos, 0) > 8;
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, EntitySpawnReason reason, @Nullable SpawnGroupData spawnDataIn) {
         if (spawnDataIn == null) {
             spawnDataIn = new AgeableMobGroupData(0.6F);
         }
@@ -114,7 +114,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
         float babyHealth = 5.0F;
         if (isBaby() && MAX_HEALTH > babyHealth) {
             this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(new AttributeModifier(
-                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "grebe_health_reduction"),
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "grebe_health_reduction"),
                     babyHealth - MAX_HEALTH,
                     AttributeModifier.Operation.ADD_VALUE));
             this.setHealth(babyHealth);
@@ -124,7 +124,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
     @Override
     protected void ageBoundaryReached() {
         this.stopRiding();
-        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "grebe_health_reduction"));
+        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "grebe_health_reduction"));
         this.setHealth((float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
     }
 
@@ -231,18 +231,18 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
 
     }
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationTest<E> event) {
         if (!(this.onGround() || this.isInWater() || this.isBaby())) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("little_grebe.fall"));
+            event.controller().setAnimation(RawAnimation.begin().thenLoop("little_grebe.fall"));
             return PlayState.CONTINUE;
         } else if (this.isInWater()) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("little_grebe.swim"));
+            event.controller().setAnimation(RawAnimation.begin().thenLoop("little_grebe.swim"));
             return PlayState.CONTINUE;
         } else if (!(walkAnimation.speed() > -0.15F && walkAnimation.speed() < 0.15F)) {
             if (this.isBaby()) {
-                event.getController().setAnimation(RawAnimation.begin().thenLoop("little_grebe_chick.walk"));
+                event.controller().setAnimation(RawAnimation.begin().thenLoop("little_grebe_chick.walk"));
             } else {
-                event.getController().setAnimation(RawAnimation.begin().thenLoop("little_grebe.walk"));
+                event.controller().setAnimation(RawAnimation.begin().thenLoop("little_grebe.walk"));
             }
             return PlayState.CONTINUE;
         }
@@ -251,7 +251,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+        controllers.add(new AnimationController<>("controller", 0, this::animationPredicate));
     }
 
     @Override
@@ -259,13 +259,7 @@ public class LittleGrebeEntity extends Animal implements GeoAnimatable {
         return this.cache; // Return the cache instance
     }
 
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount; // Use the entity's internal tick count
-    }
-
-
-    static class LittleGrebeRandomStrollGoal extends RandomStrollGoal {
+static class LittleGrebeRandomStrollGoal extends RandomStrollGoal {
         private static final Random rand = new Random();
         private final LittleGrebeEntity littleGrebe;
         private final int intervalLand;

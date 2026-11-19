@@ -8,14 +8,14 @@ import com.cgessinger.creaturesandbeasts.containers.CinderFurnaceContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 // TODO[1.21.1 port]: re-attach the SmeltingRecipeBookComponent overlay once CinderFurnaceContainer
 // extends RecipeBookMenu<SingleRecipeInput, SmeltingRecipe> again.
 @Environment(EnvType.CLIENT)
 public class CinderFurnaceScreen extends AbstractContainerScreen<CinderFurnaceContainer> {
-    private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(
+    private final Identifier texture = Identifier.fromNamespaceAndPath(
             CreaturesAndBeasts.MOD_ID, "textures/gui/container/cinder_furnace.png");
 
     public CinderFurnaceScreen(CinderFurnaceContainer cinderFurnaceContainer, Inventory inventory, Component component) {

@@ -6,7 +6,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBDataComponents;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.items.HealSpellBookItem;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -37,8 +37,8 @@ public abstract class MixinAnvilMenu {
     public DataSlot cost;
 
     /** Stable id used to find/replace prior hide-bonus modifiers across re-anvils. */
-    private static final ResourceLocation HIDE_BONUS_ID =
-            ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "yeti_hide_bonus");
+    private static final Identifier HIDE_BONUS_ID =
+            Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "yeti_hide_bonus");
 
     @Inject(method = "createResult", at = @At("HEAD"), cancellable = true)
     private void CNB_anvilCreateResult(CallbackInfo ci) {

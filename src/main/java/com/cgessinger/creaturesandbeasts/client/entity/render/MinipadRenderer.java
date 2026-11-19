@@ -9,12 +9,12 @@ import com.cgessinger.creaturesandbeasts.entities.MinipadEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import net.minecraft.resources.Identifier;
+import com.geckolib.cache.model.BakedGeoModel;
+import com.geckolib.cache.model.GeoBone;
+import com.geckolib.renderer.GeoEntityRenderer;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +27,7 @@ public class MinipadRenderer extends GeoEntityRenderer<MinipadEntity> {
     }
 
     @Override
-    public RenderType getRenderType(MinipadEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
+    public RenderType getRenderType(MinipadEntity animatable, Identifier texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
         // Updated signature and implementation
         return RenderType.entityTranslucent(texture);
     }

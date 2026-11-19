@@ -17,7 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -87,7 +87,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
         int loyaltyLevel = enchantLevel(Enchantments.LOYALTY);
         if (loyaltyLevel > 0 && (this.dealtDamage || this.isNoPhysics()) && owner != null) {
             if (!isAcceptibleReturnOwner()) {
-                if (!this.level().isClientSide && this.pickup == AbstractArrow.Pickup.ALLOWED) {
+                if (!this.level().isClientSide() && this.pickup == AbstractArrow.Pickup.ALLOWED) {
                     this.spawnAtLocation(this.getPickupItem(), 0.1F);
                 }
                 this.discard();
@@ -97,7 +97,7 @@ public class ThrownCactemSpearEntity extends AbstractArrow {
                 this.setPosRaw(this.getX(),
                         this.getY() + toOwner.y * 0.015D * (double) loyaltyLevel,
                         this.getZ());
-                if (this.level().isClientSide) {
+                if (this.level().isClientSide()) {
                     this.yOld = this.getY();
                 }
                 double d0 = 0.05D * (double) loyaltyLevel;

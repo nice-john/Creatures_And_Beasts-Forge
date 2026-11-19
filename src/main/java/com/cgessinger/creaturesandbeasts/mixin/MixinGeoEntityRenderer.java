@@ -8,8 +8,8 @@ import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.renderer.GeoEntityRenderer;
 
 @Mixin(GeoEntityRenderer.class)
 public class MixinGeoEntityRenderer<T extends LivingEntity & GeoEntity> {

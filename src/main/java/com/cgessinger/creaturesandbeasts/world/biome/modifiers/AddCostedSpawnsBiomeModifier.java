@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.MobCategory;
 
 /**
@@ -42,7 +42,7 @@ public final class AddCostedSpawnsBiomeModifier {
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(ConventionalBiomeTags.IN_NETHER),
                 MobCategory.CREATURE, CNBEntityTypes.CINDERSHELL, 8, 1, 3);
-        BiomeModifications.create(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cindershell_spawn_cost"))
+        BiomeModifications.create(Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cindershell_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
                         ctx -> ctx.hasTag(ConventionalBiomeTags.IN_NETHER),
                         (selector, modContext) ->
@@ -66,7 +66,7 @@ public final class AddCostedSpawnsBiomeModifier {
         // 3.0/6.0 (ratio 1.5) is a soft soft-cap: whales still throttle in dense
         // clusters but exploration encounters work normally. Vanilla strider for
         // reference uses 0.7/60 (ratio 0.008, basically no throttle).
-        BiomeModifications.create(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "end_whale_spawn_cost"))
+        BiomeModifications.create(Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "end_whale_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
                         ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
                         (selector, modContext) ->
@@ -95,7 +95,7 @@ public final class AddCostedSpawnsBiomeModifier {
         BiomeModifications.addSpawn(
                 ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
                 MobCategory.CREATURE, CNBEntityTypes.LIZARD, 12, 1, 4);
-        BiomeModifications.create(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lizard_desert_spawn_cost"))
+        BiomeModifications.create(Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lizard_desert_spawn_cost"))
                 .add(ModificationPhase.ADDITIONS,
                         ctx -> ctx.hasTag(ConventionalBiomeTags.DESERT),
                         (selector, modContext) ->
@@ -173,7 +173,7 @@ public final class AddCostedSpawnsBiomeModifier {
 
     /** Returns true when the biome key is {@code minecraft:<path>}. */
     private static boolean matchesMinecraft(BiomeSelectionContext ctx, String path) {
-        ResourceLocation loc = ctx.getBiomeKey().location();
+        Identifier loc = ctx.getBiomeKey().identifier();
         return loc.getNamespace().equals("minecraft") && loc.getPath().equals(path);
     }
 }

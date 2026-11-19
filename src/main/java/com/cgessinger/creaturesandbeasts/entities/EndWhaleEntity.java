@@ -20,7 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.TamableAnimal;
@@ -46,14 +46,14 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 import java.util.EnumSet;
 
@@ -135,7 +135,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     @Override public boolean isSaddled() { return this.entityData.get(SADDLED); }
 
     private void mountWhale(Player player) {
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             player.setYRot(this.getYRot());
             player.setXRot(this.getXRot());
             player.startRiding(this);
@@ -157,7 +157,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
                     - Mth.cos(this.getYRot() * Mth.DEG_TO_RAD) * verticalOffset * Mth.sin(whalePitch);
 
             // server positions the passenger; client interpolates
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                 rider.setPos(this.getX() + xOffset, this.getY() + yOffset, this.getZ() + zOffset);
                 this.clampRotation(rider);
             }
@@ -276,7 +276,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
             float f1 = 0.16277137F / (f * f * f);
 
             // server-only physics; client interpolates
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                 this.moveRelative(this.onGround() ? 0.1F * f1 : 0.02F, travelVector);
                 this.move(MoverType.SELF, this.getDeltaMovement());
                 this.setDeltaMovement(this.getDeltaMovement().scale(f));
@@ -288,7 +288,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
-        if (this.level().isClientSide) {
+        if (this.level().isClientSide()) {
             boolean flag = this.isOwnedBy(player) || this.isTame() || (itemstack.is(END_WHALE_FOOD) && !this.isTame());
             return flag ? InteractionResult.CONSUME : InteractionResult.PASS;
         } else if (this.isSaddled() && player.isSecondaryUseActive()) {
@@ -296,7 +296,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
             return InteractionResult.CONSUME;
         } else if (this.isSaddled()) {
             this.mountWhale(player);
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
         } else if (!this.isTame()) {
             if (itemstack.is(END_WHALE_FOOD)) {
                 if (!player.getAbilities().instabuild) itemstack.shrink(1);
@@ -329,7 +329,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     @Override
     public int getBaseExperienceReward() {
-        return 12 + this.level().random.nextInt(5);
+        return 12 + this.level().getRandom().nextInt(5);
     }
 
     /**
@@ -343,7 +343,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
      * downstream still rejects positions where the AABB collides with end stone,
      * so we don't have to handle the "spawned inside an island" case.)
      */
-    public static boolean checkEndWhaleSpawnRules(EntityType<EndWhaleEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
+    public static boolean checkEndWhaleSpawnRules(EntityType<EndWhaleEntity> animal, LevelAccessor worldIn, EntitySpawnReason reason, BlockPos pos, RandomSource randomIn) {
         return pos.getY() >= 50;
     }
 
@@ -384,29 +384,21 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("whale_fly");
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
-        event.getController().setAnimation(RawAnimation.begin().thenPlay("whale_fly"));
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationTest<E> event) {
+        event.controller().setAnimation(RawAnimation.begin().thenPlay("whale_fly"));
         return PlayState.CONTINUE;
     }
 
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 5, this::animationPredicate));
+        controllers.add(new AnimationController<>("controller", 5, this::animationPredicate));
     }
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() { return this.cache; }
 
-    @Override
-    public double getTick(Object animatable) {
-        // Canonical GeckoLib helper — returns gameTime + partialTick on the client,
-        // gameTime on the server. Keeps animation time monotonic across the client/server boundary
-        // and uses the same time source GeckoLib's renderer expects internally.
-        return software.bernie.geckolib.util.RenderUtil.getCurrentTick();
-    }
-
-    // ---------------- Controls/Goals ----------------
+// ---------------- Controls/Goals ----------------
 
     static class EndWhaleLookControl extends LookControl {
         private final EndWhaleEntity endWhale;

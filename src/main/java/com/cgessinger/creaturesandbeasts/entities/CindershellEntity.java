@@ -5,7 +5,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -35,7 +35,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -49,7 +49,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -61,7 +61,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.Bucketable;
+import net.minecraft.world.entity.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
@@ -70,15 +70,15 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -89,8 +89,8 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     private static final EntityDataAccessor<Boolean> FROM_BUCKET = SynchedEntityData.defineId(CindershellEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> FURNACE = SynchedEntityData.defineId(CindershellEntity.class, EntityDataSerializers.BOOLEAN);
 
-    private static final net.minecraft.resources.ResourceLocation BABY_HEALTH_REDUCTION_ID =
-            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "cindershell_baby_health_reduction");
+    private static final net.minecraft.resources.Identifier BABY_HEALTH_REDUCTION_ID =
+            net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "cindershell_baby_health_reduction");
     private static final float BABY_HEALTH = 10.0F;
     private static final EntityDimensions SLEEPING_DIMENSIONS = EntityDimensions.fixed(0.4F, 0.4F);
 
@@ -106,7 +106,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         @Override public int get(int i) { return i == 0 ? cookingProgress : i == 1 ? cookingTotalTime : 0; }
         @Override public void set(int i, int v) { if (i == 0) cookingProgress = v; else if (i == 1) cookingTotalTime = v; }
     };
-    private final Object2IntOpenHashMap<ResourceLocation> recipesUsed = new Object2IntOpenHashMap<>();
+    private final Object2IntOpenHashMap<Identifier> recipesUsed = new Object2IntOpenHashMap<>();
 
     public CindershellEntity(EntityType<CindershellEntity> type, Level worldIn) {
         super(type, worldIn);
@@ -196,7 +196,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
      * lava-lake floor and made the in-lava reports more likely. Removed — biome
      * filter (c:is_nether via biome modifier) is enough geographic restriction.
      */
-    public static boolean checkCindershellSpawnRules(EntityType<CindershellEntity> entity, LevelAccessor level, MobSpawnType mobSpawnType, BlockPos pos, RandomSource random) {
+    public static boolean checkCindershellSpawnRules(EntityType<CindershellEntity> entity, LevelAccessor level, EntitySpawnReason mobSpawnType, BlockPos pos, RandomSource random) {
         net.minecraft.world.level.block.state.BlockState atState = level.getBlockState(pos);
         net.minecraft.world.level.block.state.BlockState belowState = level.getBlockState(pos.below());
         net.minecraft.world.level.block.state.BlockState aboveState = level.getBlockState(pos.above());
@@ -216,7 +216,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
     public InteractionResult tryStartEat(Player player, ItemStack stack) {
         if (stack.is(CINDERSHELL_FOOD)) {
             int i = this.getAge();
-            if (!this.level().isClientSide && i == 0 && this.canFallInLove()) {
+            if (!this.level().isClientSide() && i == 0 && this.canFallInLove()) {
                 this.usePlayerItem(player, player.getUsedItemHand(), stack);
                 this.setEating(true);
                 this.setInLove(player);
@@ -228,9 +228,9 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
                 this.playSound(CNBSoundEvents.CINDERSHELL_BABY_EAT, 1.3F, 1F);
                 this.usePlayerItem(player, player.getUsedItemHand(), stack);
                 this.ageUp((int) (-i / 20F * 0.1F), true);
-                return InteractionResult.sidedSuccess(this.level().isClientSide);
+                return InteractionResult.sidedSuccess(this.level().isClientSide());
             }
-            if (this.level().isClientSide) {
+            if (this.level().isClientSide()) {
                 return InteractionResult.CONSUME;
             }
         }
@@ -248,21 +248,21 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
             ItemStack bucketWithData = ItemUtils.createFilledResult(item, player, bucketItem, false);
             player.setItemInHand(hand, bucketWithData);
             Level level = this.level();
-            if (!level.isClientSide) {
+            if (!level.isClientSide()) {
                 CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer) player, bucketItem);
             }
             this.discard();
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return InteractionResult.SUCCESS;
         } else if (!this.isBaby() && !this.hasFurnace() && item.is(com.cgessinger.creaturesandbeasts.init.CNBItems.CINDERSHELL_FURNACE)) {
             this.setFurnace(true);
             if (!player.getAbilities().instabuild) {
                 item.shrink(1);
             }
             this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
         } else if (this.hasFurnace() && player.isSecondaryUseActive()) {
             // Shift-right-click while furnace is mounted: drop it back (along with any contents).
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                 this.spawnAtLocation(com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE);
                 for (int i = 0; i < this.items.size(); i++) {
                     ItemStack stack = this.items.get(i);
@@ -272,15 +272,15 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
                 this.setFurnace(false);
                 this.playSound(SoundEvents.HORSE_SADDLE, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.8F);
             }
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
         } else if (this.hasFurnace()) {
-            if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
+            if (!this.level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
                 // Fabric: vanilla ServerPlayer.openMenu(MenuProvider). Forge/NeoForge added a
                 // 2-arg overload taking a buf consumer for extended menu data — we don't
                 // pass any extra payload, so the simple vanilla form suffices.
                 serverPlayer.openMenu(this);
             }
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
         } else if (this.isFood(item) && !this.getEating()) {
             return this.tryStartEat(player, item);
         }
@@ -497,7 +497,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
                     this.getDeltaMovement().x, 0, this.getDeltaMovement().z);
         }
 
-        if (!this.level().isClientSide && this.hasFurnace() && !this.items.get(0).isEmpty()) {
+        if (!this.level().isClientSide() && this.hasFurnace() && !this.items.get(0).isEmpty()) {
             RecipeHolder<? extends AbstractCookingRecipe> holder = findRecipe(this.items.get(0)).orElse(null);
             if (canBurn(holder, this.items, 64)) {
                 if (this.random.nextDouble() < 0.1D) {
@@ -517,30 +517,30 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
             } else {
                 this.cookingProgress = 0;
             }
-        } else if (!this.level().isClientSide) {
+        } else if (!this.level().isClientSide()) {
             this.cookingProgress = 0;
         }
     }
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> state) {
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationTest<E> state) {
         if (!(walkAnimation.speed() > -0.05F && walkAnimation.speed() < 0.05F)) {
-            state.getController().setAnimation(RawAnimation.begin().thenLoop(this.isBaby() ? "baby_cindershell_walk" : "cindershell_walk"));
+            state.controller().setAnimation(RawAnimation.begin().thenLoop(this.isBaby() ? "baby_cindershell_walk" : "cindershell_walk"));
         } else if (this.getEating()) {
-            state.getController().setAnimation(RawAnimation.begin().thenLoop("cindershell_idle_eat"));
+            state.controller().setAnimation(RawAnimation.begin().thenLoop("cindershell_idle_eat"));
         } else if (this.isDeadOrDying()) {
-            state.getController().setAnimation(RawAnimation.begin().thenPlay("cindershell_death"));
+            state.controller().setAnimation(RawAnimation.begin().thenPlay("cindershell_death"));
         } else {
-            state.getController().setAnimation(RawAnimation.begin().thenLoop("cindershell_idle"));
+            state.controller().setAnimation(RawAnimation.begin().thenLoop("cindershell_idle"));
         }
         return PlayState.CONTINUE;
     }
 
-    private <E extends GeoAnimatable> PlayState eatAnimationPredicate(AnimationState<E> state) {
+    private <E extends GeoAnimatable> PlayState eatAnimationPredicate(AnimationTest<E> state) {
         if (this.getEating()) {
-            state.getController().setAnimation(RawAnimation.begin().thenPlay("cindershell_eat"));
+            state.controller().setAnimation(RawAnimation.begin().thenPlay("cindershell_eat"));
             return PlayState.CONTINUE;
         }
-        state.getController().forceAnimationReset();
+        state.controller().forceAnimationReset();
         return PlayState.STOP;
     }
 
@@ -556,8 +556,8 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        AnimationController<CindershellEntity> mainController = new AnimationController<>(this, "controller", 0, this::animationPredicate);
-        AnimationController<CindershellEntity> eatController = new AnimationController<>(this, "eatController", 0, this::eatAnimationPredicate);
+        AnimationController<CindershellEntity> mainController = new AnimationController<>("controller", 0, this::animationPredicate);
+        AnimationController<CindershellEntity> eatController = new AnimationController<>("eatController", 0, this::eatAnimationPredicate);
         eatController.setSoundKeyframeHandler(this::soundListener);
         controllers.add(mainController);
         controllers.add(eatController);
@@ -568,12 +568,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         return this.cache;
     }
 
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount;
-    }
-
-    // ---- Sizing / eye height (1.20.1 parity) ----
+// ---- Sizing / eye height (1.20.1 parity) ----
     // Babies render at 0.55× width / 0.35× height; sleeping pose uses fixed small dims.
     // Eye height is 20% of body height (cindershell head sits low on the shell).
     // (1.21 made getDimensions final on LivingEntity; getDefaultDimensions is the new hook.)
@@ -631,7 +626,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
         if (this.hasFurnace()) {
             this.playSound(SoundEvents.HORSE_SADDLE, 1.0F,
                     (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.8F);
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                 this.spawnAtLocation(com.cgessinger.creaturesandbeasts.init.CNBBlocks.CINDER_FURNACE);
                 for (int i = 0; i < this.items.size(); i++) {
                     ItemStack stack = this.items.get(i);

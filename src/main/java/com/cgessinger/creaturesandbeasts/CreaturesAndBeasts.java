@@ -15,6 +15,10 @@ public class CreaturesAndBeasts implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        // Config first: spawn registration (CNBBiomeModifiers) reads values from it.
+        CNBConfig.load(FabricLoader.getInstance().getConfigDir()
+                .resolve("creaturesandbeasts-common.toml"));
+
         // ── Registries ───────────────────────────────────────────────────────
         // Data components must register before items so item ctors can reference
         // their HIDE_LAYERS / IMBUED_TICKS types without a load-order race.
@@ -23,9 +27,6 @@ public class CreaturesAndBeasts implements ModInitializer {
         CNBParticleTypes.register();
         CNBBlocks.register();
         CNBItems.register();
-        // Fuel registration is a separate FabricFuelRegistry call (was a per-item
-        // ctor side-effect on 1.20.1-fabric; explicit call now).
-        CNBItems.registerFuels();
         CNBEntityTypes.register();
         CNBContainerTypes.register();
         CNBPaintingTypes.register();
@@ -57,9 +58,5 @@ public class CreaturesAndBeasts implements ModInitializer {
         // self-registers each potted block into the static FlowerPotBlock.POTTED_BY_BLOCK
         // map. Our POTTED_PINK_WATERLILY etc. are registered in CNBBlocks via that ctor,
         // so the (Forge-only) FlowerPotBlock.addPlant() helper isn't needed here.
-
-        // ── Config ────────────────────────────────────────────────────────────
-        CNBConfig.load(FabricLoader.getInstance().getConfigDir()
-                .resolve("creaturesandbeasts-common.toml"));
     }
 }

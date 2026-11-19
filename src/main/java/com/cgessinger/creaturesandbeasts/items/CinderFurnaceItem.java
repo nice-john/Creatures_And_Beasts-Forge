@@ -5,9 +5,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class CinderFurnaceItem extends BlockItem {
 
@@ -16,8 +17,9 @@ public class CinderFurnaceItem extends BlockItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> components, TooltipFlag flag) {
-        super.appendHoverText(stack, context, components, flag);
-        components.add(Component.translatable("cnb.item.tooltip.cinder_furnace"));
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display,
+                                Consumer<Component> builder, TooltipFlag flag) {
+        super.appendHoverText(stack, context, display, builder, flag);
+        builder.accept(Component.translatable("cnb.item.tooltip.cinder_furnace"));
     }
 }

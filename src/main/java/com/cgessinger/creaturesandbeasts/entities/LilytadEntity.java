@@ -22,7 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,20 +36,20 @@ import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -141,7 +141,7 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData spawnGroupData) {
         switch (this.random.nextInt(3)) {
             case 0:
             default:
@@ -158,7 +158,7 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
         return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
     }
 
-    public static boolean checkLilytadSpawnRules(EntityType<LilytadEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
+    public static boolean checkLilytadSpawnRules(EntityType<LilytadEntity> animal, LevelAccessor worldIn, EntitySpawnReason reason, BlockPos pos, RandomSource randomIn) {
         return true;
     }
 
@@ -248,7 +248,7 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
     public void shear(SoundSource source) {
         this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, source, 1.0F, 1.0F);
         this.gameEvent(GameEvent.SHEAR);
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             this.setSheared(true);
             this.spawnAtLocation(new ItemStack(this.getLilytadType().getShearItem()));
         }
@@ -276,9 +276,9 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
         return CNBSoundEvents.LILYTAD_DEATH;
     }
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationTest<E> event) {
         if (!(walkAnimation.speed() > -0.05F && walkAnimation.speed() < 0.05F)) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("lilytad.walk"));
+            event.controller().setAnimation(RawAnimation.begin().thenLoop("lilytad.walk"));
             return PlayState.CONTINUE;
         }
         return PlayState.STOP;
@@ -286,7 +286,7 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+        controllers.add(new AnimationController<>("controller", 0, this::animationPredicate));
     }
 
     @Override
@@ -294,14 +294,7 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
         return this.cache;
     }
 
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount; // Use the entity's internal tick count
-    }
-
-
-
-    static class LilytadPanicGoal extends PanicGoal {
+static class LilytadPanicGoal extends PanicGoal {
         private final LilytadEntity lilytad;
 
         public LilytadPanicGoal(LilytadEntity lilytad, double speedModifier) {

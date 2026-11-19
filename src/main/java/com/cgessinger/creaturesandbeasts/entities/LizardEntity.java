@@ -7,7 +7,7 @@ import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import com.cgessinger.creaturesandbeasts.init.CNBLizardTypes;
 import com.cgessinger.creaturesandbeasts.util.LizardType;
 import com.cgessinger.creaturesandbeasts.util.Netable;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -35,7 +35,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -52,7 +52,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -64,14 +64,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 
 import org.jetbrains.annotations.Nullable;
@@ -199,12 +199,12 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         }
     }
 
-    public static boolean checkLizardSpawnRules(EntityType<LizardEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
+    public static boolean checkLizardSpawnRules(EntityType<LizardEntity> animal, LevelAccessor worldIn, EntitySpawnReason reason, BlockPos pos, RandomSource randomIn) {
         return worldIn.getRawBrightness(pos, 0) > 8;
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, EntitySpawnReason reason, @Nullable SpawnGroupData spawnDataIn) {
         Holder<Biome> biome = worldIn.getBiome(this.blockPosition());
 
         // TODO[1.21.1 port]: restore variant tagging via DataComponent (was: dataTag.getString("LizardType"))
@@ -454,15 +454,15 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         return new ItemStack(this.getLizardType().getSpawnItem());
     }
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationTest<E> event) {
         if (this.entityData.get(LAYING_EGG)) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_dig"));
+            event.controller().setAnimation(RawAnimation.begin().thenLoop("lizard_dig"));
             return PlayState.CONTINUE;
         } else if (event.isMoving()) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_walk"));
+            event.controller().setAnimation(RawAnimation.begin().thenLoop("lizard_walk"));
             return PlayState.CONTINUE;
         } else if (this.isPartying()) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("lizard_dance"));
+            event.controller().setAnimation(RawAnimation.begin().thenLoop("lizard_dance"));
             return PlayState.CONTINUE;
         }
         return PlayState.STOP;
@@ -470,7 +470,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 4, this::animationPredicate));
+        controllers.add(new AnimationController<>("controller", 4, this::animationPredicate));
 
     }
 
@@ -480,15 +480,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
         return this.cache;
     }
 
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount; // Use the entity's internal tick count
-    }
-
-
-
-
-    static class LizardBreedGoal extends BreedGoal {
+static class LizardBreedGoal extends BreedGoal {
         private final LizardEntity lizard;
 
         LizardBreedGoal(LizardEntity lizard, double speedModifier) {
@@ -553,7 +545,7 @@ public class LizardEntity extends Animal implements GeoAnimatable, Netable {
                     this.lizard.setLayingEgg(true);
                 } else if (this.lizard.layEggCounter > this.adjustedTickDelay(200)) {
                     Level level = this.lizard.level();
-                    level.playSound(null, blockpos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.random.nextFloat() * 0.2F);
+                    level.playSound(null, blockpos, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + level.getRandom().nextFloat() * 0.2F);
                     level.setBlock(this.blockPos.above(), CNBBlocks.LIZARD_EGGS.defaultBlockState().setValue(LizardEggBlock.EGGS, this.lizard.random.nextInt(6) + 1), 3);
 
                     LizardEggBlock lizardEggBlock = (LizardEggBlock) level.getBlockState(this.blockPos.above()).getBlock();

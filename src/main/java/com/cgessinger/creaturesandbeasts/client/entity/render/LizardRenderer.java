@@ -9,11 +9,11 @@ import com.cgessinger.creaturesandbeasts.entities.LizardEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
+import net.minecraft.resources.Identifier;
+import com.geckolib.renderer.GeoEntityRenderer;
+import com.geckolib.cache.model.BakedGeoModel;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +25,7 @@ public class LizardRenderer extends GeoEntityRenderer<LizardEntity> {
     }
 
     @Override
-    public RenderType getRenderType(LizardEntity animatable, ResourceLocation texture, MultiBufferSource bufferSource, float partialTick) {
+    public RenderType getRenderType(LizardEntity animatable, Identifier texture, MultiBufferSource bufferSource, float partialTick) {
         return RenderType.entityCutoutNoCull(texture);
     }
 

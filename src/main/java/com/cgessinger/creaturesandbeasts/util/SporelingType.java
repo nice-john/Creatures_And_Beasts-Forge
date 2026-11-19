@@ -1,6 +1,6 @@
 package com.cgessinger.creaturesandbeasts.util;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.jetbrains.annotations.Nullable;
@@ -8,43 +8,43 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SporelingType {
-    private static final Map<ResourceLocation, SporelingType> SPORELING_TYPES = new LinkedHashMap<>();
+    private static final Map<Identifier, SporelingType> SPORELING_TYPES = new LinkedHashMap<>();
 
-    private ResourceLocation id;
-    private Pair<ResourceLocation, ResourceLocation> modelAndTexture;
+    private Identifier id;
+    private Pair<Identifier, Identifier> modelAndTexture;
     private SporelingHostility hostility;
 
-    public SporelingType(ResourceLocation id, ResourceLocation model, ResourceLocation texture, SporelingHostility hostility) {
+    public SporelingType(Identifier id, Identifier model, Identifier texture, SporelingHostility hostility) {
         this(id, Pair.of(model, texture), hostility);
     }
 
-    public SporelingType(ResourceLocation id, Pair<ResourceLocation, ResourceLocation> modelAndTexture, SporelingHostility hostility) {
+    public SporelingType(Identifier id, Pair<Identifier, Identifier> modelAndTexture, SporelingHostility hostility) {
         this.id = id;
         this.modelAndTexture = modelAndTexture;
         this.hostility = hostility;
     }
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
-    public void setId(ResourceLocation id) {
+    public void setId(Identifier id) {
         this.id = id;
     }
 
-    public ResourceLocation getTextureLocation() {
+    public Identifier getTextureLocation() {
         return this.modelAndTexture.getRight();
     }
 
-    public void setTextureLocation(ResourceLocation textureLocation) {
+    public void setTextureLocation(Identifier textureLocation) {
         this.modelAndTexture = Pair.of(this.modelAndTexture.getLeft(), textureLocation);
     }
 
-    public ResourceLocation getModelLocation() {
+    public Identifier getModelLocation() {
         return this.modelAndTexture.getLeft();
     }
 
-    public void setModelLocation(ResourceLocation modelLocation) {
+    public void setModelLocation(Identifier modelLocation) {
         this.modelAndTexture = Pair.of(modelLocation, this.modelAndTexture.getRight());
     }
 
@@ -57,7 +57,7 @@ public class SporelingType {
     }
 
     public static SporelingType registerSporelingType(SporelingType sporelingType) {
-        ResourceLocation id = sporelingType.getId();
+        Identifier id = sporelingType.getId();
         if (SPORELING_TYPES.containsKey(id)) {
             throw new IllegalStateException(String.format("%s already exists in the SporelingType registry.", id.toString()));
         }
@@ -70,12 +70,12 @@ public class SporelingType {
         if (id == null) {
             return null;
         } else {
-            return getById(ResourceLocation.tryParse(id));
+            return getById(Identifier.tryParse(id));
         }
     }
 
     @Nullable
-    public static SporelingType getById(@Nullable ResourceLocation id) {
+    public static SporelingType getById(@Nullable Identifier id) {
         return SPORELING_TYPES.get(id);
     }
 

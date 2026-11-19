@@ -4,7 +4,7 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.containers.CinderFurnaceContainer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 
@@ -12,7 +12,7 @@ public class CNBContainerTypes {
 
     public static final MenuType<CinderFurnaceContainer> CINDER_FURNACE_CONTAINER =
             Registry.register(BuiltInRegistries.MENU,
-                    ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cinder_furnace_container"),
+                    Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cinder_furnace_container"),
                     // Vanilla MenuType ctor: (MenuConstructor<T>, FeatureFlagSet). Forge's
                     // IMenuTypeExtension.create wraps this; on Fabric we use the vanilla form
                     // directly with the default vanilla feature set.

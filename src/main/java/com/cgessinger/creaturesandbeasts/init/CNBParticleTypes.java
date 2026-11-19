@@ -5,7 +5,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class CNBParticleTypes {
 
@@ -18,7 +18,7 @@ public class CNBParticleTypes {
 
     private static SimpleParticleType register(String name) {
         return Registry.register(BuiltInRegistries.PARTICLE_TYPE,
-                ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name),
+                Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name),
                 new SimpleParticleType(false));
     }
 

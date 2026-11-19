@@ -1,40 +1,33 @@
 package com.cgessinger.creaturesandbeasts.items;
 
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.animatable.client.GeoRenderProvider;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.renderer.GeoArmorRenderer;
-import software.bernie.geckolib.util.GeckoLibUtil;
-import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.core.Holder;
+import com.geckolib.animatable.GeoItem;
+import com.geckolib.animatable.client.GeoRenderProvider;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.renderer.GeoArmorRenderer;
+import com.geckolib.util.GeckoLibUtil;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-public class SporelingBackpackItem extends ArmorItem implements GeoItem {
-
+public class SporelingBackpackItem extends Item implements GeoItem {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    public SporelingBackpackItem(Holder<ArmorMaterial> material, Type type, Item.Properties properties) {
-        super(material, type, properties);
+    public SporelingBackpackItem(Properties properties) {
+        super(properties);
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 0, this::predicate));
+        controllers.add(new AnimationController<SporelingBackpackItem>("controller", 0, this::predicate));
     }
 
-    private PlayState predicate(AnimationState<?> state) {
+    private PlayState predicate(AnimationTest<SporelingBackpackItem> state) {
         return PlayState.CONTINUE;
     }
 
@@ -44,17 +37,13 @@ public class SporelingBackpackItem extends ArmorItem implements GeoItem {
     @Override
     public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
         consumer.accept(new GeoRenderProvider() {
-            private GeoArmorRenderer<?> renderer;
+            private GeoArmorRenderer<?, ?> renderer;
 
             @Override
-            public <T extends LivingEntity> HumanoidModel<?> getGeoArmorRenderer(@Nullable T livingEntity,
-                                                                                  ItemStack itemStack,
-                                                                                  @Nullable EquipmentSlot equipmentSlot,
-                                                                                  @Nullable HumanoidModel<T> original) {
+            public GeoArmorRenderer<?, ?> getGeoArmorRenderer(ItemStack stack, EquipmentSlot slot) {
                 if (this.renderer == null) {
                     this.renderer = new com.cgessinger.creaturesandbeasts.client.armor.render.SporelingBackpackRenderer();
                 }
-                this.renderer.prepForRender(livingEntity, itemStack, equipmentSlot, original);
                 return this.renderer;
             }
         });

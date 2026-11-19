@@ -9,12 +9,12 @@ import com.cgessinger.creaturesandbeasts.items.GlowingFlowerCrownItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.renderer.GeoArmorRenderer;
+import com.geckolib.cache.model.BakedGeoModel;
+import com.geckolib.renderer.GeoArmorRenderer;
 
 @Environment(EnvType.CLIENT)
 public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
@@ -55,7 +55,7 @@ public class FlowerCrownRenderer extends GeoArmorRenderer<FlowerCrownItem> {
      * armor render type for the plain crown.
      */
     @Override
-    public RenderType getRenderType(FlowerCrownItem animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
+    public RenderType getRenderType(FlowerCrownItem animatable, Identifier texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
         if (animatable instanceof GlowingFlowerCrownItem) {
             return RenderType.eyes(texture);
         }

@@ -4,7 +4,7 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 
 /**
@@ -17,7 +17,7 @@ public class ClientEvents {
     public static void register() {
         // Cactem spear "throwing" item property – shows raised/drawn animation when in use.
         ItemProperties.register(CNBItems.CACTEM_SPEAR,
-                ResourceLocation.withDefaultNamespace("throwing"),
+                Identifier.withDefaultNamespace("throwing"),
                 (item, level, entity, seed) ->
                         entity != null && entity.isUsingItem() && entity.getUseItem() == item
                                 ? 1.0F : 0.0F);

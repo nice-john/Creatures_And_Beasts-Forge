@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "com.cgessinger.creaturesandbeasts.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "_disabled_for_parity_with_forge": [
     "MixinEntity (sporeling rider positioning)",
     "MixinItemStack (legacy capability copy placeholder)",

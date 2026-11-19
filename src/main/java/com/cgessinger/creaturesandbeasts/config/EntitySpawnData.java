@@ -6,7 +6,7 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -15,18 +15,18 @@ import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 
-public record EntitySpawnData(ResourceLocation entityType, ResourceLocation biome, MobCategory spawnCategory, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {
+public record EntitySpawnData(Identifier entityType, Identifier biome, MobCategory spawnCategory, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {
 
-    public ResourceLocation getEntityTypeLocation() {
+    public Identifier getEntityTypeLocation() {
         return entityType;
     }
 
     @Nullable
     public EntityType<? extends Entity> getEntityType() {
-        return BuiltInRegistries.ENTITY_TYPE.get(this.getEntityTypeLocation());
+        return BuiltInRegistries.ENTITY_TYPE.getValue(this.getEntityTypeLocation());
     }
 
-    public ResourceLocation getBiomeLocation() {
+    public Identifier getBiomeLocation() {
         return biome;
     }
 
@@ -35,7 +35,7 @@ public record EntitySpawnData(ResourceLocation entityType, ResourceLocation biom
         if (this.biome == null) {
             return null; // Return null if the biome is not set
         }
-        return ResourceKey.create(Registries.BIOME, this.biome); // Use Registries.BIOME and pass the biome ResourceLocation
+        return ResourceKey.create(Registries.BIOME, this.biome); // Use Registries.BIOME and pass the biome Identifier
     }
 
     public String getCategoryName() {
@@ -108,8 +108,8 @@ public record EntitySpawnData(ResourceLocation entityType, ResourceLocation biom
 
 
         return new EntitySpawnData(
-                ResourceLocation.tryParse(config.get("entityType")),
-                ResourceLocation.tryParse(config.get("biome")),
+                Identifier.tryParse(config.get("entityType")),
+                Identifier.tryParse(config.get("biome")),
                 config.getEnum("spawnCategory", MobCategory.class),
                 config.getInt("spawnWeight"),
                 config.getInt("minCount"),
@@ -119,14 +119,14 @@ public record EntitySpawnData(ResourceLocation entityType, ResourceLocation biom
     }
 
     public static EntitySpawnData of(EntityType<? extends Entity> entityType, ResourceKey<Biome> biome, MobCategory category, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {
-        return new EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.getKey(entityType), biome.location(), category, spawnWeight, minCount, maxCount, mobCost, energyBudget);
+        return new EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.getKey(entityType), biome.identifier(), category, spawnWeight, minCount, maxCount, mobCost, energyBudget);
     }
 
-    public static EntitySpawnData of(ResourceLocation entityType, ResourceKey<Biome> biome, MobCategory category, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {
-        return new EntitySpawnData(entityType, biome.location(), category, spawnWeight, minCount, maxCount, mobCost, energyBudget);
+    public static EntitySpawnData of(Identifier entityType, ResourceKey<Biome> biome, MobCategory category, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {
+        return new EntitySpawnData(entityType, biome.identifier(), category, spawnWeight, minCount, maxCount, mobCost, energyBudget);
     }
 
-    public static EntitySpawnData of(ResourceLocation entityType, ResourceLocation biome, MobCategory category, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {
+    public static EntitySpawnData of(Identifier entityType, Identifier biome, MobCategory category, int spawnWeight, int minCount, int maxCount, double mobCost, double energyBudget) {
         return new EntitySpawnData(entityType, biome, category, spawnWeight, minCount, maxCount, mobCost, energyBudget);
     }
 }

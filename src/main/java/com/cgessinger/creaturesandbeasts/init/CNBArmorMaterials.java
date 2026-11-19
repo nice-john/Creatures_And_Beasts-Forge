@@ -1,75 +1,63 @@
 package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * 1.21 reworked {@link ArmorMaterial} from an interface (one-method-per-attribute) into a
- * registered record with a defense map, layer list, and Holder-based equip sound.
+ * 26.x ArmorMaterial is a plain (unregistered) record that references an equipment asset
+ * ({@code assets/cnb/equipment/<name>.json}). Durability 0 is intentional: these items are
+ * built without {@code humanoidArmor(...)} (see {@link CNBItems#armorProperties}) so they stay
+ * unbreakable like the 1.21.1 versions.
  */
-public class CNBArmorMaterials {
+public final class CNBArmorMaterials {
 
-    public static final Holder<ArmorMaterial> FLOWER_CROWN = register("flower_crown",
+    public static final ArmorMaterial FLOWER_CROWN = material("flower_crown",
             defenseFor(1, 2, 3, 1),
-            5,                              // enchantment value
-            0.0F,                           // toughness
-            0.0F,                           // knockback resistance
-            () -> Ingredient.EMPTY);        // repair (none)
+            5,
+            CNBTags.Items.REPAIRS_FLOWER_CROWN);
 
-    public static final Holder<ArmorMaterial> SPORELING_BACKPACK = register("sporeling_backpack",
+    public static final ArmorMaterial GLOWING_FLOWER_CROWN = material("flower_crown",
+            defenseFor(1, 2, 3, 1),
+            5,
+            CNBTags.Items.REPAIRS_GLOWING_FLOWER_CROWN);
+
+    public static final ArmorMaterial SPORELING_BACKPACK = material("sporeling_backpack",
             defenseFor(0, 0, 1, 0),
             2,
-            0.0F,
-            0.0F,
-            () -> Ingredient.of(Items.LEATHER));
+            ItemTags.REPAIRS_LEATHER_ARMOR);
 
-    private static Map<ArmorItem.Type, Integer> defenseFor(int boots, int legs, int chest, int head) {
-        Map<ArmorItem.Type, Integer> map = new EnumMap<>(ArmorItem.Type.class);
-        map.put(ArmorItem.Type.BOOTS, boots);
-        map.put(ArmorItem.Type.LEGGINGS, legs);
-        map.put(ArmorItem.Type.CHESTPLATE, chest);
-        map.put(ArmorItem.Type.HELMET, head);
-        // 1.21 added BODY (wolf armor slot). Mirror the NeoForge branch's fallback
-        // (chest defense) so the cross-loader behavior is identical for any future
-        // item that opts into the BODY slot. Neither flower_crown nor sporeling_backpack
-        // currently equips there.
-        map.put(ArmorItem.Type.BODY, chest);
+    private static Map<ArmorType, Integer> defenseFor(int boots, int legs, int chest, int head) {
+        Map<ArmorType, Integer> map = new EnumMap<>(ArmorType.class);
+        map.put(ArmorType.BOOTS, boots);
+        map.put(ArmorType.LEGGINGS, legs);
+        map.put(ArmorType.CHESTPLATE, chest);
+        map.put(ArmorType.HELMET, head);
+        map.put(ArmorType.BODY, chest);
         return map;
     }
 
-    private static Holder<ArmorMaterial> register(String name,
-                                                  Map<ArmorItem.Type, Integer> defense,
-                                                  int enchantmentValue,
-                                                  float toughness,
-                                                  float knockbackResistance,
-                                                  java.util.function.Supplier<Ingredient> repair) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name);
-        ArmorMaterial.Layer layer = new ArmorMaterial.Layer(id, "", false);
-        ArmorMaterial material = new ArmorMaterial(
-                defense,
-                enchantmentValue,
-                Holder.direct(SoundEvents.ARMOR_EQUIP_LEATHER.value()),
-                repair,
-                List.of(layer),
-                toughness,
-                knockbackResistance);
-        return Registry.registerForHolder(BuiltInRegistries.ARMOR_MATERIAL, id, material);
+    private static ArmorMaterial material(String assetName, Map<ArmorType, Integer> defense, int enchantmentValue,
+                                          TagKey<Item> repair) {
+        ResourceKey<EquipmentAsset> asset = ResourceKey.create(EquipmentAssets.ROOT_ID,
+                Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, assetName));
+        return new ArmorMaterial(0, defense, enchantmentValue, SoundEvents.ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, repair, asset);
     }
 
     public static void register() {
-        // Static field initialisation registers everything when this class is loaded.
-        CreaturesAndBeasts.LOGGER.debug("Registered CNB armor materials");
+        CreaturesAndBeasts.LOGGER.debug("Loaded CNB armor materials");
     }
+
+    private CNBArmorMaterials() {}
 }

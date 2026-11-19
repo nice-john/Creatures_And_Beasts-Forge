@@ -2,7 +2,7 @@ package com.cgessinger.creaturesandbeasts.util;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
@@ -12,27 +12,27 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class MinipadType {
-    private static final Map<ResourceLocation, MinipadType> MINIPAD_TYPES = new LinkedHashMap<>();
+    private static final Map<Identifier, MinipadType> MINIPAD_TYPES = new LinkedHashMap<>();
 
-    private ResourceLocation id;
-    private Pair<ResourceLocation, ResourceLocation> textures;
+    private Identifier id;
+    private Pair<Identifier, Identifier> textures;
     private Supplier<Item> shearItem;
     private Supplier<Item> glowShearItem;
     private Supplier<SimpleParticleType> particle;
 
-    public MinipadType(@Nullable Item shearItem, @Nullable Item glowShearItem, ResourceLocation id, ResourceLocation texture, ResourceLocation glowTexture, Supplier<SimpleParticleType> particle) {
+    public MinipadType(@Nullable Item shearItem, @Nullable Item glowShearItem, Identifier id, Identifier texture, Identifier glowTexture, Supplier<SimpleParticleType> particle) {
         this(shearItem, glowShearItem, id, Pair.of(texture, glowTexture), particle);
     }
 
-    public MinipadType(@Nullable Supplier<Item> shearItem, @Nullable Supplier<Item> glowShearItem, ResourceLocation id, ResourceLocation texture, ResourceLocation glowTexture, Supplier<SimpleParticleType> particle) {
+    public MinipadType(@Nullable Supplier<Item> shearItem, @Nullable Supplier<Item> glowShearItem, Identifier id, Identifier texture, Identifier glowTexture, Supplier<SimpleParticleType> particle) {
         this(shearItem, glowShearItem, id, Pair.of(texture, glowTexture), particle);
     }
 
-    public MinipadType(@Nullable Item shearItem, @Nullable Item glowShearItem, ResourceLocation id, Pair<ResourceLocation, ResourceLocation> textures, Supplier<SimpleParticleType> particle) {
+    public MinipadType(@Nullable Item shearItem, @Nullable Item glowShearItem, Identifier id, Pair<Identifier, Identifier> textures, Supplier<SimpleParticleType> particle) {
         this(() -> shearItem, () -> glowShearItem, id, textures, particle);
     }
 
-    public MinipadType(@Nullable Supplier<Item> shearItem, @Nullable Supplier<Item> glowShearItem, ResourceLocation id, Pair<ResourceLocation, ResourceLocation> textures, Supplier<SimpleParticleType> particle) {
+    public MinipadType(@Nullable Supplier<Item> shearItem, @Nullable Supplier<Item> glowShearItem, Identifier id, Pair<Identifier, Identifier> textures, Supplier<SimpleParticleType> particle) {
         this.id = id;
         this.textures = textures;
         this.shearItem = shearItem;
@@ -68,23 +68,23 @@ public class MinipadType {
         this.glowShearItem = () -> glowShearItem;
     }
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
-    public void setId(ResourceLocation id) {
+    public void setId(Identifier id) {
         this.id = id;
     }
 
-    public ResourceLocation getTextureLocation() {
+    public Identifier getTextureLocation() {
         return this.textures.getFirst();
     }
 
-    public void setTextureLocation(ResourceLocation textureLocation) {
+    public void setTextureLocation(Identifier textureLocation) {
         this.textures = Pair.of(textureLocation, this.textures.getSecond());
     }
 
-    public ResourceLocation getGlowTextureLocation() {
+    public Identifier getGlowTextureLocation() {
         return this.textures.getSecond();
     }
 
@@ -97,12 +97,12 @@ public class MinipadType {
         return this.particle.get();
     }
 
-    public void setGlowTextureLocation(ResourceLocation glowTextureLocation) {
+    public void setGlowTextureLocation(Identifier glowTextureLocation) {
         this.textures = Pair.of(this.textures.getFirst(), glowTextureLocation);
     }
 
     public static MinipadType registerMinipadType(MinipadType minipadType) {
-        ResourceLocation id = minipadType.getId();
+        Identifier id = minipadType.getId();
         if (MINIPAD_TYPES.containsKey(id)) {
             throw new IllegalStateException(String.format("%s already exists in the MinipadType registry.", id.toString()));
         }
@@ -115,12 +115,12 @@ public class MinipadType {
         if (id == null) {
             return null;
         } else {
-            return getById(ResourceLocation.tryParse(id));
+            return getById(Identifier.tryParse(id));
         }
     }
 
     @Nullable
-    public static MinipadType getById(@Nullable ResourceLocation id) {
+    public static MinipadType getById(@Nullable Identifier id) {
         return MINIPAD_TYPES.get(id);
     }
 

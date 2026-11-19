@@ -7,24 +7,24 @@ import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.entities.SporelingEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBSporelingTypes;
 import com.cgessinger.creaturesandbeasts.util.SporelingType;
-import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.model.GeoModel;
+import net.minecraft.resources.Identifier;
+import com.geckolib.model.GeoModel;
 
 @Environment(EnvType.CLIENT)
 public class SporelingModel extends GeoModel<SporelingEntity> {
-    private static final ResourceLocation SPORELING_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/sporeling.animation.json");
+    private static final Identifier SPORELING_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/sporeling.animation.json");
 
-    private static final ResourceLocation GOOMY_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy.geo.json");
-    private static final ResourceLocation SHRIMPSNAIL_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_shrimpsnail.geo.json");
+    private static final Identifier GOOMY_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy.geo.json");
+    private static final Identifier SHRIMPSNAIL_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_shrimpsnail.geo.json");
 
-    private static final ResourceLocation BIT0_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_bit0.png");
-    private static final ResourceLocation LISTACALISTA_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_listacalista.png");
-    private static final ResourceLocation YUNGWILDER_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_yungwilder.png");
-    private static final ResourceLocation GOOMY_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_goomy.png");
-    private static final ResourceLocation SHRIMPSNAIL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_shrimpsnail.png");
+    private static final Identifier BIT0_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_bit0.png");
+    private static final Identifier LISTACALISTA_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_listacalista.png");
+    private static final Identifier YUNGWILDER_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_yungwilder.png");
+    private static final Identifier GOOMY_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_goomy.png");
+    private static final Identifier SHRIMPSNAIL_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_shrimpsnail.png");
 
     @Override
-    public ResourceLocation getModelResource(SporelingEntity entity) {
+    public Identifier getModelResource(SporelingEntity entity) {
         if (entity.hasCustomName() && entity.getSporelingType().getHostility().equals(SporelingType.SporelingHostility.FRIENDLY)) {
             String customName = entity.getCustomName().getString();
             if (customName.equals("Bit0") || customName.equals("ListaCalista") || customName.equals("yungwilder")) {
@@ -39,7 +39,7 @@ public class SporelingModel extends GeoModel<SporelingEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureResource(SporelingEntity entity) {
+    public Identifier getTextureResource(SporelingEntity entity) {
         if (entity.hasCustomName() && entity.getSporelingType().getHostility().equals(SporelingType.SporelingHostility.FRIENDLY)) {
             String customName = entity.getCustomName().getString();
             switch (customName) {
@@ -60,7 +60,7 @@ public class SporelingModel extends GeoModel<SporelingEntity> {
     }
 
     @Override
-    public ResourceLocation getAnimationResource(SporelingEntity entity) {
+    public Identifier getAnimationResource(SporelingEntity entity) {
         return SPORELING_ANIMATIONS;
     }
 }

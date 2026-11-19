@@ -31,7 +31,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -60,11 +60,14 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.HitResult;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.*;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animation.*;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -202,7 +205,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
-        if (this.level().isClientSide) {
+        if (this.level().isClientSide()) {
             if (this.isTame()) {
                 InteractionResult interactionresult = super.mobInteract(player, hand);
                 if (!interactionresult.consumesAction() && this.isOwnedBy(player)) {
@@ -303,7 +306,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return this.getSporelingType().getHostility() == FRIENDLY ? MobCategory.CREATURE : MobCategory.MONSTER;
     }
 
-    public static boolean checkSporelingSpawnRules(EntityType<SporelingEntity> entity, LevelAccessor worldIn, MobSpawnType mobSpawnType, BlockPos pos, RandomSource rand) {
+    public static boolean checkSporelingSpawnRules(EntityType<SporelingEntity> entity, LevelAccessor worldIn, EntitySpawnReason mobSpawnType, BlockPos pos, RandomSource rand) {
         if (worldIn.getBiome(pos).is(BiomeTags.IS_NETHER)) {
             return worldIn.getDifficulty() != Difficulty.PEACEFUL;
         } else {
@@ -322,7 +325,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
 
     @Nullable
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, EntitySpawnReason reason, @Nullable SpawnGroupData spawnDataIn) {
         // Default: biome-driven variant. SporelingSpawnEggItem.useOn calls applyEggType(...)
         // afterwards to override based on which spawn-egg the player used (Overworld/Nether).
         applyVariantForBiome(worldIn);
@@ -515,34 +518,34 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return SporelingType.getById(this.entityData.get(TYPE));
     }
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
-        AnimationProcessor.QueuedAnimation currentAnimation = event.getController().getCurrentAnimation();
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationTest<E> event) {
+        AnimationProcessor.QueuedAnimation currentAnimation = event.controller().getCurrentAnimation();
 
         if (this.isPassenger()) {
             return PlayState.STOP;
         }
 
         if (this.isInSittingPose()) {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_sitting"));
+            event.controller().setAnimation(RawAnimation.begin().thenLoop("sporeling_sitting"));
         } else if (currentAnimation != null &&
                 (currentAnimation.animation().name().equals("sporeling_sitting") ||
                         currentAnimation.animation().name().equals("sporeling_stand")) &&
                 !this.isInSittingPose()) {
-            event.getController().setAnimation(RawAnimation.begin().thenPlay("sporeling_stand"));
+            event.controller().setAnimation(RawAnimation.begin().thenPlay("sporeling_stand"));
         } else if (this.isAttacking()) {
-            event.getController().setAnimation(RawAnimation.begin().thenPlay("sporeling_bite"));
+            event.controller().setAnimation(RawAnimation.begin().thenPlay("sporeling_bite"));
         } else if (this.isWaving() && this.getHolding().isEmpty()) {
-            event.getController().setAnimation(RawAnimation.begin().thenPlay("sporeling_wave"));
+            event.controller().setAnimation(RawAnimation.begin().thenPlay("sporeling_wave"));
         } else if (this.isInspecting()) {
-            event.getController().setAnimation(RawAnimation.begin().thenPlay("sporeling_convert"));
+            event.controller().setAnimation(RawAnimation.begin().thenPlay("sporeling_convert"));
         } else if (!(walkAnimation.speed() > -0.15F && walkAnimation.speed() < 0.15F)) {
             if (this.isRunning()) {
-                event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_run"));
+                event.controller().setAnimation(RawAnimation.begin().thenLoop("sporeling_run"));
             } else {
-                event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_walk"));
+                event.controller().setAnimation(RawAnimation.begin().thenLoop("sporeling_walk"));
             }
         } else {
-            event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_idle"));
+            event.controller().setAnimation(RawAnimation.begin().thenLoop("sporeling_idle"));
         }
 
         return PlayState.CONTINUE;
@@ -551,14 +554,14 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
     /**
      * Handles backpack animations based on the Sporeling's vehicle state.
      */
-    private <E extends GeoAnimatable> PlayState backpackAnimationPredicate(AnimationState<E> event) {
+    private <E extends GeoAnimatable> PlayState backpackAnimationPredicate(AnimationTest<E> event) {
         Entity vehicle = this.getVehicle();
 
         if (vehicle != null) {
             if (!vehicle.onGround() && vehicle.fallDistance > 0.1F) {
-                event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_backpack_air"));
+                event.controller().setAnimation(RawAnimation.begin().thenLoop("sporeling_backpack_air"));
             } else {
-                event.getController().setAnimation(RawAnimation.begin().thenLoop("sporeling_backpack_idle"));
+                event.controller().setAnimation(RawAnimation.begin().thenLoop("sporeling_backpack_idle"));
             }
             return PlayState.CONTINUE;
         }
@@ -571,8 +574,8 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
      */
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
-        controllers.add(new AnimationController<>(this, "backpackController", 6, this::backpackAnimationPredicate));
+        controllers.add(new AnimationController<>("controller", 0, this::animationPredicate));
+        controllers.add(new AnimationController<>("backpackController", 6, this::backpackAnimationPredicate));
     }
 
     /**
@@ -583,15 +586,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
         return this.cache;
     }
 
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount; // Use the entity's internal tick count
-    }
-
-
-
-
-    static class WaveGoal extends LookAtPlayerGoal {
+static class WaveGoal extends LookAtPlayerGoal {
         private final SporelingEntity sporeling;
 
         public WaveGoal(SporelingEntity entityIn, Class<? extends LivingEntity> watchTargetClass, float maxDistance) {

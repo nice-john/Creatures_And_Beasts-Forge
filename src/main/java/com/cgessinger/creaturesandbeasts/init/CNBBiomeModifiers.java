@@ -2,7 +2,7 @@ package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import com.cgessinger.creaturesandbeasts.world.biome.modifiers.AddCostedSpawnsBiomeModifier;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * On Fabric, biome spawn modifications are driven by the

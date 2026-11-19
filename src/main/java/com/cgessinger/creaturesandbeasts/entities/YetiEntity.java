@@ -27,7 +27,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
@@ -57,18 +57,18 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.animation.keyframe.event.ParticleKeyframeEvent;
 import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
-import software.bernie.geckolib.constant.dataticket.DataTicket;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
-import software.bernie.geckolib.constant.DataTickets;
+import com.geckolib.constant.dataticket.DataTicket;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
+import com.geckolib.constant.DataTickets;
 
 
 import org.jetbrains.annotations.Nullable;
@@ -107,7 +107,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         var stepHeight = this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
         if (stepHeight != null) {
             stepHeight.addOrUpdateTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_step_height"),
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "yeti_step_height"),
                     1.3D - stepHeight.getBaseValue(),
                     net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
         }
@@ -257,7 +257,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, SpawnGroupData spawnDataIn) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, EntitySpawnReason reason, SpawnGroupData spawnDataIn) {
         if (spawnDataIn == null) {
             spawnDataIn = new AgeableMobGroupData(1.0F);
         }
@@ -270,11 +270,11 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         ItemStack item = player.getItemInHand(hand);
 
         if (!(this.isEating() || this.isAttacking())) {
-            if (!this.level().isClientSide && item.getItem() == Items.MELON_SLICE && !this.isPassive()) {
+            if (!this.level().isClientSide() && item.getItem() == Items.MELON_SLICE && !this.isPassive()) {
                 this.setOwnerUUID(player.getUUID());
                 return this.startEat(player, item.copy());
             } else if (item.getItem() == Items.SWEET_BERRIES) {
-                if (!this.level().isClientSide && this.getAge() == 0 && this.canFallInLove()) {
+                if (!this.level().isClientSide() && this.getAge() == 0 && this.canFallInLove()) {
                     this.setInLove(player);
                     return this.startEat(player, item.copy());
                 } else if (this.isBaby()) {
@@ -283,7 +283,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             }
         }
 
-        if (this.level().isClientSide) {
+        if (this.level().isClientSide()) {
             return InteractionResult.CONSUME;
         }
 
@@ -299,7 +299,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         double MAX_HEALTH = this.getAttribute(Attributes.MAX_HEALTH).getValue();
         if (isBaby() && MAX_HEALTH > this.babyHealth) {
             this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(new AttributeModifier(
-                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_health_reduction"),
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "yeti_health_reduction"),
                     this.babyHealth - MAX_HEALTH,
                     AttributeModifier.Operation.ADD_VALUE));
             this.setHealth(this.babyHealth);
@@ -313,12 +313,12 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
     protected void ageBoundaryReached() {
         super.ageBoundaryReached();
         float percentHealth = this.getHealth() / this.babyHealth;
-        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "yeti_health_reduction"));
+        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "yeti_health_reduction"));
         this.setHealth(percentHealth * (float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
         this.setEating(false);
         this.setHolding(ItemStack.EMPTY);
 
-        if (!this.level().isClientSide && this.isPassive() && this.getOwner() != null && this.getOwner() instanceof ServerPlayer player) {
+        if (!this.level().isClientSide() && this.isPassive() && this.getOwner() != null && this.getOwner() instanceof ServerPlayer player) {
             this.tame(player);
             this.setPassive(false);
             this.navigation.stop();
@@ -496,8 +496,8 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         return this.isBaby() ? null : CNBSoundEvents.YETI_HURT;
     }
 
-    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationState<E> event) {
-        var controller = event.getController();
+    private <E extends GeoAnimatable> PlayState animationPredicate(AnimationTest<E> event) {
+        var controller = event.controller();
         if (this.isEating()) {
             controller.setAnimation(
                     RawAnimation.begin().thenPlay(this.isBaby() ? "yeti_baby_eat" : "yeti_adult_eat")
@@ -535,7 +535,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
             this.playSound(CNBSoundEvents.YETI_HIT, 0.4F, 1.0F);
 
             // spawn the particles at the same moment (client-only)
-            if (this.level().isClientSide) {
+            if (this.level().isClientSide()) {
                 net.minecraft.client.particle.ParticleEngine pe = net.minecraft.client.Minecraft.getInstance().particleEngine;
                 net.minecraft.core.BlockPos pos = this.blockPosition();
                 for (int x = pos.getX() - 1; x <= pos.getX() + 1; x++) {
@@ -567,7 +567,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        AnimationController<YetiEntity> controller = new AnimationController<>(this, "controller", 1, this::animationPredicate);
+        AnimationController<YetiEntity> controller = new AnimationController<>("controller", 1, this::animationPredicate);
 
         controller.setSoundKeyframeHandler(this::soundListener);
         controller.setParticleKeyframeHandler(this::particleListener);
@@ -580,13 +580,7 @@ public class YetiEntity extends TamableAnimal implements Enemy, NeutralMob, GeoA
         return this.cache;
     }
 
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount; // Use the entity's internal tick count
-    }
-
-
-    static class TargetPlayerGoal extends NearestAttackableTargetGoal<Player> {
+static class TargetPlayerGoal extends NearestAttackableTargetGoal<Player> {
         private final YetiEntity yeti;
 
         public TargetPlayerGoal(YetiEntity yeti) {

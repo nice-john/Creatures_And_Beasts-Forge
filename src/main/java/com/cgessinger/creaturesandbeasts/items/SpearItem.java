@@ -2,31 +2,35 @@ package com.cgessinger.creaturesandbeasts.items;
 
 import com.cgessinger.creaturesandbeasts.entities.ThrownCactemSpearEntity;
 import com.cgessinger.creaturesandbeasts.init.CNBSoundEvents;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 /**
  * Cactem spear: charge with right-click, release to throw a {@link ThrownCactemSpearEntity}.
@@ -34,18 +38,30 @@ import net.minecraft.world.phys.Vec3;
  * the enchant), Fire Aspect & Knockback (applied on hit by the projectile entity).
  */
 public class SpearItem extends Item {
-    private static final ResourceLocation ATTACK_DAMAGE_ID =
-            ResourceLocation.fromNamespaceAndPath("cnb", "spear_attack_damage");
-    private static final ResourceLocation ATTACK_SPEED_ID =
-            ResourceLocation.fromNamespaceAndPath("cnb", "spear_attack_speed");
+
+    private static final Identifier ATTACK_DAMAGE_ID =
+            Identifier.fromNamespaceAndPath("cnb", "spear_attack_damage");
+    private static final Identifier ATTACK_SPEED_ID =
+            Identifier.fromNamespaceAndPath("cnb", "spear_attack_speed");
 
     public SpearItem(Properties properties) {
-        super(properties.attributes(buildAttributes()));
+        super(properties);
+    }
+
+    /**
+     * Properties for the spear: attribute modifiers, trident-style Tool component (can't break
+     * blocks in creative, 2 durability per mined block) and low enchantability.
+     */
+    public static Properties spearProperties(Properties properties) {
+        return properties
+                .attributes(buildAttributes())
+                .component(DataComponents.TOOL, new Tool(List.of(), 1.0F, 2, false))
+                .enchantable(1);
     }
 
     private static ItemAttributeModifiers buildAttributes() {
         return ItemAttributeModifiers.builder()
-                .add(Attributes.ATTACK_DAMAGE,
+                .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
                         new AttributeModifier(ATTACK_DAMAGE_ID, 5.0D, AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.MAINHAND)
                 .add(Attributes.ATTACK_SPEED,
@@ -54,37 +70,15 @@ public class SpearItem extends Item {
                 .build();
     }
 
-    /** Spears can't break blocks (except in creative). Mirrors vanilla Trident. */
-    @Override
-    public boolean canAttackBlock(BlockState state, Level level, BlockPos pos, Player player) {
-        return !player.isCreative();
-    }
-
     /** Melee hits cost 1 durability. */
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity hurtEntity, LivingEntity owner) {
+    public void postHurtEnemy(ItemStack stack, LivingEntity hurtEntity, LivingEntity owner) {
         stack.hurtAndBreak(1, owner, EquipmentSlot.MAINHAND);
-        return true;
-    }
-
-    /** Mining a non-instabreak block costs 2 durability. */
-    @Override
-    public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity entity) {
-        if ((double) state.getDestroySpeed(level, pos) != 0.0D) {
-            stack.hurtAndBreak(2, entity, EquipmentSlot.MAINHAND);
-        }
-        return true;
-    }
-
-    /** Low enchantability — matches Trident-tier enchant table behavior. */
-    @Override
-    public int getEnchantmentValue() {
-        return 1;
     }
 
     @Override
-    public UseAnim getUseAnimation(ItemStack stack) {
-        return UseAnim.SPEAR;
+    public ItemUseAnimation getUseAnimation(ItemStack stack) {
+        return ItemUseAnimation.SPEAR;
     }
 
     @Override
@@ -93,25 +87,26 @@ public class SpearItem extends Item {
     }
 
     @Override
-    public net.minecraft.world.InteractionResultHolder<ItemStack> use(Level level, Player player, net.minecraft.world.InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
         if (itemstack.getDamageValue() >= itemstack.getMaxDamage() - 1) {
-            return net.minecraft.world.InteractionResultHolder.fail(itemstack);
+            return InteractionResult.FAIL;
         }
         player.startUsingItem(hand);
-        return net.minecraft.world.InteractionResultHolder.consume(itemstack);
+        return InteractionResult.CONSUME;
     }
 
     @Override
-    public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int useTicks) {
-        if (!(entity instanceof Player player)) return;
+    public boolean releaseUsing(ItemStack stack, Level level, LivingEntity entity, int useTicks) {
+        if (!(entity instanceof Player player)) return false;
+
         int charged = this.getUseDuration(stack, entity) - useTicks;
-        if (charged < 10) return;
-        if (level.isClientSide) return;
+        if (charged < 10) return false;
+        if (level.isClientSide()) return false;
 
         // Damage the spear once for the throw
         stack.hurtAndBreak(1, player,
-                player.getUsedItemHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                player.getUsedItemHand() == InteractionHand.MAIN_HAND
                         ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
 
         spawnSpears(stack, player, level);
@@ -120,6 +115,7 @@ public class SpearItem extends Item {
             player.getInventory().removeItem(stack);
         }
         player.awardStat(Stats.ITEM_USED.get(this));
+        return true;
     }
 
     private void spawnSpears(ItemStack stack, Player player, Level level) {
@@ -145,12 +141,10 @@ public class SpearItem extends Item {
 
     private void shootProjectile(Level level, Player player, ItemStack stack, float soundVariation, float yawJitter, boolean canPickup) {
         ThrownCactemSpearEntity spear = new ThrownCactemSpearEntity(level, player, stack);
-
         Vec3 view = player.getViewVector(1.0F);
-        float randomPitch = (level.random.nextFloat() - 0.5F) * yawJitter;
-        float randomYaw = (level.random.nextFloat() - 0.5F) * yawJitter;
+        float randomPitch = (level.getRandom().nextFloat() - 0.5F) * yawJitter;
+        float randomYaw = (level.getRandom().nextFloat() - 0.5F) * yawJitter;
         view = view.xRot(randomPitch).yRot(randomYaw);
-
         spear.shoot(view.x(), view.y(), view.z(), 1.6F, 1.0F);
 
         if (player.getAbilities().instabuild) {

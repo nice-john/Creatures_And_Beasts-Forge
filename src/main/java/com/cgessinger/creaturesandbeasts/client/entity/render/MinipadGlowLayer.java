@@ -8,15 +8,15 @@ import com.cgessinger.creaturesandbeasts.entities.MinipadEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.renderer.GeoRenderer;
-import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
+import com.geckolib.cache.model.BakedGeoModel;
+import com.geckolib.renderer.base.GeoRenderer;
+import com.geckolib.renderer.layer.GeoRenderLayer;
 
 @Environment(EnvType.CLIENT)
 public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
-    private static final ResourceLocation MINIPAD_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/minipad/minipad.geo.json");
+    private static final Identifier MINIPAD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/minipad/minipad.geo.json");
 
     public MinipadGlowLayer(GeoRenderer<MinipadEntity> entityRendererIn) {
         super(entityRendererIn);
@@ -37,7 +37,7 @@ public class MinipadGlowLayer extends GeoRenderLayer<MinipadEntity> {
         long time = entity.level().getDayTime();
 
         if (entity.isGlowing()) {
-            RenderType eyesTexture = RenderType.eyes(ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/minipad/minipad_eyes_glow.png"));
+            RenderType eyesTexture = RenderType.eyes(Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/minipad/minipad_eyes_glow.png"));
             RenderType flowerGlow = RenderType.eyes(entity.getMinipadType().getGlowTextureLocation());
             RenderType flowerTranslucent = RenderType.entityTranslucent(entity.getMinipadType().getGlowTextureLocation());
 

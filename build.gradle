@@ -1,15 +1,18 @@
 plugins {
-    id 'fabric-loom' version '1.7-SNAPSHOT'
+    // 26.x is unobfuscated: the non-remapping Loom plugin id replaces 'fabric-loom'.
+    id 'net.fabricmc.fabric-loom' version '1.17.21'
     id 'maven-publish'
 }
 
-version = '1.1.16'
+version = '2.0.0'
 group = 'com.cgessinger.creaturesandbeasts'
-archivesBaseName = "CNB-1.21.1-fabric"
+base {
+    archivesName = "CNB-26.3-fabric"
+}
 
 // Loom needs an explicit pointer to the access widener; the fabric.mod.json
-// "accessWidener" field alone is not enough for Loom 1.6+ to wire it into the
-// runtime classpath transformations. Path is relative to the project root.
+// "accessWidener" field alone is not enough to wire it into the runtime
+// classpath transformations. Path is relative to the project root.
 loom {
     accessWidenerPath = file("src/main/resources/creatures-and-beasts.aw")
 }
@@ -20,6 +23,7 @@ repositories {
         url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
         content {
             includeGroupByRegex("software\\.bernie.*")
+            includeGroup("com.geckolib")
             includeGroup("com.eliotlash.mclib")
         }
     }
@@ -29,22 +33,21 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.21.1"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:0.16.10"
-    // Latest fabric-api for 1.21.1 (last released for that version line).
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.115.0+1.21.1"
+    minecraft "com.mojang:minecraft:26.3"
+    // No mappings line: 26.x ships unobfuscated, so mod dependencies are plain
+    // implementation (no modImplementation remapping).
+    implementation "net.fabricmc:fabric-loader:0.19.5"
+    implementation "net.fabricmc.fabric-api:fabric-api:0.166.2+26.3"
 
-    // GeckoLib for Fabric 1.21.1 — pulled in via gradle.properties pin.
-    modImplementation "software.bernie.geckolib:geckolib-fabric-1.21.1:${geckolib_version}"
+    // GeckoLib 5 for Fabric 26.3 (group moved from software.bernie.geckolib to com.geckolib).
+    implementation "com.geckolib:geckolib-fabric-26.3:${geckolib_version}"
 
-    // Night Config – TOML for our simple config.
+    // Night Config Ã¢â‚¬â€œ TOML for our simple config.
     // The toml artifact contains only the TOML codec; CommentedFileConfig lives in
-    // :core (and :core depends on nothing). We must `include` both — Loom's
-    // include directive only jar-in-jars the literally listed artifact, not its
-    // transitive dependencies, so omitting :core works in dev (where the gradle
-    // classpath provides it) but throws NoClassDefFoundError at runtime in a
-    // published jar.
+    // :core. We must `include` both Ã¢â‚¬â€ Loom's include directive only jar-in-jars
+    // the literally listed artifact, not its transitive dependencies, so omitting
+    // :core works in dev (where the gradle classpath provides it) but throws
+    // NoClassDefFoundError at runtime in a published jar.
     include implementation("com.electronwill.night-config:core:3.6.7")
     include implementation("com.electronwill.night-config:toml:3.6.7")
 }
@@ -59,17 +62,18 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = 25
+    it.options.compilerArgs << '-Xmaxerrs' << '10000'
 }
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
+        rename { "${it}_${base.archivesName.get()}" }
     }
 }

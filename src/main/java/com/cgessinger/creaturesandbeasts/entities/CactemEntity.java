@@ -29,7 +29,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -54,21 +54,21 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.GeoAnimatable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.animation.keyframe.event.SoundKeyframeEvent;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 
 import java.util.EnumSet;
@@ -178,7 +178,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     @Override
     public void tick() {
         // Check if the entity is on the server side and if goals need to be updated
-        if (!this.level().isClientSide && this.shouldUpdateGoals) {
+        if (!this.level().isClientSide() && this.shouldUpdateGoals) {
             this.reassessGoals(); // Reassess the entity's goals
             this.shouldUpdateGoals = false; // Reset the flag
         }
@@ -211,7 +211,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
     @Override
     public int getBaseExperienceReward() {
-        return 3 + this.level().random.nextInt(4);
+        return 3 + this.level().getRandom().nextInt(4);
     }
 
     @Override
@@ -220,7 +220,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroup) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData spawnGroup) {
         double elderChance = level.getRandom().nextDouble();
 
         if (spawnGroup == null) {
@@ -273,7 +273,7 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         double MAX_HEALTH = this.getAttribute(Attributes.MAX_HEALTH).getValue();
         if (isBaby() && MAX_HEALTH > this.babyHealth) {
             this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(new AttributeModifier(
-                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "cactem_health_reduction"),
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "cactem_health_reduction"),
                     this.babyHealth - MAX_HEALTH,
                     AttributeModifier.Operation.ADD_VALUE));
             this.setHealth(this.babyHealth);
@@ -296,10 +296,10 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         }
 
         float percentHealth = this.getHealth() / this.babyHealth;
-        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cnb", "cactem_health_reduction"));
+        this.getAttribute(Attributes.MAX_HEALTH).removeModifier(net.minecraft.resources.Identifier.fromNamespaceAndPath("cnb", "cactem_health_reduction"));
         this.setHealth(percentHealth * (float) this.getAttribute(Attributes.MAX_HEALTH).getValue());
 
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             this.shouldUpdateGoals = true;
         }
     }
@@ -411,32 +411,32 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
 
         // Animation predicate for general animations
-        private <E extends GeoEntity> PlayState animationPredicate(AnimationState<E> event) {
+        private <E extends GeoEntity> PlayState animationPredicate(AnimationTest<E> event) {
             if (this.isHealing()) {
-                event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_elder_heal"));
+                event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_elder_heal"));
             } else if (this.isTrading()) {
-                event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_admire"));
+                event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_admire"));
             } else if (!(walkAnimation.speed() > -0.075F && walkAnimation.speed() < 0.075F)) {
                 if (this.isElder()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_elder_walk"));
+                    event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_elder_walk"));
                 } else if (this.isBaby()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_baby_run"));
+                    event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_baby_run"));
                 } else if (this.isAttacking() || !this.isSpearShown()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_run_throw"));
+                    event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_run_throw"));
                 } else {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_run"));
+                    event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_run"));
                     this.setIdleAnim(this.random.nextInt(2));
                 }
             } else {
                 if (this.isElder()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
+                    event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
                 } else if (this.isBaby()) {
-                    event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
+                    event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
                 } else {
                     if (this.getIdleAnim() == 0) {
-                        event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
+                        event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_idle"));
                     } else {
-                        event.getController().setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
+                        event.controller().setAnimation(RawAnimation.begin().thenPlay("cactem_idle_2"));
                     }
                 }
             }
@@ -444,8 +444,8 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         }
 
         // Animation predicate for attack animations
-        private <E extends GeoEntity> PlayState attackAnimationPredicate(AnimationState<E> event) {
-            var controller = event.getController();
+        private <E extends GeoEntity> PlayState attackAnimationPredicate(AnimationTest<E> event) {
+            var controller = event.controller();
             var currentAnimation = controller.getCurrentAnimation();
 
             if (this.isAttacking() || (currentAnimation != null && "cactem_throw".equals(currentAnimation.animation().name()) && controller.getAnimationState().equals(AnimationController.State.RUNNING))) {
@@ -459,10 +459,10 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
         }
 
         // Sound listener for keyframe events
-        private <E extends GeoEntity> void soundListener(AnimationState<E> event) {
+        private <E extends GeoEntity> void soundListener(AnimationTest<E> event) {
             LocalPlayer player = Minecraft.getInstance().player;
-            if (event.getController().getCurrentAnimation() != null) {
-                String sound = event.getController().getCurrentAnimation().animation().name();
+            if (event.controller().getCurrentAnimation() != null) {
+                String sound = event.controller().getCurrentAnimation().animation().name();
 
                 if (sound.equals("cactem_heal")) {
                     player.playSound(CNBSoundEvents.CACTEM_HEAL, 1.0F, 1.0F);
@@ -486,8 +486,8 @@ public class CactemEntity extends AgeableMob implements RangedAttackMob, GeoEnti
 
     @Override
         public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-            AnimationController<CactemEntity> controller = new AnimationController<>(this, "controller", 0, this::animationPredicate);
-            AnimationController<CactemEntity> attackController = new AnimationController<>(this, "attackController", 0, this::attackAnimationPredicate);
+            AnimationController<CactemEntity> controller = new AnimationController<>("controller", 0, this::animationPredicate);
+            AnimationController<CactemEntity> attackController = new AnimationController<>("attackController", 0, this::attackAnimationPredicate);
 
             controller.setSoundKeyframeHandler(this::soundListener);
             attackController.setSoundKeyframeHandler(this::soundListener);

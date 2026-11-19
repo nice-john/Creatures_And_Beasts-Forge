@@ -1,22 +1,23 @@
 package com.cgessinger.creaturesandbeasts.items;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 
 /**
- * Item that carries a burn time for furnace fuel registration. On Fabric, fuel is registered
- * via {@code FuelRegistry.INSTANCE.add(item, burnTime)} (called from {@link
- * com.cgessinger.creaturesandbeasts.init.CNBItems#registerFuels()}) rather than via an
- * Item override. The burnTime is stored here so the registration call can read it back.
+ * Furnace fuel item. 26.x removed Fabric's {@code FuelRegistry}; burn time is now the
+ * {@link DataComponents#COOKING_FUEL} item component, attached via {@link #fuelProperties(int)}.
  */
 public class CNBFuelItem extends Item {
-    private final int burnTime;
 
-    public CNBFuelItem(int burnTime) {
-        super(new Item.Properties());
-        this.burnTime = burnTime;
+    public CNBFuelItem(Properties properties) {
+        super(properties);
     }
 
-    public int getBurnTime() {
-        return this.burnTime;
+    public static Properties fuelProperties(int burnTime) {
+        return new Properties().component(DataComponents.COOKING_FUEL,
+                new CookingFuel(new ResolvableInt.Constant(burnTime), new ResolvableFloat.Constant(1.0F)));
     }
 }

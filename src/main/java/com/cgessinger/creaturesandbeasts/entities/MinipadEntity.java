@@ -23,7 +23,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -39,7 +39,7 @@ import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -50,14 +50,14 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
-import software.bernie.geckolib.animation.RawAnimation;
-import software.bernie.geckolib.animation.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import com.geckolib.animatable.GeoAnimatable;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -166,7 +166,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnType, @Nullable SpawnGroupData spawnGroupData) {
         switch (this.random.nextInt(3)) {
             case 0:
             default:
@@ -183,7 +183,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
         return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
     }
 
-    public static boolean checkMinipadSpawnRules(EntityType<MinipadEntity> animal, LevelAccessor worldIn, MobSpawnType reason, BlockPos pos, RandomSource randomIn) {
+    public static boolean checkMinipadSpawnRules(EntityType<MinipadEntity> animal, LevelAccessor worldIn, EntitySpawnReason reason, BlockPos pos, RandomSource randomIn) {
         return true;
     }
 
@@ -306,7 +306,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
     public void shear(SoundSource source) {
         this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, source, 1.0F, 1.0F);
         this.gameEvent(GameEvent.SHEAR);
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             this.setSheared(true);
             ItemStack drop = this.level().getDayTime() > 13000
                     ? new ItemStack(this.getMinipadType().getGlowShearItem())
@@ -321,7 +321,7 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
 
     @Override
     public int getBaseExperienceReward() {
-        return 2 + this.level().random.nextInt(3);
+        return 2 + this.level().getRandom().nextInt(3);
     }
 
     @Override
@@ -352,15 +352,15 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
 
 
     // Animation predicate for handling animations
-    private PlayState animationPredicate(AnimationState<MinipadEntity> event) {
+    private PlayState animationPredicate(AnimationTest<MinipadEntity> event) {
         if (this.isInWater() && !(walkAnimation.speed() > -0.15F && walkAnimation.speed() < 0.15F)) {
-            event.getController().setAnimation(RawAnimation.begin().thenPlay("minipad_swim"));
+            event.controller().setAnimation(RawAnimation.begin().thenPlay("minipad_swim"));
             return PlayState.CONTINUE;
         } else if (this.isInWater()) {
-            event.getController().setAnimation(RawAnimation.begin().thenPlay("minipad_float"));
+            event.controller().setAnimation(RawAnimation.begin().thenPlay("minipad_float"));
             return PlayState.CONTINUE;
         } else if (!(walkAnimation.speed() > -0.15F && walkAnimation.speed() < 0.15F)) {
-            event.getController().setAnimation(RawAnimation.begin().thenPlay("minipad_walk"));
+            event.controller().setAnimation(RawAnimation.begin().thenPlay("minipad_walk"));
             return PlayState.CONTINUE;
         }
         return PlayState.STOP;
@@ -368,17 +368,12 @@ public class MinipadEntity extends Animal implements net.minecraft.world.entity.
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 0, this::animationPredicate));
+        controllers.add(new AnimationController<>("controller", 0, this::animationPredicate));
     }
 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.cache;
-    }
-
-    @Override
-    public double getTick(Object animatable) {
-        return this.tickCount + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
     }
 
 }

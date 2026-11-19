@@ -2,11 +2,12 @@ package com.cgessinger.creaturesandbeasts.init;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 public class CNBTags {
+
     public static class Items {
         public static final TagKey<Item> MINIPAD_FLOWERS = tag("minipad_flowers");
         public static final TagKey<Item> GLOWING_MINIPAD_FLOWERS = tag("glowing_minipad_flowers");
@@ -15,11 +16,13 @@ public class CNBTags {
         public static final TagKey<Item> LITTLE_GREBE_FOOD = tag("little_grebe_food");
         public static final TagKey<Item> SPORELING_FOOD = tag("sporeling_food");
 
+        // 26.x armor/tool materials repair via item tags instead of Ingredients.
+        public static final TagKey<Item> REPAIRS_CINDER = tag("repairs_cinder");
+        public static final TagKey<Item> REPAIRS_FLOWER_CROWN = tag("repairs_flower_crown");
+        public static final TagKey<Item> REPAIRS_GLOWING_FLOWER_CROWN = tag("repairs_glowing_flower_crown");
+
         private static TagKey<Item> tag(String name) {
-            // ItemTags.create takes a String in vanilla and assumes minecraft: namespace.
-            // For our cnb: namespace, use TagKey.create directly with the ITEM registry key.
-            return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name));
+            return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name));
         }
     }
-
 }

@@ -3,7 +3,7 @@ package com.cgessinger.creaturesandbeasts.init;
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 
 public class CNBSoundEvents {
@@ -53,7 +53,7 @@ public class CNBSoundEvents {
     // ─────────────────────────────────────────────────────────────────────────
 
     private static SoundEvent register(String name) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name);
+        Identifier id = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, name);
         return Registry.register(BuiltInRegistries.SOUND_EVENT, id,
                 SoundEvent.createVariableRangeEvent(id));
     }

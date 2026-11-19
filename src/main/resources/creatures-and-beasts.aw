@@ -1,4 +1,4 @@
-accessWidener v2 named
+accessWidener v2 official
 
 # MeleeAttackGoal.ticksUntilNextAttack – used by entity AI code
 accessible field net/minecraft/world/entity/ai/goal/MeleeAttackGoal ticksUntilNextAttack I

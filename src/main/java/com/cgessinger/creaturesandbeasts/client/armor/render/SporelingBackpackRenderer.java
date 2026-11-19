@@ -5,9 +5,9 @@ import net.fabricmc.api.Environment;
 
 import com.cgessinger.creaturesandbeasts.client.armor.model.SporelingBackpackModel;
 import com.cgessinger.creaturesandbeasts.items.SporelingBackpackItem;
-import net.minecraft.resources.ResourceLocation;
-import software.bernie.geckolib.renderer.GeoArmorRenderer;
-import software.bernie.geckolib.renderer.GeoItemRenderer;
+import net.minecraft.resources.Identifier;
+import com.geckolib.renderer.GeoArmorRenderer;
+import com.geckolib.renderer.GeoItemRenderer;
 
 @Environment(EnvType.CLIENT)
 public class SporelingBackpackRenderer extends GeoArmorRenderer<SporelingBackpackItem> {
