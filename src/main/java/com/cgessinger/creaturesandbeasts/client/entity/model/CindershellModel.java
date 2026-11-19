@@ -22,7 +22,7 @@ public class CindershellModel extends GeoModel<CindershellEntity> {
     private static final ResourceLocation CINDERSHELL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/cindershell.png");
     private static final ResourceLocation BABY_CINDERSHELL_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cindershell/baby_cindershell.png");
 
-    private static final ResourceLocation CINDERSHELL_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cindershell.json");
+    private static final ResourceLocation CINDERSHELL_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cindershell.animation.json");
 
     @Override
     public ResourceLocation getModelResource(CindershellEntity entity) {

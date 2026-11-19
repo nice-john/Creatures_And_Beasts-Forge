@@ -13,7 +13,7 @@ import software.bernie.geckolib.model.GeoModel;
 public class MinipadModel extends GeoModel<MinipadEntity> {
     private static final ResourceLocation MINIPAD_MODEL = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/minipad/minipad.geo.json");
     private static final ResourceLocation MINIPAD_SHEARED_TEXTURE = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/minipad/minipad_sheared.png");
-    private static final ResourceLocation MINIPAD_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/minipad.json");
+    private static final ResourceLocation MINIPAD_ANIMATIONS = ResourceLocation.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/minipad.animation.json");
 
     @Override
     public ResourceLocation getModelResource(MinipadEntity entity) {

@@ -200,6 +200,11 @@ public class LilytadEntity extends Animal implements net.minecraft.world.entity.
     // tag in data/minecraft/tags/entity_type/can_breathe_under_water.json.
 
     @Override
+    public boolean requiresCustomPersistence() {
+        return super.requiresCustomPersistence() || this.hasCustomName();
+    }
+
+    @Override
     public boolean isFood(ItemStack stack) {
         return false;
     }
