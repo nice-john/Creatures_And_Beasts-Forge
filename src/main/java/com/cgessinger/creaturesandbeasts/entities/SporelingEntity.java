@@ -129,6 +129,7 @@ public class SporelingEntity extends TamableAnimal implements GeoAnimatable {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
+                .add(Attributes.TEMPT_RANGE, 10.0D)
                 .add(Attributes.MAX_HEALTH, 16.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.FOLLOW_RANGE, 35.0D)

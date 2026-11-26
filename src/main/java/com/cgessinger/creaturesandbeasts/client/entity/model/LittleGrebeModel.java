@@ -18,13 +18,13 @@ import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class LittleGrebeModel extends CnbGeoModel<LittleGrebeEntity> {
-    private static final Identifier LITTLE_GREBE_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe.geo.json");
-    private static final Identifier LITTLE_GREBE_CHICK_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe_chick.geo.json");
+    private static final Identifier LITTLE_GREBE_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe");
+    private static final Identifier LITTLE_GREBE_CHICK_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/little_grebe/little_grebe_chick");
 
     private static final Identifier LITTLE_GREBE_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/little_grebe/little_grebe.png");
     private static final Identifier LITTLE_GREBE_CHICK_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/little_grebe/little_grebe_chick.png");
 
-    private static final Identifier LITTLE_GREBE_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/little_grebe.animation.json");
+    private static final Identifier LITTLE_GREBE_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "little_grebe");
 
     @Override
     protected Identifier resolveModel(LittleGrebeEntity entity) {

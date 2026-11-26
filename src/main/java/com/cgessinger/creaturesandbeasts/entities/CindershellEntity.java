@@ -120,6 +120,7 @@ public class CindershellEntity extends Animal implements GeoAnimatable, Bucketab
 
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
+                .add(Attributes.TEMPT_RANGE, 10.0D)
                 .add(Attributes.MAX_HEALTH, 80.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.1D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 100D);

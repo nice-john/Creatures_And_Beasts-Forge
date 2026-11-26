@@ -12,9 +12,9 @@ import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class MinipadModel extends CnbGeoModel<MinipadEntity> {
-    private static final Identifier MINIPAD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/minipad/minipad.geo.json");
+    private static final Identifier MINIPAD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/minipad/minipad");
     private static final Identifier MINIPAD_SHEARED_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/minipad/minipad_sheared.png");
-    private static final Identifier MINIPAD_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/minipad.animation.json");
+    private static final Identifier MINIPAD_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "minipad");
 
     @Override
     protected Identifier resolveModel(MinipadEntity entity) {

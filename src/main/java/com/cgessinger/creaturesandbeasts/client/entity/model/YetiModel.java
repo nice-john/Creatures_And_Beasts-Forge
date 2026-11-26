@@ -17,13 +17,13 @@ import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class YetiModel extends CnbGeoModel<YetiEntity> {
-    private static final Identifier YETI_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/yeti.geo.json");
-    private static final Identifier BABY_YETI_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/baby_yeti.geo.json");
+    private static final Identifier YETI_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/yeti");
+    private static final Identifier BABY_YETI_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/yeti/baby_yeti");
 
     private static final Identifier YETI_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/yeti/yeti.png");
     private static final Identifier BABY_YETI_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/yeti/baby_yeti.png");
 
-    private static final Identifier YETI_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/yeti.animation.json");
+    private static final Identifier YETI_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "yeti");
 
     @Override
     protected Identifier resolveModel(YetiEntity entity) {

@@ -13,10 +13,10 @@ import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class SporelingModel extends CnbGeoModel<SporelingEntity> {
-    private static final Identifier SPORELING_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/sporeling.animation.json");
+    private static final Identifier SPORELING_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "sporeling");
 
-    private static final Identifier GOOMY_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy.geo.json");
-    private static final Identifier SHRIMPSNAIL_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_shrimpsnail.geo.json");
+    private static final Identifier GOOMY_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy");
+    private static final Identifier SHRIMPSNAIL_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_shrimpsnail");
 
     private static final Identifier BIT0_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_bit0.png");
     private static final Identifier LISTACALISTA_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/sporeling/sporeling_listacalista.png");

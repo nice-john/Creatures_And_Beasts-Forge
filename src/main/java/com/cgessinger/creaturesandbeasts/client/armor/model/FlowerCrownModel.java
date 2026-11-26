@@ -11,9 +11,9 @@ import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class FlowerCrownModel extends CnbGeoModel<FlowerCrownItem> {
-    private static final Identifier FLOWER_CROWN_MODEL = Identifier.fromNamespaceAndPath("cnb", "geo/armor/flower_crown.geo.json");
+    private static final Identifier FLOWER_CROWN_MODEL = Identifier.fromNamespaceAndPath("cnb", "geo/armor/flower_crown");
     private static final Identifier FLOWER_CROWN_TEXTURE = Identifier.fromNamespaceAndPath("cnb", "textures/armor/flower_crown.png");
-    private static final Identifier FLOWER_CROWN_ANIMATION = Identifier.fromNamespaceAndPath("cnb", "animations/flower_crown.animation.json");
+    private static final Identifier FLOWER_CROWN_ANIMATION = Identifier.fromNamespaceAndPath("cnb", "flower_crown");
 
     @Override
     protected Identifier resolveModel(FlowerCrownItem animatable) {
