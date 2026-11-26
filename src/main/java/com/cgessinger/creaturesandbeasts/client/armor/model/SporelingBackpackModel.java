@@ -5,10 +5,11 @@ import com.geckolib.model.GeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 import net.minecraft.resources.Identifier;
 
-public class SporelingBackpackModel extends GeoModel<SporelingBackpackItem> {
-    private static final Identifier SPORELING_BACKPACK_MODEL = Identifier.fromNamespaceAndPath("cnb", "geo/armor/sporeling_backpack.geo.json");
+
+public class SporelingBackpackModel extends CnbGeoModel<SporelingBackpackItem> {
+    private static final Identifier SPORELING_BACKPACK_MODEL = Identifier.fromNamespaceAndPath("cnb", "geo/armor/sporeling_backpack");
     private static final Identifier SPORELING_BACKPACK_TEXTURE = Identifier.fromNamespaceAndPath("cnb", "textures/armor/sporeling_backpack.png");
-    private static final Identifier SPORELING_BACKPACK_ANIMATION = Identifier.fromNamespaceAndPath("cnb", "animations/sporeling_backpack.animation.json");
+    private static final Identifier SPORELING_BACKPACK_ANIMATION = Identifier.fromNamespaceAndPath("cnb", "sporeling_backpack");
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {

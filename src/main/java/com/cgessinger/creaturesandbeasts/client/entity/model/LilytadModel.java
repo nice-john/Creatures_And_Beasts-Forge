@@ -5,9 +5,9 @@ import com.cgessinger.creaturesandbeasts.entities.LilytadEntity;
 import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 public class LilytadModel extends CnbGeoModel<LilytadEntity> {
-    private static final Identifier LILYTAD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lilytad/lilytad.geo.json");
+    private static final Identifier LILYTAD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lilytad/lilytad");
     private static final Identifier LILYTAD_SHEARED_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/lilytad/lilytad_sheared.png");
-    private static final Identifier LILYTAD_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/lilytad.animation.json");
+    private static final Identifier LILYTAD_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lilytad");
 
     @Override
     protected Identifier selectModel(LilytadEntity entity) {

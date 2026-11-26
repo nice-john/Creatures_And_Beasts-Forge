@@ -23,7 +23,7 @@ public class CNBSporelingTypes {
     public static final SporelingType CRIMSON_FUNGUS = registerWithCNBDirectory(MOD_ID, "crimson_fungus", "nether", NEUTRAL);
 
     private static SporelingType registerWithCNBDirectory(String namespace, String name, String modelName, SporelingType.SporelingHostility hostility) {
-        return register(new SporelingType(Identifier.fromNamespaceAndPath(namespace, name), Identifier.fromNamespaceAndPath(MOD_ID, "geo/entity/sporeling/sporeling_" + modelName + ".geo.json"), Identifier.fromNamespaceAndPath(MOD_ID, "textures/entity/sporeling/sporeling_" + name + ".png"), hostility));
+        return register(new SporelingType(Identifier.fromNamespaceAndPath(namespace, name), Identifier.fromNamespaceAndPath(MOD_ID, "geo/entity/sporeling/sporeling_" + modelName + ""), Identifier.fromNamespaceAndPath(MOD_ID, "textures/entity/sporeling/sporeling_" + name + ".png"), hostility));
 
     }
 

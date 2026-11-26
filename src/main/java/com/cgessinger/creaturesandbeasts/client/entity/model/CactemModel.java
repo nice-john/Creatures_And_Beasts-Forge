@@ -5,15 +5,15 @@ import com.cgessinger.creaturesandbeasts.entities.CactemEntity;
 import net.minecraft.resources.Identifier;
 
 public class CactemModel extends CnbGeoModel<CactemEntity> {
-    private static final Identifier ELDER_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/elder_cactem.geo.json");
-    private static final Identifier WARRIOR_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/warrior_cactem.geo.json");
-    private static final Identifier BABY_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/baby_cactem.geo.json");
+    private static final Identifier ELDER_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/elder_cactem");
+    private static final Identifier WARRIOR_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/warrior_cactem");
+    private static final Identifier BABY_CACTEM_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/cactem/baby_cactem");
 
     private static final Identifier ELDER_CACTEM_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/elder_cactem.png");
     private static final Identifier WARRIOR_CACTEM_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/warrior_cactem.png");
     private static final Identifier BABY_CACTEM_TEXTURE = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "textures/entity/cactem/baby_cactem.png");
 
-    private static final Identifier CACTEM_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/cactem.animation.json");
+    private static final Identifier CACTEM_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "cactem");
 
     @Override
     protected Identifier selectModel(CactemEntity entity) {

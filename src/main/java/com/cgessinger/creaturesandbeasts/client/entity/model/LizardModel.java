@@ -8,12 +8,12 @@ import com.cgessinger.creaturesandbeasts.init.CNBLizardTypes;
 import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 public class LizardModel extends CnbGeoModel<LizardEntity> {
-    private static final Identifier LIZARD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/lizard.geo.json");
-    private static final Identifier MUSHROOM_LIZARD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/mushroom_lizard.geo.json");
-    private static final Identifier SAD_LIZARD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/sad_lizard.geo.json");
-    private static final Identifier SAD_MUSHROOM_LIZARD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/sad_mushroom_lizard.geo.json");
+    private static final Identifier LIZARD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/lizard");
+    private static final Identifier MUSHROOM_LIZARD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/mushroom_lizard");
+    private static final Identifier SAD_LIZARD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/sad_lizard");
+    private static final Identifier SAD_MUSHROOM_LIZARD_MODEL = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/sad_mushroom_lizard");
 
-    private static final Identifier LIZARD_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "animations/lizard.animation.json");
+    private static final Identifier LIZARD_ANIMATIONS = Identifier.fromNamespaceAndPath(CreaturesAndBeasts.MOD_ID, "lizard");
 
     @Override
     protected Identifier selectModel(LizardEntity entity) {
