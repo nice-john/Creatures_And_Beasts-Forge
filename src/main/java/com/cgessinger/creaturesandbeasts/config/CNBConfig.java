@@ -15,7 +15,7 @@ public class CNBConfig {
     public static int hideAmount = 5;
     public static int hideCost = 1;
     public static double hideMultiplier = 0.01D;
-    public static int endWhaleSpawnWeight = 28;
+    public static int endWhaleSpawnWeight = 35;
 
     // ------------------------------------------------------------------ //
 
@@ -47,7 +47,7 @@ public class CNBConfig {
         }
 
         if (!cfg.contains("spawning.endWhaleSpawnWeight")) {
-            cfg.set("spawning.endWhaleSpawnWeight", 28);
+            cfg.set("spawning.endWhaleSpawnWeight", 35);
             cfg.setComment("spawning.endWhaleSpawnWeight",
                     " Spawn weight of End Whales in the End. Lower = rarer, 0 disables natural spawning. Range: [0, ...]");
             dirty = true;
