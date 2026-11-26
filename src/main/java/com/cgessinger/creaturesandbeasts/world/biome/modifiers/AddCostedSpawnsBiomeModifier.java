@@ -1,5 +1,7 @@
 package com.cgessinger.creaturesandbeasts.world.biome.modifiers;
 
+import com.cgessinger.creaturesandbeasts.config.CNBConfig;
+import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
@@ -37,7 +39,12 @@ public record AddCostedSpawnsBiomeModifier(EntityType<? extends Entity> entityTy
                         && !costSpawnerData.biomesIntersect().get().contains(biome)) {
                     continue;
                 }
-                spawns.addSpawn(costSpawnerData.category, new MobSpawnSettings.SpawnerData(this.entityType, costSpawnerData.weight, costSpawnerData.min, costSpawnerData.max));
+                Weight weight = costSpawnerData.weight;
+                if (this.entityType == CNBEntityTypes.END_WHALE.get()) {
+                    if (CNBConfig.endWhaleSpawnWeight <= 0) continue;
+                    weight = Weight.of(CNBConfig.endWhaleSpawnWeight);
+                }
+                spawns.addSpawn(costSpawnerData.category, new MobSpawnSettings.SpawnerData(this.entityType, weight, costSpawnerData.min, costSpawnerData.max));
 
                 if (costSpawnerData.cost > 0.0D && costSpawnerData.budget > 0.0D) {
                     spawns.addMobCharge(this.entityType, costSpawnerData.cost, costSpawnerData.budget);

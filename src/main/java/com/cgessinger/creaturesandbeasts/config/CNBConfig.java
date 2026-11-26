@@ -20,4 +20,8 @@ public class CNBConfig {
     @DoubleRange(min = 0)
     public static double hideMultiplier = 0.01D;
 
+    @Configurable(description = "Spawn weight of End Whales in the End. Lower is rarer, 0 disables natural spawning.", category = "Spawning")
+    @IntegerRange(min = 0)
+    public static int endWhaleSpawnWeight = 35;
+
 }

@@ -79,6 +79,11 @@ public class LilytadEntity extends Animal implements IForgeShearable, GeoAnimata
     }
 
     @Override
+    public boolean requiresCustomPersistence() {
+        return super.requiresCustomPersistence() || this.hasCustomName();
+    }
+
+    @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(TYPE, CNBLilytadTypes.PINK.getId().toString());

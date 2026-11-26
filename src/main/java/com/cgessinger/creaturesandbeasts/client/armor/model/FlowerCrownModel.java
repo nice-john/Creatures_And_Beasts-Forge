@@ -11,7 +11,7 @@ import software.bernie.geckolib.model.GeoModel;
 public class FlowerCrownModel extends GeoModel<FlowerCrownItem> {
     private static final ResourceLocation FLOWER_CROWN_MODEL = new ResourceLocation("cnb", "geo/armor/flower_crown.geo.json");
     private static final ResourceLocation FLOWER_CROWN_TEXTURE = new ResourceLocation("cnb", "textures/armor/flower_crown.png");
-    private static final ResourceLocation FLOWER_CROWN_ANIMATION = new ResourceLocation("cnb", "animations/flower_crown.json");
+    private static final ResourceLocation FLOWER_CROWN_ANIMATION = new ResourceLocation("cnb", "animations/flower_crown.animation.json");
 
     @Override
     public ResourceLocation getModelResource(FlowerCrownItem animatable) {

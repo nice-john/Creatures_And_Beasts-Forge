@@ -91,6 +91,11 @@ public class MinipadEntity extends Animal implements IForgeShearable, GeoAnimata
 
 
     @Override
+    public boolean requiresCustomPersistence() {
+        return super.requiresCustomPersistence() || this.hasCustomName();
+    }
+
+    @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(TYPE, CNBMinipadTypes.PINK.getId().toString());

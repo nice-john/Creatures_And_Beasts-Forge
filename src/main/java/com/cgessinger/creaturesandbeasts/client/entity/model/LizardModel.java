@@ -23,7 +23,7 @@ public class LizardModel extends GeoModel<LizardEntity> {
     private static final ResourceLocation SAD_LIZARD_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/sad_lizard.geo.json");
     private static final ResourceLocation SAD_MUSHROOM_LIZARD_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/lizard/sad_mushroom_lizard.geo.json");
 
-    private static final ResourceLocation LIZARD_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/lizard.json");
+    private static final ResourceLocation LIZARD_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/lizard.animation.json");
 
     @Override
     public ResourceLocation getModelResource(LizardEntity entity) {
