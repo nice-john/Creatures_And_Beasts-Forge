@@ -22,7 +22,7 @@ public class LittleGrebeModel extends GeoModel<LittleGrebeEntity> {
     private static final ResourceLocation LITTLE_GREBE_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/little_grebe/little_grebe.png");
     private static final ResourceLocation LITTLE_GREBE_CHICK_TEXTURE = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "textures/entity/little_grebe/little_grebe_chick.png");
 
-    private static final ResourceLocation LITTLE_GREBE_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/little_grebe.json");
+    private static final ResourceLocation LITTLE_GREBE_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/little_grebe.animation.json");
 
     @Override
     public ResourceLocation getModelResource(LittleGrebeEntity entity) {

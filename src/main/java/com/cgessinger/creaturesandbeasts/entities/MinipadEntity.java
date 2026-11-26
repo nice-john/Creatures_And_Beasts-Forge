@@ -120,6 +120,11 @@ public class MinipadEntity extends Animal implements GeoAnimatable {
         compound.putString("MinipadType", this.getMinipadType().getId().toString());
     }
 
+    @Override
+    public boolean requiresCustomPersistence() {
+        return super.requiresCustomPersistence() || this.hasCustomName();
+    }
+
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 12.0D)

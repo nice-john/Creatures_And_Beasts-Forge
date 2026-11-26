@@ -11,7 +11,7 @@ import software.bernie.geckolib.model.GeoModel;
 
 @Environment(EnvType.CLIENT)
 public class SporelingModel extends GeoModel<SporelingEntity> {
-    private static final ResourceLocation SPORELING_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/sporeling.json");
+    private static final ResourceLocation SPORELING_ANIMATIONS = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "animations/sporeling.animation.json");
 
     private static final ResourceLocation GOOMY_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_goomy.geo.json");
     private static final ResourceLocation SHRIMPSNAIL_MODEL = new ResourceLocation(CreaturesAndBeasts.MOD_ID, "geo/entity/sporeling/sporeling_shrimpsnail.geo.json");

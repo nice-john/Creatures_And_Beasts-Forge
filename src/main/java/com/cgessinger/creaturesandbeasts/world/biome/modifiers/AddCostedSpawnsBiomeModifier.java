@@ -1,6 +1,7 @@
 package com.cgessinger.creaturesandbeasts.world.biome.modifiers;
 
 import com.cgessinger.creaturesandbeasts.CreaturesAndBeasts;
+import com.cgessinger.creaturesandbeasts.config.CNBConfig;
 import com.cgessinger.creaturesandbeasts.init.CNBEntityTypes;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
@@ -57,9 +58,11 @@ public final class AddCostedSpawnsBiomeModifier {
         // throttle (cost 3.0, budget 6.0) is checked per spawn event, not per pod
         // member, so each cycle creates a pod of 3-8 then briefly cools down before
         // the next pod can spawn nearby.
-        BiomeModifications.addSpawn(
-                ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
-                MobCategory.CREATURE, CNBEntityTypes.END_WHALE, 40, 3, 8);
+        if (CNBConfig.endWhaleSpawnWeight > 0) {
+            BiomeModifications.addSpawn(
+                    ctx -> ctx.hasTag(ConventionalBiomeTags.IN_THE_END),
+                    MobCategory.CREATURE, CNBEntityTypes.END_WHALE, CNBConfig.endWhaleSpawnWeight, 3, 8);
+        }
         // Mob-charge throttle. Was cost=400 budget=1.0 (ratio 160000), which gave
         // an effective cutoff radius of ~400 blocks - one whale would block every
         // other whale within the player's entire tracked range. User reported 20

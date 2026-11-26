@@ -15,6 +15,10 @@ public class CreaturesAndBeasts implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        // Config must load before CNBBiomeModifiers.register(), which reads spawn weights from it.
+        CNBConfig.load(FabricLoader.getInstance().getConfigDir()
+                .resolve("creaturesandbeasts-common.toml"));
+
         // ── Registries ───────────────────────────────────────────────────────
         CNBSoundEvents.register();
         CNBParticleTypes.register();
@@ -53,7 +57,6 @@ public class CreaturesAndBeasts implements ModInitializer {
         // so the (Forge-only) FlowerPotBlock.addPlant() helper isn't needed here.
 
         // ── Config ────────────────────────────────────────────────────────────
-        CNBConfig.load(FabricLoader.getInstance().getConfigDir()
-                .resolve("creaturesandbeasts-common.toml"));
+        // (Config is loaded at the top of onInitialize, before biome modifiers.)
     }
 }
