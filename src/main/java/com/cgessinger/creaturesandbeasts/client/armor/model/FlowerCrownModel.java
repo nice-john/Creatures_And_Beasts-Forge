@@ -4,10 +4,8 @@ import com.cgessinger.creaturesandbeasts.items.FlowerCrownItem;
 import com.geckolib.model.GeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 import net.minecraft.resources.Identifier;
-
-
-@Environment(EnvType.CLIENT)
-public class FlowerCrownModel extends CnbGeoModel<FlowerCrownItem> {
+import net.neoforged.api.distmarker.Dist;
+public class FlowerCrownModel extends GeoModel<FlowerCrownItem> {
     private static final Identifier FLOWER_CROWN_MODEL = Identifier.fromNamespaceAndPath("cnb", "geo/armor/flower_crown");
     private static final Identifier FLOWER_CROWN_TEXTURE = Identifier.fromNamespaceAndPath("cnb", "textures/armor/flower_crown.png");
     private static final Identifier FLOWER_CROWN_ANIMATION = Identifier.fromNamespaceAndPath("cnb", "flower_crown");

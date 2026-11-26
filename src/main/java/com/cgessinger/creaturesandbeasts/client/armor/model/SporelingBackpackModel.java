@@ -5,8 +5,7 @@ import com.geckolib.model.GeoModel;
 import com.geckolib.renderer.base.GeoRenderState;
 import net.minecraft.resources.Identifier;
 
-
-public class SporelingBackpackModel extends CnbGeoModel<SporelingBackpackItem> {
+public class SporelingBackpackModel extends GeoModel<SporelingBackpackItem> {
     private static final Identifier SPORELING_BACKPACK_MODEL = Identifier.fromNamespaceAndPath("cnb", "geo/armor/sporeling_backpack");
     private static final Identifier SPORELING_BACKPACK_TEXTURE = Identifier.fromNamespaceAndPath("cnb", "textures/armor/sporeling_backpack.png");
     private static final Identifier SPORELING_BACKPACK_ANIMATION = Identifier.fromNamespaceAndPath("cnb", "sporeling_backpack");
