@@ -22,6 +22,6 @@ public class CNBConfig {
 
     @Configurable(description = "Spawn weight of End Whales in the End. Lower is rarer, 0 disables natural spawning.", category = "Spawning")
     @IntegerRange(min = 0)
-    public static int endWhaleSpawnWeight = 40;
+    public static int endWhaleSpawnWeight = 35;
 
 }
