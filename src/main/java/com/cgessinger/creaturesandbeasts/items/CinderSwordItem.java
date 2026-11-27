@@ -5,6 +5,8 @@ import com.cgessinger.creaturesandbeasts.capabilities.CinderSwordWrapper;
 import com.cgessinger.creaturesandbeasts.capabilities.ICinderSwordUpdate;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -60,7 +62,26 @@ public class CinderSwordItem extends SwordItem {
 
             sword.setTag(stack.getOrCreateTag());
             sword.getCapability(CinderSwordCapability.CINDER_SWORD_CAPABILITY).map(handler -> handler.setImbuedTicks(400));
-            player.getInventory().setItem(slotNumber, sword);
+            replaceInInventory(player, stack, sword);
+        }
+    }
+
+    /**
+     * Swap {@code old} for {@code replacement} wherever {@code old} actually sits.
+     * The {@code slotNumber} passed to inventoryTick is an index within ONE compartment
+     * (main items / armor / offhand), not a global slot, so writing it with
+     * Inventory.setItem put the new sword in hotbar slot 0 for an offhand sword and left
+     * the original in the offhand (duplicate + overwritten hotbar item).
+     */
+    private static void replaceInInventory(Player player, ItemStack old, ItemStack replacement) {
+        Inventory inv = player.getInventory();
+        for (NonNullList<ItemStack> list : List.of(inv.items, inv.armor, inv.offhand)) {
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i) == old) {
+                    list.set(i, replacement);
+                    return;
+                }
+            }
         }
     }
 
