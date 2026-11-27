@@ -24,6 +24,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // Game-bus events only. Mod-bus events (entity attributes, etc.) live in CreaturesAndBeasts/ClientEvents.
@@ -113,8 +114,22 @@ public class CNBEvents {
      * old {@code MULTIPLY_TOTAL}) to mirror 1.19 behavior.
      */
     private static void applyHideBonusToStack(ItemStack stack, EquipmentSlot slot, int layers) {
-        ItemAttributeModifiers existing =
-                stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+        // Armor's base armor/toughness live in Item#getDefaultAttributeModifiers, NOT in the
+        // stack's component, and vanilla only falls back to them while the component is empty.
+        // Writing a component that holds just our bonus therefore erased the base armor value.
+        // Seed from the item's defaults, and drop any earlier hide bonus so re-anvilling
+        // replaces it instead of appending a duplicate modifier id.
+        ItemAttributeModifiers current = stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
+        if (current == null || current.modifiers().isEmpty()) {
+            current = stack.getItem().getDefaultAttributeModifiers();
+        }
+        List<ItemAttributeModifiers.Entry> kept = new ArrayList<>();
+        for (ItemAttributeModifiers.Entry entry : current.modifiers()) {
+            if (!entry.modifier().id().equals(HIDE_BONUS_ID)) {
+                kept.add(entry);
+            }
+        }
+        ItemAttributeModifiers existing = new ItemAttributeModifiers(kept, current.showInTooltip());
 
         double bonus = CNBConfig.hideMultiplier * layers;
         ItemAttributeModifiers updated = existing.withModifierAdded(
