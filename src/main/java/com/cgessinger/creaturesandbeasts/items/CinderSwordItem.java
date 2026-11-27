@@ -3,6 +3,8 @@ package com.cgessinger.creaturesandbeasts.items;
 import com.cgessinger.creaturesandbeasts.init.CNBDataComponents;
 import com.cgessinger.creaturesandbeasts.init.CNBItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -79,11 +81,30 @@ public class CinderSwordItem extends SwordItem {
             if (this.imbueLevel == 1) {
                 player.playSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 1.0F);
             }
-            player.getInventory().setItem(slot, lowered);
+            replaceInInventory(player, stack, lowered);
         } else {
             // imbueLevel == 0: the cooldown finished on the base tier â€” clear the component
             // so future inventoryTicks don't keep re-running this branch.
             stack.remove(CNBDataComponents.IMBUED_TICKS);
+        }
+    }
+
+    /**
+     * Swap {@code old} for {@code replacement} wherever {@code old} actually sits.
+     * The {@code slot} passed to inventoryTick is an index within ONE compartment
+     * (main items / armor / offhand), not a global slot, so Inventory.setItem(slot, ..) put the
+     * new sword in hotbar slot 0 for an offhand sword and left the original in the offhand
+     * (duplicate + overwritten hotbar item).
+     */
+    private static void replaceInInventory(Player player, ItemStack old, ItemStack replacement) {
+        Inventory inv = player.getInventory();
+        for (NonNullList<ItemStack> list : List.of(inv.items, inv.armor, inv.offhand)) {
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i) == old) {
+                    list.set(i, replacement);
+                    return;
+                }
+            }
         }
     }
 
