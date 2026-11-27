@@ -454,12 +454,21 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
 
     static class EndWhaleWanderGoal extends Goal {
         private final EndWhaleEntity endWhale;
+        /** Ticks to wait after a failed target/path search before trying again. */
+        private int retryCooldown;
         EndWhaleWanderGoal(EndWhaleEntity endWhale) {
             this.setFlags(EnumSet.of(Goal.Flag.MOVE));
             this.endWhale = endWhale;
         }
         @Override
         public boolean canUse() {
+            // When a search FAILS (no valid position / no path) navigation stays "done", so this
+            // goal would restart and run a full random-position search + pathfind on every tick
+            // for every whale (the reported lag). Back off after a failure.
+            if (this.retryCooldown > 0) {
+                --this.retryCooldown;
+                return false;
+            }
             return this.endWhale.navigation.isDone()
                     && !this.endWhale.isVehicle()
                     && !this.endWhale.isLeashed();
@@ -473,9 +482,13 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         @Override
         public void start() {
             Vec3 vec3 = this.findPos();
+            boolean moving = false;
             if (vec3 != null) {
-                this.endWhale.navigation.moveTo(
+                moving = this.endWhale.navigation.moveTo(
                         this.endWhale.navigation.createPath(BlockPos.containing(vec3), 3), 1.0D);
+            }
+            if (!moving) {
+                this.retryCooldown = 20 + this.endWhale.getRandom().nextInt(20);
             }
         }
         @Override
@@ -499,6 +512,7 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         private final double speedModifier;
         @Nullable protected Player player;
         private int calmDown;
+        private int repathDelay;
         private final Ingredient items;
 
         public EndWhaleTemptGoal(EndWhaleEntity endWhale, double speedModifier, Ingredient temptIngredient) {
@@ -512,6 +526,8 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
         public boolean canUse() {
             if (this.calmDown > 0) { --this.calmDown; return false; }
             if (this.endWhale.isVehicle()) return false;
+            // Scanning for a tempting player doesn't need to run every tick.
+            if ((this.endWhale.tickCount + this.endWhale.getId()) % 5 != 0) return false;
             Player nearest = this.endWhale.level().getNearestPlayer(this.endWhale, 100.0D);
             if (nearest == null || nearest.isSpectator() || !this.shouldFollow(nearest)) {
                 this.player = null;
@@ -549,7 +565,10 @@ public class EndWhaleEntity extends TamableAnimal implements FlyingAnimal, Saddl
                     (float) this.endWhale.getMaxHeadXRot());
             if (this.endWhale.distanceToSqr(this.player) < 6.25D) {
                 this.endWhale.getNavigation().stop();
-            } else {
+            } else if (--this.repathDelay <= 0) {
+                // moveTo(Entity) recomputes a full path each call over a 100-block range; doing
+                // it every tick doubled the lag while holding chorus fruit. Re-plan twice a second.
+                this.repathDelay = 10;
                 this.endWhale.getNavigation().moveTo(this.player, this.speedModifier);
             }
         }
