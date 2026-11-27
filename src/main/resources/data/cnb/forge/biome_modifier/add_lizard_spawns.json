@@ -3,7 +3,7 @@
   "entityType": "cnb:lizard",
   "spawns": [
     {
-      "biomes": "#forge:is_badlands",
+      "biomes": "#minecraft:is_badlands",
       "category": "creature",
       "weight": 23,
       "min": 1,
@@ -19,7 +19,7 @@
       "budget": 60.0
     },
     {
-      "biomes": "#forge:is_jungle",
+      "biomes": "#minecraft:is_jungle",
       "category": "creature",
       "weight": 150,
       "min": 1,

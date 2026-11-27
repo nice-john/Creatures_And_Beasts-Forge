@@ -3,7 +3,7 @@
   "entityType": "cnb:little_grebe",
   "spawns": [
     {
-      "biomes": "#forge:is_river",
+      "biomes": "#minecraft:is_river",
       "category": "creature",
       "weight": 53,
       "min": 2,
