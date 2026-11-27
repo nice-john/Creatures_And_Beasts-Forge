@@ -4,7 +4,7 @@ plugins {
     id 'maven-publish'
 }
 
-version = '2.0.0'
+version = '2.0.1'
 group = 'com.cgessinger.creaturesandbeasts'
 base {
     archivesName = "CNB-26.3-fabric"
