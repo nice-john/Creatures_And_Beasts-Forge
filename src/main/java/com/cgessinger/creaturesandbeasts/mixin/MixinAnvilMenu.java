@@ -16,6 +16,8 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import java.util.ArrayList;
+import java.util.List;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -95,8 +97,22 @@ public abstract class MixinAnvilMenu {
      * instead of stacking duplicates.
      */
     private static void applyHideBonusToStack(ItemStack stack, EquipmentSlot slot, int layers) {
-        ItemAttributeModifiers existing =
-                stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+        // Armor's base armor/toughness live in Item#getDefaultAttributeModifiers, NOT in the
+        // stack's component, and vanilla only falls back to them while the component is empty.
+        // Writing a component that holds just our bonus therefore erased the base armor value.
+        // Seed from the item's defaults, and drop any earlier hide bonus so re-anvilling
+        // replaces it instead of appending a duplicate modifier id.
+        ItemAttributeModifiers current = stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
+        if (current == null || current.modifiers().isEmpty()) {
+            current = stack.getItem().getDefaultAttributeModifiers();
+        }
+        List<ItemAttributeModifiers.Entry> kept = new ArrayList<>();
+        for (ItemAttributeModifiers.Entry entry : current.modifiers()) {
+            if (!entry.modifier().id().equals(HIDE_BONUS_ID)) {
+                kept.add(entry);
+            }
+        }
+        ItemAttributeModifiers existing = new ItemAttributeModifiers(kept, current.showInTooltip());
         double bonus = CNBConfig.hideMultiplier * layers;
         ItemAttributeModifiers updated = existing.withModifierAdded(
                 Attributes.ARMOR,
