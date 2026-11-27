@@ -451,12 +451,21 @@ public class EndWhaleEntity extends TamableAnimal implements GeoEntity {
 
     static class EndWhaleWanderGoal extends Goal {
         private final EndWhaleEntity endWhale;
+        /** Ticks to wait after a failed target/path search before trying again. */
+        private int retryCooldown;
         EndWhaleWanderGoal(EndWhaleEntity endWhale) {
             this.setFlags(EnumSet.of(Goal.Flag.MOVE));
             this.endWhale = endWhale;
         }
         @Override
         public boolean canUse() {
+            // When a search FAILS (no valid position / no path) navigation stays "done", so this
+            // goal would restart and run a full random-position search + pathfind on every tick
+            // for every whale (the reported lag). Back off after a failure.
+            if (this.retryCooldown > 0) {
+                --this.retryCooldown;
+                return false;
+            }
             // Re-roll a wander target the moment the previous path finishes — no idle delay.
             // Combined with the forward cone in findPos() and the slow yaw rate from
             // FlyingMoveControl, this gives a continuous gliding feel.
@@ -473,9 +482,13 @@ public class EndWhaleEntity extends TamableAnimal implements GeoEntity {
         @Override
         public void start() {
             Vec3 vec3 = this.findPos();
+            boolean moving = false;
             if (vec3 != null) {
-                this.endWhale.navigation.moveTo(
+                moving = this.endWhale.navigation.moveTo(
                         this.endWhale.navigation.createPath(BlockPos.containing(vec3), 3), 1.0D);
+            }
+            if (!moving) {
+                this.retryCooldown = 20 + this.endWhale.getRandom().nextInt(20);
             }
         }
         @Override
@@ -504,6 +517,7 @@ public class EndWhaleEntity extends TamableAnimal implements GeoEntity {
         private final double speedModifier;
         @Nullable protected Player player;
         private int calmDown;
+        private int repathDelay;
         private final java.util.function.Predicate<ItemStack> items;
 
         public EndWhaleTemptGoal(EndWhaleEntity endWhale, double speedModifier, java.util.function.Predicate<ItemStack> temptIngredient) {
@@ -517,6 +531,8 @@ public class EndWhaleEntity extends TamableAnimal implements GeoEntity {
         public boolean canUse() {
             if (this.calmDown > 0) { --this.calmDown; return false; }
             if (this.endWhale.isVehicle()) return false;
+            // Scanning for a tempting player doesn't need to run every tick.
+            if ((this.endWhale.tickCount + this.endWhale.getId()) % 5 != 0) return false;
 
             // Find nearest non-spectator player within RANGE who is holding the tempt ingredient.
             // (TargetingConditions+selector was unreliable across loader versions; this is direct.)
@@ -556,7 +572,10 @@ public class EndWhaleEntity extends TamableAnimal implements GeoEntity {
                     (float) this.endWhale.getMaxHeadXRot());
             if (this.endWhale.distanceToSqr(this.player) < 6.25D) {
                 this.endWhale.getNavigation().stop();
-            } else {
+            } else if (--this.repathDelay <= 0) {
+                // moveTo(Entity) recomputes a full path each call over a 100-block range; doing
+                // it every tick doubled the lag while holding chorus fruit. Re-plan twice a second.
+                this.repathDelay = 10;
                 this.endWhale.getNavigation().moveTo(this.player, this.speedModifier);
             }
         }

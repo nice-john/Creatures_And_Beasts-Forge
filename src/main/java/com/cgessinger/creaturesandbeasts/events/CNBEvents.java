@@ -113,8 +113,17 @@ public class CNBEvents {
      * old {@code MULTIPLY_TOTAL}) to mirror 1.19 behavior.
      */
     private static void applyHideBonusToStack(ItemStack stack, EquipmentSlot slot, int layers) {
-        ItemAttributeModifiers existing =
+        ItemAttributeModifiers current =
                 stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+        // Drop any earlier hide bonus so re-anvilling replaces it. withModifierAdded only appends,
+        // and two modifiers with the same id make AttributeInstance throw when the armor is equipped.
+        java.util.List<ItemAttributeModifiers.Entry> kept = new java.util.ArrayList<>();
+        for (ItemAttributeModifiers.Entry entry : current.modifiers()) {
+            if (!entry.modifier().id().equals(HIDE_BONUS_ID)) {
+                kept.add(entry);
+            }
+        }
+        ItemAttributeModifiers existing = new ItemAttributeModifiers(kept);
 
         double bonus = CNBConfig.hideMultiplier * layers;
         ItemAttributeModifiers updated = existing.withModifierAdded(
